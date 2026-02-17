@@ -7,10 +7,24 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Download, Smartphone } from "lucide-react";
+import { Download, Smartphone, SquarePlus } from "lucide-react";
 
 const POPUP_DISMISSED_KEY = "voicecrm_app_popup_dismissed";
 const DISMISS_DURATION_MS = 24 * 60 * 60 * 1000;
+
+type Platform = "ios" | "android" | "other";
+
+function detectPlatform(): Platform {
+  if (typeof navigator === "undefined") return "other";
+  const ua = navigator.userAgent || "";
+  if (/iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) {
+    return "ios";
+  }
+  if (/Android/i.test(ua)) {
+    return "android";
+  }
+  return "other";
+}
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(
@@ -26,12 +40,82 @@ function useIsMobile() {
   return isMobile;
 }
 
+function IOSInstructions() {
+  const steps = [
+    {
+      number: 1,
+      icon: <ShareIcon />,
+      text: "Toque no botão Compartilhar",
+      detail: "na barra inferior do Safari",
+    },
+    {
+      number: 2,
+      icon: <SquarePlus className="h-5 w-5 text-primary" />,
+      text: "Toque em \"Adicionar à Tela de Início\"",
+      detail: "role para baixo se necessário",
+    },
+    {
+      number: 3,
+      icon: <Smartphone className="h-5 w-5 text-primary" />,
+      text: "Toque em \"Adicionar\"",
+      detail: "o VoiceCRM aparecerá como um app",
+    },
+  ];
+
+  return (
+    <div className="flex flex-col gap-3 mt-1" data-testid="ios-instructions">
+      {steps.map((step) => (
+        <div
+          key={step.number}
+          className="flex items-start gap-3 p-3 rounded-md bg-muted/50"
+          data-testid={`ios-step-${step.number}`}
+        >
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+            {step.number}
+          </div>
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              {step.icon}
+              <span className="text-sm font-medium">{step.text}</span>
+            </div>
+            <span className="text-xs text-muted-foreground">{step.detail}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ShareIcon() {
+  return (
+    <svg
+      className="h-5 w-5 text-primary"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+      <polyline points="16 6 12 2 8 6" />
+      <line x1="12" y1="2" x2="12" y2="15" />
+    </svg>
+  );
+}
+
 export function MobileAppPopup() {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
+  const [platform, setPlatform] = useState<Platform>("other");
+
+  useEffect(() => {
+    setPlatform(detectPlatform());
+  }, []);
 
   useEffect(() => {
     if (!isMobile) return;
+    if (platform === "other") return;
 
     const isStandalone =
       window.matchMedia("(display-mode: standalone)").matches ||
@@ -46,7 +130,7 @@ export function MobileAppPopup() {
 
     const timer = setTimeout(() => setOpen(true), 1500);
     return () => clearTimeout(timer);
-  }, [isMobile]);
+  }, [isMobile, platform]);
 
   function handleDismiss() {
     setOpen(false);
@@ -65,6 +149,8 @@ export function MobileAppPopup() {
 
   if (!isMobile) return null;
 
+  const isIOS = platform === "ios";
+
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) handleDismiss(); }}>
       <DialogContent className="sm:max-w-md max-w-[calc(100vw-2rem)] rounded-md" data-testid="popup-mobile-app">
@@ -73,31 +159,37 @@ export function MobileAppPopup() {
             <Smartphone className="h-7 w-7 text-primary" />
           </div>
           <DialogTitle className="text-lg" data-testid="text-popup-title">
-            Baixe o App VoiceCRM
+            {isIOS ? "Adicione o VoiceCRM" : "Baixe o App VoiceCRM"}
           </DialogTitle>
-          <DialogDescription className="text-sm text-muted-foreground">
-            Instale o VoiceCRM no seu celular para acesso rápido. Grave reuniões, acesse contatos e acompanhe tarefas direto da tela inicial.
+          <DialogDescription className="text-sm text-muted-foreground" data-testid="text-popup-description">
+            {isIOS
+              ? "Adicione o VoiceCRM à sua tela inicial para acesso rápido. Funciona como um app nativo no seu iPhone."
+              : "Instale o VoiceCRM no seu celular para acesso rápido. Grave reuniões, acesse contatos e acompanhe tarefas direto da tela inicial."}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-3 mt-2">
-          <Button
-            className="w-full gap-2"
-            size="lg"
-            onClick={handleDownload}
-            data-testid="button-install-app"
-          >
-            <Download className="h-5 w-5" />
-            Baixar App
-          </Button>
-        </div>
+        {isIOS ? (
+          <IOSInstructions />
+        ) : (
+          <div className="flex flex-col gap-3 mt-2">
+            <Button
+              className="w-full gap-2"
+              size="lg"
+              onClick={handleDownload}
+              data-testid="button-install-app"
+            >
+              <Download className="h-5 w-5" />
+              Baixar App
+            </Button>
+          </div>
+        )}
 
         <button
           onClick={handleDismiss}
           className="mt-1 text-sm text-muted-foreground hover:text-foreground transition-colors text-center w-full"
           data-testid="button-dismiss-popup"
         >
-          Agora não
+          {isIOS ? "Entendi" : "Agora não"}
         </button>
       </DialogContent>
     </Dialog>
