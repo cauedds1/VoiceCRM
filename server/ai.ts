@@ -2,10 +2,12 @@ import OpenAI from "openai";
 import { storage } from "./storage";
 import type { Meeting } from "@shared/schema";
 
-const openai = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-});
+function getOpenAIClient(): OpenAI {
+  return new OpenAI({
+    apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+    baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+  });
+}
 
 interface ExtractedData {
   title: string;
@@ -22,6 +24,7 @@ export async function processAudioMeeting(
 ): Promise<Meeting> {
   const file = new File([audioBuffer], "audio.webm", { type: mimeType || "audio/webm" });
 
+  const openai = getOpenAIClient();
   const transcription = await openai.audio.transcriptions.create({
     file,
     model: "gpt-4o-mini-transcribe",
