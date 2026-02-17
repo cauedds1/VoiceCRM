@@ -1,6 +1,7 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Building2, Search, Plus, Users, Phone, Mail, MapPin } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -150,16 +151,26 @@ export default function CompaniesList() {
             <Link key={company.id} href={`/companies/${company.id}`}>
               <Card className="hover-elevate cursor-pointer" data-testid={`company-item-${company.id}`}>
                 <CardContent className="p-5">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <h3 className="text-base font-medium truncate">{company.name}</h3>
-                      {company.industry && (
-                        <p className="text-xs text-muted-foreground mt-1">{company.industry}</p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
-                      <Users className="h-3 w-3" />
-                      {getContactCount(company.id)}
+                  <div className="flex items-start gap-4">
+                    <Avatar className="h-10 w-10 shrink-0">
+                      <AvatarImage src={company.logoUrl || undefined} alt={company.name} />
+                      <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
+                        {company.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <h3 className="text-base font-medium truncate">{company.name}</h3>
+                          {company.industry && (
+                            <p className="text-xs text-muted-foreground mt-1">{company.industry}</p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
+                          <Users className="h-3 w-3" />
+                          {getContactCount(company.id)}
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div className="mt-3 space-y-1">
