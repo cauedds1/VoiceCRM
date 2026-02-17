@@ -376,6 +376,7 @@ export async function registerRoutes(
         priority: z.enum(["high", "medium", "low"]).default("medium"),
         dueDate: z.string().optional().nullable(),
         status: z.enum(["pending", "in_progress", "completed"]).default("pending"),
+        contactId: z.string().optional().nullable(),
       });
       const data = createSchema.parse(req.body);
       const task = await storage.createTask({
@@ -384,6 +385,7 @@ export async function registerRoutes(
         priority: data.priority,
         dueDate: data.dueDate ? new Date(data.dueDate) : null,
         status: data.status,
+        contactId: data.contactId || null,
         meetingId: null,
         userId,
       });

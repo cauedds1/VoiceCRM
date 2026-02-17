@@ -1,7 +1,8 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
 import {
-  CheckSquare, Clock, Calendar, Filter, AlertCircle, Mic, Plus
+  CheckSquare, Clock, Calendar, Filter, AlertCircle, Mic, Plus,
+  User, UserPlus, X, Search
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useState } from "react";
-import type { Task, Meeting } from "@shared/schema";
+import type { Task, Meeting, Contact } from "@shared/schema";
 
 function priorityLabel(p: string) {
   switch (p) {
@@ -66,6 +67,14 @@ export default function TasksList() {
   const [newDescription, setNewDescription] = useState("");
   const [newPriority, setNewPriority] = useState("medium");
   const [newDueDate, setNewDueDate] = useState("");
+  const [selectedContactId, setSelectedContactId] = useState<string | null>(null);
+  const [showContactPicker, setShowContactPicker] = useState(false);
+  const [contactSearch, setContactSearch] = useState("");
+  const [showNewContactForm, setShowNewContactForm] = useState(false);
+  const [newContactName, setNewContactName] = useState("");
+  const [newContactCompany, setNewContactCompany] = useState("");
+  const [newContactPhone, setNewContactPhone] = useState("");
+  const [newContactEmail, setNewContactEmail] = useState("");
 
   const { data: tasks = [], isLoading } = useQuery<Task[]>({
     queryKey: ["/api/tasks"],
@@ -73,6 +82,10 @@ export default function TasksList() {
 
   const { data: meetings = [] } = useQuery<Meeting[]>({
     queryKey: ["/api/meetings"],
+  });
+
+  const { data: contacts = [] } = useQuery<Contact[]>({
+    queryKey: ["/api/contacts"],
   });
 
   const updateTask = useMutation({
@@ -85,21 +98,54 @@ export default function TasksList() {
   });
 
   const createTask = useMutation({
-    mutationFn: async (data: { title: string; description?: string; priority: string; dueDate?: string }) =>
+    mutationFn: async (data: { title: string; description?: string; priority: string; dueDate?: string; contactId?: string }) =>
       apiRequest("POST", "/api/tasks", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       toast({ title: "Tarefa criada com sucesso!" });
-      setDialogOpen(false);
-      setNewTitle("");
-      setNewDescription("");
-      setNewPriority("medium");
-      setNewDueDate("");
+      resetDialog();
     },
     onError: (error: Error) => {
       toast({ title: "Erro ao criar tarefa", description: error.message, variant: "destructive" });
     },
   });
+
+  const createContact = useMutation({
+    mutationFn: async (data: { name: string; companyName?: string; phone?: string; email?: string }) =>
+      apiRequest("POST", "/api/contacts", data),
+    onSuccess: async (res) => {
+      const contact = await res.json();
+      queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
+      setSelectedContactId(contact.id);
+      setShowNewContactForm(false);
+      setShowContactPicker(false);
+      setContactSearch("");
+      setNewContactName("");
+      setNewContactCompany("");
+      setNewContactPhone("");
+      setNewContactEmail("");
+      toast({ title: "Contato criado e anexado!" });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Erro ao criar contato", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const resetDialog = () => {
+    setDialogOpen(false);
+    setNewTitle("");
+    setNewDescription("");
+    setNewPriority("medium");
+    setNewDueDate("");
+    setSelectedContactId(null);
+    setShowContactPicker(false);
+    setContactSearch("");
+    setShowNewContactForm(false);
+    setNewContactName("");
+    setNewContactCompany("");
+    setNewContactPhone("");
+    setNewContactEmail("");
+  };
 
   const handleCreateTask = (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,10 +158,34 @@ export default function TasksList() {
       description: newDescription.trim() || undefined,
       priority: newPriority,
       dueDate: newDueDate || undefined,
+      contactId: selectedContactId || undefined,
+    });
+  };
+
+  const handleCreateContact = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newContactName.trim()) {
+      toast({ title: "Informe o nome do contato", variant: "destructive" });
+      return;
+    }
+    createContact.mutate({
+      name: newContactName.trim(),
+      companyName: newContactCompany.trim() || undefined,
+      phone: newContactPhone.trim() || undefined,
+      email: newContactEmail.trim() || undefined,
     });
   };
 
   const meetingsMap = new Map(meetings.map((m) => [m.id, m]));
+  const contactsMap = new Map(contacts.map((c) => [c.id, c]));
+
+  const filteredContacts = contacts.filter(
+    (c) =>
+      c.name.toLowerCase().includes(contactSearch.toLowerCase()) ||
+      (c.companyName || "").toLowerCase().includes(contactSearch.toLowerCase())
+  );
+
+  const selectedContact = selectedContactId ? contactsMap.get(selectedContactId) : null;
 
   const filtered = tasks.filter((t) => {
     if (statusFilter !== "all" && t.status !== statusFilter) return false;
@@ -138,14 +208,14 @@ export default function TasksList() {
             Geradas pela IA ou adicionadas manualmente
           </p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) resetDialog(); else setDialogOpen(true); }}>
           <DialogTrigger asChild>
             <Button className="gap-2 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white" data-testid="button-add-task">
               <Plus className="h-4 w-4" />
               Nova Tarefa
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Nova Tarefa</DialogTitle>
             </DialogHeader>
@@ -194,6 +264,171 @@ export default function TasksList() {
                   />
                 </div>
               </div>
+
+              <div>
+                <label className="text-xs text-muted-foreground mb-1.5 block">Contato (opcional)</label>
+                {selectedContact ? (
+                  <div className="flex items-center gap-2 p-2.5 rounded-md bg-accent/50">
+                    <User className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{selectedContact.name}</p>
+                      {selectedContact.companyName && (
+                        <p className="text-xs text-muted-foreground truncate">{selectedContact.companyName}</p>
+                      )}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setSelectedContactId(null)}
+                      data-testid="button-remove-contact"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ) : showContactPicker ? (
+                  <div className="space-y-2">
+                    {!showNewContactForm ? (
+                      <>
+                        <div className="relative">
+                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                          <Input
+                            placeholder="Buscar contato..."
+                            value={contactSearch}
+                            onChange={(e) => setContactSearch(e.target.value)}
+                            className="pl-8"
+                            data-testid="input-search-task-contact"
+                          />
+                        </div>
+                        <div className="max-h-36 overflow-y-auto space-y-1 rounded-md border p-1">
+                          {filteredContacts.length === 0 ? (
+                            <p className="text-xs text-muted-foreground text-center py-3">
+                              Nenhum contato encontrado
+                            </p>
+                          ) : (
+                            filteredContacts.map((c) => (
+                              <button
+                                key={c.id}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedContactId(c.id);
+                                  setShowContactPicker(false);
+                                  setContactSearch("");
+                                }}
+                                className="w-full text-left p-2 rounded-md hover-elevate flex items-center gap-2"
+                                data-testid={`select-contact-${c.id}`}
+                              >
+                                <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                <div className="min-w-0">
+                                  <p className="text-sm font-medium truncate">{c.name}</p>
+                                  {c.companyName && (
+                                    <p className="text-xs text-muted-foreground truncate">{c.companyName}</p>
+                                  )}
+                                </div>
+                              </button>
+                            ))
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="gap-1 flex-1"
+                            onClick={() => setShowNewContactForm(true)}
+                            data-testid="button-new-contact-from-task"
+                          >
+                            <UserPlus className="h-3.5 w-3.5" />
+                            Novo Contato
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setShowContactPicker(false);
+                              setContactSearch("");
+                            }}
+                            data-testid="button-cancel-contact-picker"
+                          >
+                            Cancelar
+                          </Button>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="space-y-3 rounded-md border p-3">
+                        <p className="text-xs font-medium text-muted-foreground">Novo Contato</p>
+                        <Input
+                          placeholder="Nome do contato"
+                          value={newContactName}
+                          onChange={(e) => setNewContactName(e.target.value)}
+                          data-testid="input-new-contact-name"
+                        />
+                        <Input
+                          placeholder="Empresa (opcional)"
+                          value={newContactCompany}
+                          onChange={(e) => setNewContactCompany(e.target.value)}
+                          data-testid="input-new-contact-company"
+                        />
+                        <div className="grid grid-cols-2 gap-2">
+                          <Input
+                            placeholder="Telefone"
+                            value={newContactPhone}
+                            onChange={(e) => setNewContactPhone(e.target.value)}
+                            data-testid="input-new-contact-phone"
+                          />
+                          <Input
+                            placeholder="Email"
+                            value={newContactEmail}
+                            onChange={(e) => setNewContactEmail(e.target.value)}
+                            data-testid="input-new-contact-email"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="flex-1 gap-1 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white"
+                            onClick={handleCreateContact}
+                            disabled={createContact.isPending}
+                            data-testid="button-save-new-contact"
+                          >
+                            <UserPlus className="h-3.5 w-3.5" />
+                            {createContact.isPending ? "Salvando..." : "Salvar Contato"}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setShowNewContactForm(false);
+                              setNewContactName("");
+                              setNewContactCompany("");
+                              setNewContactPhone("");
+                              setNewContactEmail("");
+                            }}
+                            data-testid="button-cancel-new-contact"
+                          >
+                            Voltar
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full gap-2 justify-start text-muted-foreground"
+                    onClick={() => setShowContactPicker(true)}
+                    data-testid="button-attach-contact"
+                  >
+                    <User className="h-4 w-4" />
+                    Anexar Contato
+                  </Button>
+                )}
+              </div>
+
               <Button
                 type="submit"
                 className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white"
@@ -339,6 +574,7 @@ export default function TasksList() {
         <div className="space-y-3">
           {filtered.map((task) => {
             const meeting = task.meetingId ? meetingsMap.get(task.meetingId) : null;
+            const contact = task.contactId ? contactsMap.get(task.contactId) : null;
             const isOverdue = task.dueDate && task.status !== "completed" && new Date(task.dueDate) < new Date();
 
             return (
@@ -363,6 +599,14 @@ export default function TasksList() {
                       )}
 
                       <div className="flex flex-wrap items-center gap-3 pl-4">
+                        {contact && (
+                          <Link href={`/contacts/${contact.id}`}>
+                            <span className="text-xs text-muted-foreground flex items-center gap-1 hover:text-foreground transition-colors cursor-pointer" data-testid={`task-contact-link-${task.id}`}>
+                              <User className="h-3 w-3" />
+                              {contact.name}
+                            </span>
+                          </Link>
+                        )}
                         {task.dueDate && (
                           <span className={`text-xs flex items-center gap-1 ${isOverdue ? "text-red-500 font-medium" : "text-muted-foreground"}`}>
                             <Calendar className="h-3 w-3" />
@@ -382,7 +626,7 @@ export default function TasksList() {
                             </span>
                           </Link>
                         )}
-                        {!task.meetingId && (
+                        {!task.meetingId && !task.contactId && (
                           <span className="text-xs text-muted-foreground flex items-center gap-1" data-testid={`task-manual-label-${task.id}`}>
                             <Plus className="h-3 w-3" />
                             Manual

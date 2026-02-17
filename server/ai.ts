@@ -13,7 +13,7 @@ interface ExtractedData {
   title: string;
   summary: string;
   contacts: Array<{ name: string; company?: string; role?: string }>;
-  tasks: Array<{ title: string; description?: string; priority: string; dueDate?: string }>;
+  tasks: Array<{ title: string; description?: string; priority: string; dueDate?: string; contactName?: string }>;
   decisions: string[];
 }
 
@@ -72,7 +72,10 @@ EXTRAÇÃO DE TAREFAS — PRESTE MUITA ATENÇÃO:
   - "urgente", "o mais rápido possível", "prioridade" → high
   - Tarefas normais sem urgência → medium
   - "quando der", "sem pressa", "eventualmente" → low
-- Se alguém for mencionado como responsável, inclua no título ou descrição
+- Se alguém for mencionado como responsável ou envolvido na tarefa, preencha o campo "contactName" com o nome EXATO da pessoa (deve corresponder a um nome em "contacts")
+  - Exemplo: "Preciso ligar pro João" → contactName: "João"
+  - Exemplo: "O Carlos ficou de enviar" → contactName: "Carlos"
+  - Se a tarefa não envolve uma pessoa específica, deixe contactName como null
 
 Responda SEMPRE em JSON com esta estrutura exata:
 {
@@ -82,7 +85,7 @@ Responda SEMPRE em JSON com esta estrutura exata:
     { "name": "Nome da pessoa", "company": "Nome da empresa (se mencionada)", "role": "Cargo (se mencionado)" }
   ],
   "tasks": [
-    { "title": "Título da tarefa", "description": "Descrição detalhada", "priority": "high|medium|low", "dueDate": "Data se mencionada (formato YYYY-MM-DD) ou null" }
+    { "title": "Título da tarefa", "description": "Descrição detalhada", "priority": "high|medium|low", "dueDate": "Data se mencionada (formato YYYY-MM-DD) ou null", "contactName": "Nome da pessoa envolvida ou null" }
   ],
   "decisions": ["Decisão 1", "Decisão 2"]
 }`
@@ -116,6 +119,8 @@ Responda SEMPRE em JSON com esta estrutura exata:
     userId,
   });
 
+  const contactNameToIdMap = new Map<string, string>();
+
   for (const contactData of extracted.contacts || []) {
     if (!contactData.name) continue;
 
@@ -142,17 +147,45 @@ Responda SEMPRE em JSON com esta estrutura exata:
       });
     }
 
+    contactNameToIdMap.set(contactData.name.toLowerCase(), contact.id);
     await storage.addMeetingContact(meeting.id, contact.id);
   }
 
   for (const taskData of extracted.tasks || []) {
     if (!taskData.title) continue;
+
+    let taskContactId: string | null = null;
+    if (taskData.contactName) {
+      const normalizedName = taskData.contactName.toLowerCase();
+      taskContactId = contactNameToIdMap.get(normalizedName) || null;
+
+      if (!taskContactId) {
+        for (const [mapName, mapId] of contactNameToIdMap) {
+          if (mapName.includes(normalizedName) || normalizedName.includes(mapName)) {
+            taskContactId = mapId;
+            break;
+          }
+        }
+      }
+
+      if (!taskContactId) {
+        let contact = await storage.createContact({
+          name: taskData.contactName,
+          userId,
+        });
+        taskContactId = contact.id;
+        contactNameToIdMap.set(normalizedName, contact.id);
+        await storage.addMeetingContact(meeting.id, contact.id);
+      }
+    }
+
     await storage.createTask({
       title: taskData.title,
       description: taskData.description || null,
       priority: taskData.priority || "medium",
       dueDate: taskData.dueDate ? new Date(taskData.dueDate) : null,
       meetingId: meeting.id,
+      contactId: taskContactId,
       status: "pending",
       userId,
     });
