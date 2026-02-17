@@ -162,10 +162,13 @@ export default function Landing() {
               variants={fadeUp}
             >
               <Link href="/auth">
-                <Button size="lg" className="gap-2 text-base px-8 bg-gradient-to-r from-emerald-500 to-cyan-500 border-emerald-500" data-testid="button-get-started">
-                  Comece grátis agora
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
+                <div className="group relative inline-flex" data-testid="button-get-started">
+                  <div className="absolute -inset-1 rounded-md bg-gradient-to-r from-emerald-500 via-cyan-500 to-blue-500 opacity-60 blur-lg transition-all duration-500 group-hover:opacity-100 group-hover:blur-xl" />
+                  <Button size="lg" className="relative gap-2 text-base px-10 py-6 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 shadow-lg shadow-emerald-500/25">
+                    Comece grátis agora
+                    <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                  </Button>
+                </div>
               </Link>
             </motion.div>
           </div>
