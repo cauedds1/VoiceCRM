@@ -17,6 +17,8 @@ export default function NewMeeting() {
   const [duration, setDuration] = useState(0);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [bars, setBars] = useState<number[]>(Array.from({ length: 32 }, () => 4));
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
+  const wasRecordingBeforeDiscard = useRef(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -171,7 +173,23 @@ export default function NewMeeting() {
     setState("processing");
   }, [stopTimer, stopVisualization]);
 
+  const askDiscard = useCallback(() => {
+    wasRecordingBeforeDiscard.current = state === "recording";
+    if (state === "recording") {
+      pauseRecording();
+    }
+    setShowDiscardConfirm(true);
+  }, [state, pauseRecording]);
+
+  const cancelDiscard = useCallback(() => {
+    setShowDiscardConfirm(false);
+    if (wasRecordingBeforeDiscard.current) {
+      resumeRecording();
+    }
+  }, [resumeRecording]);
+
   const discardRecording = useCallback(() => {
+    setShowDiscardConfirm(false);
     const mr = mediaRecorderRef.current;
     if (mr && mr.state !== "inactive") {
       mr.ondataavailable = null;
@@ -372,7 +390,7 @@ export default function NewMeeting() {
 
                     {isActive && (
                       <button
-                        onClick={discardRecording}
+                        onClick={askDiscard}
                         className="w-14 h-14 rounded-full flex items-center justify-center bg-accent text-muted-foreground transition-all"
                         data-testid="button-discard-recording"
                         aria-label="Descartar gravação"
@@ -382,13 +400,42 @@ export default function NewMeeting() {
                     )}
                   </div>
 
-                  {state === "idle" && !audioBlob && (
+                  {showDiscardConfirm && (
+                    <div className="flex flex-col items-center gap-3 p-4 rounded-md border border-destructive/30 bg-destructive/5 max-w-xs w-full">
+                      <p className="text-sm font-medium text-center">
+                        Tem certeza que deseja descartar a gravação?
+                      </p>
+                      <p className="text-xs text-muted-foreground text-center">
+                        Todo o áudio gravado será perdido e não poderá ser recuperado.
+                      </p>
+                      <div className="flex items-center gap-3">
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={discardRecording}
+                          data-testid="button-confirm-discard"
+                        >
+                          Sim, descartar
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={cancelDiscard}
+                          data-testid="button-cancel-discard"
+                        >
+                          Cancelar
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {!showDiscardConfirm && state === "idle" && !audioBlob && (
                     <p className="text-sm text-muted-foreground text-center max-w-xs">
                       Toque no botão para gravar. Conte o que aconteceu na reunião com suas próprias palavras.
                     </p>
                   )}
 
-                  {isActive && (
+                  {!showDiscardConfirm && isActive && (
                     <p className="text-xs text-muted-foreground text-center max-w-xs">
                       {state === "paused"
                         ? "A gravação foi pausada. Toque em continuar para retomar ou pare para finalizar."
