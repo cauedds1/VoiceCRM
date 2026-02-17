@@ -1,4 +1,5 @@
 import { Mic, Zap, Brain, Clock, ArrowRight, CheckCircle, Users, Building2, ListTodo, BarChart3, Shield, Sparkles, ChevronRight, Smartphone } from "lucide-react";
+import logoImg from "@/assets/images/logo.png";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -108,9 +109,7 @@ export default function Landing() {
       <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-background/70 border-b">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="relative flex items-center justify-center w-9 h-9 rounded-md bg-gradient-to-br from-emerald-500 to-cyan-500">
-              <Mic className="h-5 w-5 text-white" />
-            </div>
+            <img src={logoImg} alt="VoiceCRM" className="w-9 h-9 rounded-md" />
             <span className="text-lg font-bold tracking-tight">VoiceCRM</span>
           </div>
           <div className="flex items-center gap-2">
@@ -654,9 +653,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-8 h-8 rounded-md bg-gradient-to-br from-emerald-500 to-cyan-500">
-                <Mic className="h-4 w-4 text-white" />
-              </div>
+              <img src={logoImg} alt="VoiceCRM" className="w-8 h-8 rounded-md" />
               <span className="text-sm font-bold">VoiceCRM</span>
             </div>
             <p className="text-sm text-muted-foreground">
