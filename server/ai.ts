@@ -33,6 +33,8 @@ export async function processAudioMeeting(
 
   const transcribedText = transcription.text;
 
+  const todayDate = new Date().toISOString().split("T")[0];
+
   const extractionResponse = await openai.chat.completions.create({
     model: "gpt-5-mini",
     response_format: { type: "json_object" },
@@ -46,10 +48,31 @@ REGRAS IMPORTANTES:
 - Identifique TODAS as pessoas mencionadas e suas respectivas empresas
 - Quando alguém diz "Fulano da Empresa X", "Fulano" é a PESSOA e "Empresa X" é a EMPRESA
 - Separe claramente pessoa de empresa
-- Extraia todas as tarefas, ações e compromissos mencionados
-- Identifique decisões tomadas durante a reunião
 - Crie um título conciso e descritivo para a reunião
 - Crie um resumo claro e organizado
+- Identifique decisões tomadas durante a reunião
+
+EXTRAÇÃO DE TAREFAS — PRESTE MUITA ATENÇÃO:
+- Extraia TODAS as tarefas, ações, compromissos, pendências e coisas a fazer mencionadas
+- Qualquer frase que indique algo que precisa ser feito é uma tarefa. Exemplos:
+  - "Preciso enviar o relatório" → tarefa
+  - "Tenho que ligar pro João até sexta" → tarefa com prazo
+  - "Ficou de mandar a proposta" → tarefa
+  - "Vou marcar uma reunião com o fornecedor" → tarefa
+  - "A gente combinou de revisar o contrato" → tarefa
+  - "Não posso esquecer de pagar a fatura" → tarefa
+  - "Ele vai preparar a apresentação pra semana que vem" → tarefa com prazo
+- Interprete datas relativas com base na data de hoje (${todayDate}):
+  - "até sexta" → calcule a próxima sexta-feira
+  - "semana que vem" → calcule a data da próxima semana
+  - "amanhã" → dia seguinte a hoje
+  - "até o final do mês" → último dia do mês atual
+  - "daqui 3 dias" → some 3 dias a partir de hoje
+- Se a urgência/importância for mencionada ou implícita, defina a prioridade:
+  - "urgente", "o mais rápido possível", "prioridade" → high
+  - Tarefas normais sem urgência → medium
+  - "quando der", "sem pressa", "eventualmente" → low
+- Se alguém for mencionado como responsável, inclua no título ou descrição
 
 Responda SEMPRE em JSON com esta estrutura exata:
 {

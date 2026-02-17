@@ -21,6 +21,7 @@ import ContactDetail from "@/pages/contact-detail";
 import CompaniesList from "@/pages/companies-list";
 import CompanyDetail from "@/pages/company-detail";
 import NewMeetingManual from "@/pages/new-meeting-manual";
+import TasksList from "@/pages/tasks-list";
 import Reports from "@/pages/reports";
 import NotFound from "@/pages/not-found";
 import { MobileAppPopup } from "@/components/mobile-app-popup";
@@ -86,6 +87,7 @@ function AuthenticatedLayout() {
               <Route path="/contacts" component={ContactsList} />
               <Route path="/companies/:id" component={CompanyDetail} />
               <Route path="/companies" component={CompaniesList} />
+              <Route path="/tasks" component={TasksList} />
               <Route path="/reports" component={Reports} />
               <Route component={NotFound} />
             </Switch>

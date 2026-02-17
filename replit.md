@@ -18,7 +18,8 @@ Voice-powered CRM system for professionals. Record audio after meetings, AI tran
 - beforeunload protection prevents accidental data loss during active recording
 - AI transcription (gpt-4o-mini-transcribe) and entity extraction (gpt-5-mini)
 - Auto-creation of contacts and companies from voice mentions
-- Task and decision extraction from meeting audio
+- Task and decision extraction from meeting audio with enhanced natural language understanding
+- Dedicated Tasks page with status/priority filtering, overdue detection, meeting links
 - Full CRUD for contacts, companies, meetings, tasks
 - Contacts grouped by company with city/state location
 - Companies with city/state location fields
@@ -31,7 +32,7 @@ Voice-powered CRM system for professionals. Record audio after meetings, AI tran
 ## Project Structure
 ```
 client/src/
-  pages/         - All page components (dashboard, meetings, contacts, companies, reports)
+  pages/         - All page components (dashboard, meetings, contacts, companies, tasks, reports)
   components/    - Reusable components (sidebar, theme toggle)
   hooks/         - Custom hooks (use-auth, use-toast)
   lib/           - Query client, auth utilities
