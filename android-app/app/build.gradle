@@ -24,9 +24,9 @@ android {
     signingConfigs {
         release {
             storeFile file("../keystore.jks")
-            storePassword System.getenv("KEYSTORE_PASSWORD") ?: "changeme"
+            storePassword System.getenv("KEYSTORE_PASSWORD") ?: "voicecrm123"
             keyAlias System.getenv("KEY_ALIAS") ?: "voicecrm"
-            keyPassword System.getenv("KEY_PASSWORD") ?: "changeme"
+            keyPassword System.getenv("KEY_PASSWORD") ?: "voicecrm123"
         }
     }
 

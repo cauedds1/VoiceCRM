@@ -25,6 +25,20 @@ export async function registerRoutes(
   await setupAuth(app);
   registerAuthRoutes(app);
 
+  app.get("/.well-known/assetlinks.json", (_req, res) => {
+    res.setHeader("Content-Type", "application/json");
+    res.json([{
+      relation: ["delegate_permission/common.handle_all_urls"],
+      target: {
+        namespace: "android_app",
+        package_name: "com.voicecrm.app",
+        sha256_cert_fingerprints: [
+          "69:31:A7:D1:94:11:B8:5C:F0:66:8F:45:13:8F:21:E0:0C:53:A8:F0:6D:E7:3A:12:02:FD:19:8F:BD:15:6A:B1"
+        ]
+      }
+    }]);
+  });
+
   app.get("/voicecrm.apk", (_req, res) => {
     const apkPath = path.resolve(process.cwd(), "server", "assets", "voicecrm.apk");
     res.setHeader("Content-Type", "application/vnd.android.package-archive");
