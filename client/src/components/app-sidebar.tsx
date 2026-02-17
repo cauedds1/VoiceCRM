@@ -38,10 +38,10 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="p-4 pb-5">
-        <div className="flex flex-col items-center gap-2 pt-2">
-          <img src={logoImg} alt="VoiceCRM" className="w-16 h-16" />
-          <div className="text-center">
-            <h1 className="text-xl font-bold tracking-tight">
+        <div className="flex items-center gap-3">
+          <img src={logoImg} alt="VoiceCRM" className="w-14 h-14" />
+          <div>
+            <h1 className="text-lg font-bold tracking-tight">
               <span style={{ color: "#ffffff" }}>Voice</span>
               <span className="text-sidebar-foreground">CRM</span>
             </h1>
