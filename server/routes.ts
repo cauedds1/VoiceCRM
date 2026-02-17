@@ -110,6 +110,36 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/meetings", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const createSchema = z.object({
+        title: z.string().min(1),
+        summary: z.string().optional(),
+        contactIds: z.array(z.string()).optional(),
+        date: z.string().optional(),
+      });
+      const data = createSchema.parse(req.body);
+      const meeting = await storage.createMeeting({
+        title: data.title,
+        summary: data.summary || null,
+        transcription: null,
+        status: "completed",
+        userId,
+        date: data.date ? new Date(data.date) : new Date(),
+      });
+      if (data.contactIds && data.contactIds.length > 0) {
+        for (const contactId of data.contactIds) {
+          await storage.addMeetingContact(meeting.id, contactId);
+        }
+      }
+      res.json(meeting);
+    } catch (error: any) {
+      if (error instanceof z.ZodError) return res.status(400).json({ message: error.errors });
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   app.post("/api/meetings/process-audio", isAuthenticated, upload.single("audio"), async (req, res) => {
     try {
       const userId = getUserId(req);

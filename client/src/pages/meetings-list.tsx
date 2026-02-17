@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { Mic, Clock, Search, Plus } from "lucide-react";
+import { Mic, Clock, Search, Plus, PenLine } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,12 +26,20 @@ export default function MeetingsList() {
           <h1 className="text-2xl font-bold tracking-tight">Reuniões</h1>
           <p className="text-muted-foreground mt-1">Histórico de todas as suas reuniões</p>
         </div>
-        <Link href="/meetings/new">
-          <Button className="gap-2" data-testid="button-new-meeting">
-            <Mic className="h-4 w-4" />
-            Nova Reunião
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/meetings/new-manual">
+            <Button variant="outline" className="gap-2" data-testid="button-new-meeting-manual">
+              <PenLine className="h-4 w-4" />
+              Manual
+            </Button>
+          </Link>
+          <Link href="/meetings/new">
+            <Button className="gap-2" data-testid="button-new-meeting">
+              <Mic className="h-4 w-4" />
+              Nova Reunião
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="relative">
