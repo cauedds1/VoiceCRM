@@ -7,9 +7,10 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Download, Smartphone, Check } from "lucide-react";
+import { Download, Smartphone } from "lucide-react";
 
 const POPUP_DISMISSED_KEY = "voicecrm_app_popup_dismissed";
+const DISMISS_DURATION_MS = 24 * 60 * 60 * 1000;
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -33,7 +34,7 @@ function useIsMobile() {
 export function MobileAppPopup() {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
-  const [installed, setInstalled] = useState(false);
+  const [installing, setInstalling] = useState(false);
   const deferredPromptRef = useRef<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
@@ -44,8 +45,8 @@ export function MobileAppPopup() {
     window.addEventListener("beforeinstallprompt", handler);
 
     const installedHandler = () => {
-      setInstalled(true);
       setOpen(false);
+      localStorage.setItem(POPUP_DISMISSED_KEY, "installed");
       deferredPromptRef.current = null;
     };
     window.addEventListener("appinstalled", installedHandler);
@@ -65,10 +66,15 @@ export function MobileAppPopup() {
     if (isStandalone) return;
 
     const dismissed = localStorage.getItem(POPUP_DISMISSED_KEY);
-    if (!dismissed) {
-      const timer = setTimeout(() => setOpen(true), 1500);
-      return () => clearTimeout(timer);
+    if (dismissed === "installed") return;
+
+    if (dismissed) {
+      const dismissedAt = parseInt(dismissed, 10);
+      if (Date.now() - dismissedAt < DISMISS_DURATION_MS) return;
     }
+
+    const timer = setTimeout(() => setOpen(true), 1500);
+    return () => clearTimeout(timer);
   }, [isMobile]);
 
   function handleDismiss() {
@@ -78,17 +84,33 @@ export function MobileAppPopup() {
 
   async function handleInstall() {
     if (deferredPromptRef.current) {
-      await deferredPromptRef.current.prompt();
-      const choice = await deferredPromptRef.current.userChoice;
-      if (choice.outcome === "accepted") {
-        setInstalled(true);
+      setInstalling(true);
+      try {
+        await deferredPromptRef.current.prompt();
+        const choice = await deferredPromptRef.current.userChoice;
+        if (choice.outcome === "accepted") {
+          localStorage.setItem(POPUP_DISMISSED_KEY, "installed");
+          setOpen(false);
+        }
+      } finally {
+        setInstalling(false);
+        deferredPromptRef.current = null;
       }
-      deferredPromptRef.current = null;
+    } else {
+      alert(
+        "Para instalar o VoiceCRM:\n\n" +
+        "1. Toque no menu do navegador (⋮ ou ⫶)\n" +
+        "2. Selecione \"Adicionar à tela inicial\"\n" +
+        "3. Confirme a instalação\n\n" +
+        "O app será adicionado à sua tela inicial!"
+      );
     }
-    handleDismiss();
   }
 
-  if (!isMobile || installed) return null;
+  if (!isMobile) return null;
+
+  const isInstalled = localStorage.getItem(POPUP_DISMISSED_KEY) === "installed";
+  if (isInstalled) return null;
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) handleDismiss(); }}>
@@ -110,10 +132,11 @@ export function MobileAppPopup() {
             className="w-full gap-2"
             size="lg"
             onClick={handleInstall}
+            disabled={installing}
             data-testid="button-install-app"
           >
             <Download className="h-5 w-5" />
-            Baixar App
+            {installing ? "Instalando..." : "Baixar App"}
           </Button>
         </div>
 
@@ -122,7 +145,7 @@ export function MobileAppPopup() {
           className="mt-1 text-sm text-muted-foreground hover:text-foreground transition-colors text-center w-full"
           data-testid="button-dismiss-popup"
         >
-          Continuar no navegador
+          Agora não
         </button>
       </DialogContent>
     </Dialog>
