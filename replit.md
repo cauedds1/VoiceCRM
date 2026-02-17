@@ -26,6 +26,7 @@ Voice-powered CRM system for professionals. Record audio after meetings, AI tran
 - Contact detail with meeting history
 - Monthly meeting reports with bar chart (Recharts)
 - Dark/light theme toggle
+- PWA "Add to Home Screen" popup: Android uses beforeinstallprompt API for one-tap install, iOS shows step-by-step guide. Popup appears every visit on mobile until app is installed (standalone mode).
 
 ## Project Structure
 ```

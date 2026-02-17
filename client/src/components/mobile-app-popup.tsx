@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -7,10 +7,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Download, Smartphone, SquarePlus } from "lucide-react";
-
-const POPUP_DISMISSED_KEY = "voicecrm_app_popup_dismissed";
-const DISMISS_DURATION_MS = 24 * 60 * 60 * 1000;
+import { Smartphone, SquarePlus } from "lucide-react";
 
 type Platform = "ios" | "android" | "other";
 
@@ -51,13 +48,13 @@ function IOSInstructions() {
     {
       number: 2,
       icon: <SquarePlus className="h-5 w-5 text-primary" />,
-      text: "Toque em \"Adicionar à Tela de Início\"",
+      text: 'Toque em "Adicionar à Tela de Início"',
       detail: "role para baixo se necessário",
     },
     {
       number: 3,
       icon: <Smartphone className="h-5 w-5 text-primary" />,
-      text: "Toque em \"Adicionar\"",
+      text: 'Toque em "Adicionar"',
       detail: "o VoiceCRM aparecerá como um app",
     },
   ];
@@ -108,6 +105,18 @@ export function MobileAppPopup() {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const platform = typeof window !== "undefined" ? detectPlatform() : "other";
+  const deferredPromptRef = useRef<any>(null);
+  const [installReady, setInstallReady] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      deferredPromptRef.current = e;
+      setInstallReady(true);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
 
   useEffect(() => {
     if (!isMobile) return;
@@ -117,7 +126,7 @@ export function MobileAppPopup() {
       (navigator as any).standalone === true;
     if (isStandalone) return;
 
-    const timer = setTimeout(() => setOpen(true), 1500);
+    const timer = setTimeout(() => setOpen(true), 2000);
     return () => clearTimeout(timer);
   }, [isMobile]);
 
@@ -125,19 +134,22 @@ export function MobileAppPopup() {
     setOpen(false);
   }
 
-  function handleDownload() {
-    const link = document.createElement("a");
-    link.href = "/voicecrm.apk";
-    link.download = "VoiceCRM.apk";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    handleDismiss();
+  async function handleInstall() {
+    if (deferredPromptRef.current) {
+      deferredPromptRef.current.prompt();
+      const result = await deferredPromptRef.current.userChoice;
+      if (result.outcome === "accepted") {
+        deferredPromptRef.current = null;
+        setInstallReady(false);
+      }
+      handleDismiss();
+    }
   }
 
   if (!isMobile) return null;
 
   const isIOS = platform === "ios";
+  const isAndroid = platform === "android";
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) handleDismiss(); }}>
@@ -147,28 +159,47 @@ export function MobileAppPopup() {
             <Smartphone className="h-7 w-7 text-primary" />
           </div>
           <DialogTitle className="text-lg" data-testid="text-popup-title">
-            {isIOS ? "Adicione o VoiceCRM" : "Baixe o App VoiceCRM"}
+            Adicionar à Tela Inicial
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground" data-testid="text-popup-description">
-            {isIOS
-              ? "Adicione o VoiceCRM à sua tela inicial para acesso rápido. Funciona como um app nativo no seu iPhone."
-              : "Instale o VoiceCRM no seu celular para acesso rápido. Grave reuniões, acesse contatos e acompanhe tarefas direto da tela inicial."}
+            Adicione o VoiceCRM à sua tela inicial para acesso rápido. Funciona como um app nativo no seu celular.
           </DialogDescription>
         </DialogHeader>
 
         {isIOS ? (
           <IOSInstructions />
-        ) : (
+        ) : isAndroid && installReady ? (
           <div className="flex flex-col gap-3 mt-2">
             <Button
               className="w-full gap-2"
               size="lg"
-              onClick={handleDownload}
+              onClick={handleInstall}
               data-testid="button-install-app"
             >
-              <Download className="h-5 w-5" />
-              Baixar App
+              <Smartphone className="h-5 w-5" />
+              Adicionar à Tela Inicial
             </Button>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3 mt-1">
+            <div className="flex items-start gap-3 p-3 rounded-md bg-muted/50">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                1
+              </div>
+              <div className="flex flex-col gap-0.5 min-w-0">
+                <span className="text-sm font-medium">Abra o menu do navegador</span>
+                <span className="text-xs text-muted-foreground">toque nos 3 pontos no canto superior</span>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-3 rounded-md bg-muted/50">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                2
+              </div>
+              <div className="flex flex-col gap-0.5 min-w-0">
+                <span className="text-sm font-medium">Toque em "Adicionar à tela inicial"</span>
+                <span className="text-xs text-muted-foreground">ou "Instalar aplicativo"</span>
+              </div>
+            </div>
           </div>
         )}
 
@@ -177,7 +208,7 @@ export function MobileAppPopup() {
           className="mt-1 text-sm text-muted-foreground hover:text-foreground transition-colors text-center w-full"
           data-testid="button-dismiss-popup"
         >
-          {isIOS ? "Entendi" : "Agora não"}
+          Agora não
         </button>
       </DialogContent>
     </Dialog>
