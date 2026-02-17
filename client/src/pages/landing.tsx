@@ -109,8 +109,11 @@ export default function Landing() {
       <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-background/70 border-b">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <img src={logoImg} alt="VoiceCRM" className="w-9 h-9 rounded-md" />
-            <span className="text-lg font-bold tracking-tight">VoiceCRM</span>
+            <img src={logoImg} alt="VoiceCRM" className="w-10 h-10 rounded-md" />
+            <span className="text-lg font-bold tracking-tight">
+              <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Voice</span>
+              <span>CRM</span>
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
@@ -654,7 +657,10 @@ export default function Landing() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
               <img src={logoImg} alt="VoiceCRM" className="w-8 h-8 rounded-md" />
-              <span className="text-sm font-bold">VoiceCRM</span>
+              <span className="text-sm font-bold">
+                <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Voice</span>
+                <span>CRM</span>
+              </span>
             </div>
             <p className="text-sm text-muted-foreground">
               {new Date().getFullYear()} VoiceCRM. Todos os direitos reservados.
