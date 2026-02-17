@@ -107,15 +107,10 @@ function ShareIcon() {
 export function MobileAppPopup() {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
-  const [platform, setPlatform] = useState<Platform>("other");
-
-  useEffect(() => {
-    setPlatform(detectPlatform());
-  }, []);
+  const platform = typeof window !== "undefined" ? detectPlatform() : "other";
 
   useEffect(() => {
     if (!isMobile) return;
-    if (platform === "other") return;
 
     const isStandalone =
       window.matchMedia("(display-mode: standalone)").matches ||
@@ -130,7 +125,7 @@ export function MobileAppPopup() {
 
     const timer = setTimeout(() => setOpen(true), 1500);
     return () => clearTimeout(timer);
-  }, [isMobile, platform]);
+  }, [isMobile]);
 
   function handleDismiss() {
     setOpen(false);
