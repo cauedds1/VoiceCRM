@@ -1,6 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { Building2, Search, Plus, Users, Phone, Mail } from "lucide-react";
+import { Building2, Search, Plus, Users, Phone, Mail, MapPin } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +23,7 @@ export default function CompaniesList() {
   const { toast } = useToast();
 
   const form = useForm({
-    defaultValues: { name: "", industry: "", phone: "", email: "", address: "" },
+    defaultValues: { name: "", industry: "", phone: "", email: "", address: "", city: "", state: "" },
   });
 
   const createCompany = useMutation({
@@ -96,6 +96,20 @@ export default function CompaniesList() {
                     <FormControl><Input {...field} placeholder="Endereço (opcional)" data-testid="input-company-address" /></FormControl>
                   </FormItem>
                 )} />
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField control={form.control} name="city" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Cidade</FormLabel>
+                      <FormControl><Input {...field} placeholder="Cidade (opcional)" data-testid="input-company-city" /></FormControl>
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="state" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Estado</FormLabel>
+                      <FormControl><Input {...field} placeholder="Estado (opcional)" data-testid="input-company-state" /></FormControl>
+                    </FormItem>
+                  )} />
+                </div>
                 <Button type="submit" className="w-full" disabled={createCompany.isPending} data-testid="button-save-company">
                   {createCompany.isPending ? "Salvando..." : "Salvar Empresa"}
                 </Button>
@@ -158,6 +172,12 @@ export default function CompaniesList() {
                     <p className="text-xs text-muted-foreground flex items-center gap-1">
                       <Mail className="h-3 w-3" />
                       {company.email}
+                    </p>
+                  )}
+                  {(company.city || company.state) && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      {[company.city, company.state].filter(Boolean).join(" - ")}
                     </p>
                   )}
                 </div>

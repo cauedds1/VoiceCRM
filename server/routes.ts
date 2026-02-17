@@ -13,6 +13,10 @@ function getUserId(req: any): string {
   return req.user?.claims?.sub;
 }
 
+function paramId(req: any): string {
+  return req.params.id as string;
+}
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
@@ -34,7 +38,7 @@ export async function registerRoutes(
   app.get("/api/meetings/:id", isAuthenticated, async (req, res) => {
     try {
       const userId = getUserId(req);
-      const meeting = await storage.getMeeting(req.params.id, userId);
+      const meeting = await storage.getMeeting(paramId(req), userId);
       if (!meeting) return res.status(404).json({ message: "Reunião não encontrada" });
       res.json(meeting);
     } catch (error: any) {
@@ -51,7 +55,7 @@ export async function registerRoutes(
         status: z.string().optional(),
       });
       const data = updateSchema.parse(req.body);
-      const meeting = await storage.updateMeeting(req.params.id, userId, data);
+      const meeting = await storage.updateMeeting(paramId(req), userId, data);
       if (!meeting) return res.status(404).json({ message: "Reunião não encontrada" });
       res.json(meeting);
     } catch (error: any) {
@@ -63,7 +67,7 @@ export async function registerRoutes(
   app.delete("/api/meetings/:id", isAuthenticated, async (req, res) => {
     try {
       const userId = getUserId(req);
-      await storage.deleteMeeting(req.params.id, userId);
+      await storage.deleteMeeting(paramId(req), userId);
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -73,9 +77,9 @@ export async function registerRoutes(
   app.get("/api/meetings/:id/tasks", isAuthenticated, async (req, res) => {
     try {
       const userId = getUserId(req);
-      const meeting = await storage.getMeeting(req.params.id, userId);
+      const meeting = await storage.getMeeting(paramId(req), userId);
       if (!meeting) return res.status(404).json({ message: "Reunião não encontrada" });
-      const result = await storage.getTasksByMeeting(req.params.id);
+      const result = await storage.getTasksByMeeting(paramId(req));
       res.json(result);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -85,9 +89,9 @@ export async function registerRoutes(
   app.get("/api/meetings/:id/decisions", isAuthenticated, async (req, res) => {
     try {
       const userId = getUserId(req);
-      const meeting = await storage.getMeeting(req.params.id, userId);
+      const meeting = await storage.getMeeting(paramId(req), userId);
       if (!meeting) return res.status(404).json({ message: "Reunião não encontrada" });
-      const result = await storage.getDecisionsByMeeting(req.params.id);
+      const result = await storage.getDecisionsByMeeting(paramId(req));
       res.json(result);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -97,9 +101,9 @@ export async function registerRoutes(
   app.get("/api/meetings/:id/contacts", isAuthenticated, async (req, res) => {
     try {
       const userId = getUserId(req);
-      const meeting = await storage.getMeeting(req.params.id, userId);
+      const meeting = await storage.getMeeting(paramId(req), userId);
       if (!meeting) return res.status(404).json({ message: "Reunião não encontrada" });
-      const result = await storage.getMeetingContacts(req.params.id);
+      const result = await storage.getMeetingContacts(paramId(req));
       res.json(result);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -132,7 +136,7 @@ export async function registerRoutes(
   app.get("/api/contacts/:id", isAuthenticated, async (req, res) => {
     try {
       const userId = getUserId(req);
-      const contact = await storage.getContact(req.params.id, userId);
+      const contact = await storage.getContact(paramId(req), userId);
       if (!contact) return res.status(404).json({ message: "Contato não encontrado" });
       res.json(contact);
     } catch (error: any) {
@@ -150,6 +154,8 @@ export async function registerRoutes(
         email: z.string().optional().nullable(),
         companyName: z.string().optional().nullable(),
         notes: z.string().optional().nullable(),
+        city: z.string().optional().nullable(),
+        state: z.string().optional().nullable(),
       });
       const data = createSchema.parse(req.body);
 
@@ -169,6 +175,8 @@ export async function registerRoutes(
         companyId: companyId || null,
         companyName: data.companyName || null,
         notes: data.notes || null,
+        city: data.city || null,
+        state: data.state || null,
         userId,
       });
       res.json(contact);
@@ -188,6 +196,8 @@ export async function registerRoutes(
         email: z.string().optional().nullable(),
         companyName: z.string().optional().nullable(),
         notes: z.string().optional().nullable(),
+        city: z.string().optional().nullable(),
+        state: z.string().optional().nullable(),
       });
       const data = updateSchema.parse(req.body);
       const updateData: any = { ...data };
@@ -203,7 +213,7 @@ export async function registerRoutes(
           updateData.companyId = null;
         }
       }
-      const contact = await storage.updateContact(req.params.id, userId, updateData);
+      const contact = await storage.updateContact(paramId(req), userId, updateData);
       if (!contact) return res.status(404).json({ message: "Contato não encontrado" });
       res.json(contact);
     } catch (error: any) {
@@ -215,9 +225,9 @@ export async function registerRoutes(
   app.get("/api/contacts/:id/meetings", isAuthenticated, async (req, res) => {
     try {
       const userId = getUserId(req);
-      const contact = await storage.getContact(req.params.id, userId);
+      const contact = await storage.getContact(paramId(req), userId);
       if (!contact) return res.status(404).json({ message: "Contato não encontrado" });
-      const result = await storage.getContactMeetings(req.params.id);
+      const result = await storage.getContactMeetings(paramId(req));
       res.json(result);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -245,6 +255,8 @@ export async function registerRoutes(
         email: z.string().optional().nullable(),
         address: z.string().optional().nullable(),
         notes: z.string().optional().nullable(),
+        city: z.string().optional().nullable(),
+        state: z.string().optional().nullable(),
       });
       const data = createSchema.parse(req.body);
       const company = await storage.createCompany({ ...data, userId });
@@ -265,9 +277,11 @@ export async function registerRoutes(
         email: z.string().optional().nullable(),
         address: z.string().optional().nullable(),
         notes: z.string().optional().nullable(),
+        city: z.string().optional().nullable(),
+        state: z.string().optional().nullable(),
       });
       const data = updateSchema.parse(req.body);
-      const company = await storage.updateCompany(req.params.id, userId, data);
+      const company = await storage.updateCompany(paramId(req), userId, data);
       if (!company) return res.status(404).json({ message: "Empresa não encontrada" });
       res.json(company);
     } catch (error: any) {
@@ -297,11 +311,67 @@ export async function registerRoutes(
         priority: z.enum(["high", "medium", "low"]).optional(),
       });
       const data = updateSchema.parse(req.body);
-      const task = await storage.updateTask(req.params.id, userId, data);
+      const task = await storage.updateTask(paramId(req), userId, data);
       if (!task) return res.status(404).json({ message: "Tarefa não encontrada" });
       res.json(task);
     } catch (error: any) {
       if (error instanceof z.ZodError) return res.status(400).json({ message: error.errors });
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // === REPORTS ===
+  app.get("/api/reports/meetings-by-month", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const allMeetings = await storage.getMeetings(userId);
+      const monthCounts: Record<string, number> = {};
+      for (const m of allMeetings) {
+        const d = m.date ? new Date(m.date) : m.createdAt ? new Date(m.createdAt) : null;
+        if (!d) continue;
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        monthCounts[key] = (monthCounts[key] || 0) + 1;
+      }
+      const now = new Date();
+      const months: { month: string; label: string; count: number }[] = [];
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        const label = d.toLocaleDateString("pt-BR", { month: "short", year: "numeric" });
+        months.push({ month: key, label, count: monthCounts[key] || 0 });
+      }
+      const totalMeetings = allMeetings.length;
+      const thisMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+      const thisMonth = monthCounts[thisMonthKey] || 0;
+      const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const lastMonthKey = `${lastMonthDate.getFullYear()}-${String(lastMonthDate.getMonth() + 1).padStart(2, "0")}`;
+      const lastMonth = monthCounts[lastMonthKey] || 0;
+      res.json({ months, totalMeetings, thisMonth, lastMonth });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/reports/summary", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const [allMeetings, allContacts, allCompanies, allTasks] = await Promise.all([
+        storage.getMeetings(userId),
+        storage.getContacts(userId),
+        storage.getCompanies(userId),
+        storage.getTasks(userId),
+      ]);
+      const pendingTasks = allTasks.filter((t) => t.status === "pending").length;
+      const completedTasks = allTasks.filter((t) => t.status === "completed").length;
+      res.json({
+        totalMeetings: allMeetings.length,
+        totalContacts: allContacts.length,
+        totalCompanies: allCompanies.length,
+        totalTasks: allTasks.length,
+        pendingTasks,
+        completedTasks,
+      });
+    } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
   });

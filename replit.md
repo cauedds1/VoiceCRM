@@ -16,15 +16,17 @@ Voice-powered CRM system for professionals. Record audio after meetings, AI tran
 - Auto-creation of contacts and companies from voice mentions
 - Task and decision extraction from meeting audio
 - Full CRUD for contacts, companies, meetings, tasks
-- Contacts grouped by company
+- Contacts grouped by company with city/state location
+- Companies with city/state location fields
 - Meeting detail with participants, tasks, decisions, transcription
 - Contact detail with meeting history
+- Monthly meeting reports with bar chart (Recharts)
 - Dark/light theme toggle
 
 ## Project Structure
 ```
 client/src/
-  pages/         - All page components (dashboard, meetings, contacts, companies)
+  pages/         - All page components (dashboard, meetings, contacts, companies, reports)
   components/    - Reusable components (sidebar, theme toggle)
   hooks/         - Custom hooks (use-auth, use-toast)
   lib/           - Query client, auth utilities
@@ -46,6 +48,8 @@ shared/
 - `GET /api/contacts/:id/meetings` - Contact meeting history
 - `GET/POST/PATCH /api/companies` - Company CRUD
 - `GET/PATCH /api/tasks` - Task management
+- `GET /api/reports/meetings-by-month` - Monthly meeting aggregation (last 12 months)
+- `GET /api/reports/summary` - Overall CRM summary stats
 
 ## Design Principles
 - Vibrant teal/blue theme but NO visual clutter

@@ -16,6 +16,7 @@ import MeetingDetail from "@/pages/meeting-detail";
 import ContactsList from "@/pages/contacts-list";
 import ContactDetail from "@/pages/contact-detail";
 import CompaniesList from "@/pages/companies-list";
+import Reports from "@/pages/reports";
 import NotFound from "@/pages/not-found";
 import { Loader2 } from "lucide-react";
 
@@ -43,6 +44,7 @@ function AuthenticatedLayout() {
               <Route path="/contacts/:id" component={ContactDetail} />
               <Route path="/contacts" component={ContactsList} />
               <Route path="/companies" component={CompaniesList} />
+              <Route path="/reports" component={Reports} />
               <Route component={NotFound} />
             </Switch>
           </main>

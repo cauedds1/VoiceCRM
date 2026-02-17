@@ -14,6 +14,8 @@ export const companies = pgTable("companies", {
   email: text("email"),
   address: text("address"),
   notes: text("notes"),
+  city: text("city"),
+  state: text("state"),
   userId: varchar("user_id").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -27,6 +29,8 @@ export const contacts = pgTable("contacts", {
   companyId: varchar("company_id"),
   companyName: text("company_name"),
   notes: text("notes"),
+  city: text("city"),
+  state: text("state"),
   userId: varchar("user_id").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });

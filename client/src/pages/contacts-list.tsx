@@ -1,6 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { Users, Building2, Search, Plus, Phone, Mail, Edit2, Save, X } from "lucide-react";
+import { Users, Building2, Search, Plus, Phone, Mail, Edit2, Save, X, MapPin } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +23,7 @@ export default function ContactsList() {
   const { toast } = useToast();
 
   const form = useForm({
-    defaultValues: { name: "", role: "", phone: "", email: "", companyName: "" },
+    defaultValues: { name: "", role: "", phone: "", email: "", companyName: "", city: "", state: "" },
   });
 
   const createContact = useMutation({
@@ -108,6 +108,20 @@ export default function ContactsList() {
                     </FormItem>
                   )} />
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField control={form.control} name="city" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Cidade</FormLabel>
+                      <FormControl><Input {...field} placeholder="Cidade (opcional)" data-testid="input-contact-city" /></FormControl>
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="state" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Estado</FormLabel>
+                      <FormControl><Input {...field} placeholder="Estado (opcional)" data-testid="input-contact-state" /></FormControl>
+                    </FormItem>
+                  )} />
+                </div>
                 <Button type="submit" className="w-full" disabled={createContact.isPending} data-testid="button-save-contact">
                   {createContact.isPending ? "Salvando..." : "Salvar Contato"}
                 </Button>
@@ -166,6 +180,12 @@ export default function ContactsList() {
                             <p className="text-sm font-medium">{contact.name}</p>
                             {contact.role && (
                               <p className="text-xs text-muted-foreground mt-0.5">{contact.role}</p>
+                            )}
+                            {(contact.city || contact.state) && (
+                              <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                {[contact.city, contact.state].filter(Boolean).join(" - ")}
+                              </p>
                             )}
                           </div>
                           <div className="flex items-center gap-4 shrink-0 text-muted-foreground">

@@ -1,6 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
-import { ArrowLeft, Building2, Phone, Mail, Clock, Edit2, Save, X, Mic } from "lucide-react";
+import { ArrowLeft, Building2, Phone, Mail, Clock, Edit2, Save, X, Mic, MapPin } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -125,6 +125,14 @@ export default function ContactDetail() {
                   <Input value={editData.email || ""} onChange={(e) => setEditData({ ...editData, email: e.target.value })} data-testid="input-edit-email" />
                 </div>
                 <div>
+                  <label className="text-xs text-muted-foreground">Cidade</label>
+                  <Input value={editData.city || ""} onChange={(e) => setEditData({ ...editData, city: e.target.value })} data-testid="input-edit-city" />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Estado</label>
+                  <Input value={editData.state || ""} onChange={(e) => setEditData({ ...editData, state: e.target.value })} data-testid="input-edit-state" />
+                </div>
+                <div>
                   <label className="text-xs text-muted-foreground">Notas</label>
                   <Textarea value={editData.notes || ""} onChange={(e) => setEditData({ ...editData, notes: e.target.value })} rows={3} data-testid="textarea-edit-notes" />
                 </div>
@@ -152,6 +160,16 @@ export default function ContactDetail() {
                   <p className="text-sm flex items-center gap-1">
                     {contact.email ? (
                       <><Mail className="h-3 w-3 text-muted-foreground" />{contact.email}</>
+                    ) : (
+                      <span className="text-muted-foreground">Não informado</span>
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Localização</p>
+                  <p className="text-sm flex items-center gap-1">
+                    {(contact.city || contact.state) ? (
+                      <><MapPin className="h-3 w-3 text-muted-foreground" />{[contact.city, contact.state].filter(Boolean).join(" - ")}</>
                     ) : (
                       <span className="text-muted-foreground">Não informado</span>
                     )}
