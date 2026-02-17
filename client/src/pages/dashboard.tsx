@@ -78,10 +78,10 @@ export default function Dashboard() {
   const isLoading = loadingMeetings || loadingTasks || loadingContacts || loadingCompanies;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-8">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight" data-testid="text-welcome">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight" data-testid="text-welcome">
             Olá, {user?.firstName || "Usuário"}
           </h1>
           <p className="text-muted-foreground mt-1">

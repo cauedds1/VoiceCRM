@@ -37,7 +37,7 @@ export default function ContactDetail() {
 
   if (isLoading) {
     return (
-      <div className="p-6 max-w-4xl mx-auto space-y-6">
+      <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-6">
         <Skeleton className="h-8 w-48" />
         <div className="grid md:grid-cols-3 gap-6">
           <Skeleton className="h-64" />
@@ -49,7 +49,7 @@ export default function ContactDetail() {
 
   if (!contact) {
     return (
-      <div className="p-6 max-w-4xl mx-auto text-center py-20">
+      <div className="p-4 sm:p-6 max-w-4xl mx-auto text-center py-20">
         <p className="text-muted-foreground">Contato não encontrado</p>
         <Link href="/contacts">
           <Button variant="ghost" className="mt-4 gap-2">
@@ -62,7 +62,7 @@ export default function ContactDetail() {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-6">
       <div className="flex flex-wrap items-center gap-4">
         <Link href="/contacts">
           <Button variant="ghost" size="icon" data-testid="button-back">
@@ -70,7 +70,7 @@ export default function ContactDetail() {
           </Button>
         </Link>
         <div className="flex-1 min-w-0">
-          <h1 className="text-2xl font-bold tracking-tight" data-testid="text-contact-name">{contact.name}</h1>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight" data-testid="text-contact-name">{contact.name}</h1>
           {contact.companyName && (
             <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
               <Building2 className="h-3.5 w-3.5" />

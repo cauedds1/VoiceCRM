@@ -57,10 +57,10 @@ export default function ContactsList() {
   });
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Contatos</h1>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Contatos</h1>
           <p className="text-muted-foreground mt-1">Todos os contatos organizados por empresa</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -175,7 +175,7 @@ export default function ContactsList() {
                   <Link key={contact.id} href={`/contacts/${contact.id}`}>
                     <Card className="hover-elevate cursor-pointer" data-testid={`contact-item-${contact.id}`}>
                       <CardContent className="p-4">
-                        <div className="flex items-center justify-between gap-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
                           <div className="min-w-0">
                             <p className="text-sm font-medium">{contact.name}</p>
                             {contact.role && (
@@ -188,7 +188,7 @@ export default function ContactsList() {
                               </p>
                             )}
                           </div>
-                          <div className="flex items-center gap-4 shrink-0 text-muted-foreground">
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-4 shrink-0 text-muted-foreground">
                             {contact.phone && (
                               <span className="text-xs flex items-center gap-1">
                                 <Phone className="h-3 w-3" />

@@ -47,7 +47,7 @@ export default function CompanyDetail() {
 
   if (isLoading) {
     return (
-      <div className="p-6 max-w-4xl mx-auto space-y-6">
+      <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-6">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-64 w-full" />
       </div>
@@ -56,7 +56,7 @@ export default function CompanyDetail() {
 
   if (!company) {
     return (
-      <div className="p-6 max-w-4xl mx-auto text-center py-20">
+      <div className="p-4 sm:p-6 max-w-4xl mx-auto text-center py-20">
         <p className="text-muted-foreground">Empresa não encontrada</p>
         <Link href="/companies">
           <Button variant="ghost" className="mt-4 gap-2">
@@ -77,7 +77,7 @@ export default function CompanyDetail() {
   ];
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-6">
       <div className="flex flex-wrap items-center gap-4">
         <Link href="/companies">
           <Button variant="ghost" size="icon" data-testid="button-back">
@@ -91,7 +91,7 @@ export default function CompanyDetail() {
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <h1 className="text-2xl font-bold tracking-tight" data-testid="text-company-name">{company.name}</h1>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight" data-testid="text-company-name">{company.name}</h1>
           <div className="flex flex-wrap items-center gap-3 mt-1">
             {company.industry && (
               <span className="text-sm text-muted-foreground">{company.industry}</span>
@@ -172,7 +172,7 @@ export default function CompanyDetail() {
                   <label className="text-xs text-muted-foreground mb-1.5 block">URL do Logo</label>
                   <Input value={editData.logoUrl || ""} onChange={(e) => setEditData({ ...editData, logoUrl: e.target.value })} placeholder="https://exemplo.com/logo.png" data-testid="input-edit-logo" />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs text-muted-foreground mb-1.5 block">Telefone</label>
                     <Input value={editData.phone || ""} onChange={(e) => setEditData({ ...editData, phone: e.target.value })} data-testid="input-edit-phone" />
@@ -186,7 +186,7 @@ export default function CompanyDetail() {
                   <label className="text-xs text-muted-foreground mb-1.5 block">Endereço</label>
                   <Input value={editData.address || ""} onChange={(e) => setEditData({ ...editData, address: e.target.value })} data-testid="input-edit-address" />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs text-muted-foreground mb-1.5 block">Cidade</label>
                     <Input value={editData.city || ""} onChange={(e) => setEditData({ ...editData, city: e.target.value })} data-testid="input-edit-city" />

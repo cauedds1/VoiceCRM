@@ -139,10 +139,10 @@ export default function NewMeeting() {
   };
 
   return (
-    <div className="p-6 max-w-2xl mx-auto flex items-center justify-center min-h-[calc(100vh-4rem)]">
+    <div className="p-4 sm:p-6 max-w-2xl mx-auto flex items-center justify-center min-h-[calc(100vh-4rem)]">
       <div className="w-full space-y-6">
         <div className="text-center">
-          <h1 className="text-2xl font-bold tracking-tight">Nova Reunião</h1>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Nova Reunião</h1>
           <p className="text-muted-foreground mt-2">
             Grave um áudio descrevendo sua reunião e a IA organiza tudo automaticamente
           </p>
@@ -213,7 +213,7 @@ export default function NewMeeting() {
                     )}
                     <button
                       onClick={state === "recording" ? stopRecording : startRecording}
-                      className={`relative z-10 w-20 h-20 rounded-full flex items-center justify-center transition-all ${
+                      className={`relative z-10 w-24 h-24 sm:w-20 sm:h-20 rounded-full flex items-center justify-center transition-all ${
                         state === "recording"
                           ? "bg-destructive text-destructive-foreground"
                           : "bg-primary text-primary-foreground"
@@ -221,9 +221,9 @@ export default function NewMeeting() {
                       data-testid="button-record"
                     >
                       {state === "recording" ? (
-                        <Square className="h-7 w-7" />
+                        <Square className="h-8 w-8 sm:h-7 sm:w-7" />
                       ) : (
-                        <Mic className="h-8 w-8" />
+                        <Mic className="h-9 w-9 sm:h-8 sm:w-8" />
                       )}
                     </button>
                   </div>

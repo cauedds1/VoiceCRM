@@ -20,10 +20,10 @@ export default function MeetingsList() {
     .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Reuniões</h1>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Reuniões</h1>
           <p className="text-muted-foreground mt-1">Histórico de todas as suas reuniões</p>
         </div>
         <div className="flex items-center gap-2">

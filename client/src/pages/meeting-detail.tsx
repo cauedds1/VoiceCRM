@@ -68,7 +68,7 @@ export default function MeetingDetail() {
 
   if (isLoading) {
     return (
-      <div className="p-6 max-w-5xl mx-auto space-y-6">
+      <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-6 w-64" />
         <div className="grid lg:grid-cols-3 gap-6">
@@ -84,7 +84,7 @@ export default function MeetingDetail() {
 
   if (!meeting) {
     return (
-      <div className="p-6 max-w-5xl mx-auto text-center py-20">
+      <div className="p-4 sm:p-6 max-w-5xl mx-auto text-center py-20">
         <p className="text-muted-foreground">Reunião não encontrada</p>
         <Link href="/meetings">
           <Button variant="ghost" className="mt-4 gap-2">
@@ -97,7 +97,7 @@ export default function MeetingDetail() {
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6">
       <div className="flex flex-wrap items-center gap-4">
         <Link href="/meetings">
           <Button variant="ghost" size="icon" data-testid="button-back">
@@ -113,7 +113,7 @@ export default function MeetingDetail() {
               data-testid="input-edit-title"
             />
           ) : (
-            <h1 className="text-2xl font-bold tracking-tight truncate" data-testid="text-meeting-title">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight truncate" data-testid="text-meeting-title">
               {meeting.title}
             </h1>
           )}
@@ -217,7 +217,7 @@ export default function MeetingDetail() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {meetingTasks.map((task) => (
-                  <div key={task.id} className="flex items-start justify-between gap-3 p-3 rounded-md bg-accent/30" data-testid={`task-detail-${task.id}`}>
+                  <div key={task.id} className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 p-3 rounded-md bg-accent/30" data-testid={`task-detail-${task.id}`}>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium">{task.title}</p>
                       {task.description && (
@@ -230,7 +230,7 @@ export default function MeetingDetail() {
                         </p>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
                       <Badge variant={priorityColor(task.priority)} className="text-xs">
                         {priorityLabel(task.priority)}
                       </Badge>

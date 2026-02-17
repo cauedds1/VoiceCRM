@@ -1,13 +1,15 @@
 import { Switch, Route } from "wouter";
+import { useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { useAuth } from "@/hooks/use-auth";
+import { useEffect } from "react";
 import Landing from "@/pages/landing";
 import AuthPage from "@/pages/auth-page";
 import Dashboard from "@/pages/dashboard";
@@ -23,6 +25,17 @@ import Reports from "@/pages/reports";
 import NotFound from "@/pages/not-found";
 import { Loader2 } from "lucide-react";
 
+function SidebarMobileClose() {
+  const { setOpenMobile } = useSidebar();
+  const [location] = useLocation();
+
+  useEffect(() => {
+    setOpenMobile(false);
+  }, [location, setOpenMobile]);
+
+  return null;
+}
+
 function AuthenticatedLayout() {
   const style = {
     "--sidebar-width": "16rem",
@@ -31,6 +44,7 @@ function AuthenticatedLayout() {
 
   return (
     <SidebarProvider style={style as React.CSSProperties}>
+      <SidebarMobileClose />
       <div className="flex h-screen w-full">
         <AppSidebar />
         <div className="flex flex-col flex-1 min-w-0">
