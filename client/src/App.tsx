@@ -23,6 +23,7 @@ import CompanyDetail from "@/pages/company-detail";
 import NewMeetingManual from "@/pages/new-meeting-manual";
 import Reports from "@/pages/reports";
 import NotFound from "@/pages/not-found";
+import { MobileAppPopup } from "@/components/mobile-app-popup";
 import { Loader2 } from "lucide-react";
 
 function useIsMobile() {
@@ -64,6 +65,7 @@ function AuthenticatedLayout() {
   return (
     <SidebarProvider style={style as React.CSSProperties}>
       <SidebarMobileClose />
+      <MobileAppPopup />
       <div className="flex h-screen w-full">
         <AppSidebar />
         <div className="flex flex-col flex-1 min-w-0">
