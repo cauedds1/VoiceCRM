@@ -65,7 +65,6 @@ function AuthenticatedLayout() {
   return (
     <SidebarProvider style={style as React.CSSProperties}>
       <SidebarMobileClose />
-      <MobileAppPopup />
       <div className="flex h-screen w-full">
         <AppSidebar />
         <div className="flex flex-col flex-1 min-w-0">
@@ -108,10 +107,13 @@ function AppRouter() {
 
   if (!user) {
     return (
-      <Switch>
-        <Route path="/auth" component={AuthPage} />
-        <Route component={Landing} />
-      </Switch>
+      <>
+        <MobileAppPopup />
+        <Switch>
+          <Route path="/auth" component={AuthPage} />
+          <Route component={Landing} />
+        </Switch>
+      </>
     );
   }
 
