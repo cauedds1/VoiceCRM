@@ -285,9 +285,8 @@ export default function Landing() {
             </p>
           </motion.div>
 
-          <div className="relative max-w-4xl mx-auto">
-            <div className="absolute left-6 md:left-1/2 top-0 bottom-0 w-px md:-translate-x-px bg-gradient-to-b from-emerald-500 via-cyan-500 to-violet-500 opacity-30" />
-            <div className="absolute left-6 md:left-1/2 top-0 bottom-0 w-px md:-translate-x-px bg-gradient-to-b from-emerald-500 via-cyan-500 to-violet-500 blur-sm opacity-40" />
+          <div className="relative max-w-5xl mx-auto">
+            <div className="absolute left-[19px] md:left-1/2 top-0 bottom-0 w-px md:-translate-x-px bg-gradient-to-b from-emerald-500/40 via-cyan-500/40 to-violet-500/40" />
 
             {[
               {
@@ -296,6 +295,7 @@ export default function Landing() {
                 title: "Grave um áudio",
                 description: "Saiu da reunião? Abra o app e conte o que aconteceu. Sem digitar, sem formulários, sem burocracia. Fale naturalmente como se estivesse contando para um colega.",
                 gradient: "from-emerald-500 to-teal-500",
+                color: "text-emerald-500",
               },
               {
                 icon: Brain,
@@ -303,6 +303,7 @@ export default function Landing() {
                 title: "A IA processa tudo",
                 description: "Inteligência artificial avançada transcreve o áudio, identifica pessoas e empresas mencionadas, extrai tarefas e prazos, e organiza decisões importantes.",
                 gradient: "from-cyan-500 to-blue-500",
+                color: "text-cyan-500",
               },
               {
                 icon: Zap,
@@ -310,13 +311,14 @@ export default function Landing() {
                 title: "CRM atualizado",
                 description: "Contatos criados, empresas vinculadas, tarefas na fila e decisões registradas. Tudo automático. Abra o CRM e veja tudo organizado, pronto para ação.",
                 gradient: "from-violet-500 to-purple-500",
+                color: "text-violet-500",
               },
             ].map((feature, i) => {
               const isLeft = i % 2 === 0;
               return (
                 <motion.div
                   key={feature.step}
-                  className={`relative flex items-start gap-6 mb-16 last:mb-0 pl-16 md:pl-0 ${isLeft ? "md:flex-row md:pr-[calc(50%+2rem)]" : "md:flex-row-reverse md:pl-[calc(50%+2rem)]"}`}
+                  className={`relative flex items-start gap-8 mb-20 last:mb-0 pl-14 md:pl-0 ${isLeft ? "md:flex-row md:pr-[calc(50%+3rem)]" : "md:flex-row-reverse md:pl-[calc(50%+3rem)]"}`}
                   initial="hidden"
                   whileInView="visible"
                   viewport={{ once: true, margin: "-50px" }}
@@ -324,24 +326,15 @@ export default function Landing() {
                   variants={isLeft ? slideFromLeft : slideFromRight}
                   data-testid={`step-${feature.step}`}
                 >
-                  <div className={`absolute left-3 md:left-1/2 top-2 w-7 h-7 rounded-full bg-gradient-to-br ${feature.gradient} flex items-center justify-center md:-translate-x-1/2 z-10 ring-4 ring-background`}>
-                    <feature.icon className="h-3.5 w-3.5 text-white" />
+                  <div className={`absolute left-2 md:left-1/2 top-1 w-9 h-9 rounded-full bg-gradient-to-br ${feature.gradient} flex items-center justify-center md:-translate-x-1/2 z-10 ring-4 ring-background`}>
+                    <feature.icon className="h-4 w-4 text-white" />
                   </div>
 
-                  <Card className="border-0 bg-card hover-elevate flex-1">
-                    <CardContent className="p-6 md:p-8">
-                      <div className="flex items-center gap-4 mb-4">
-                        <div className={`inline-flex items-center justify-center w-12 h-12 rounded-md bg-gradient-to-br ${feature.gradient}`}>
-                          <feature.icon className="h-6 w-6 text-white" />
-                        </div>
-                        <div>
-                          <span className="text-3xl font-extrabold bg-gradient-to-r from-emerald-500 to-cyan-500 bg-clip-text text-transparent">{feature.step}</span>
-                        </div>
-                      </div>
-                      <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-                      <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
-                    </CardContent>
-                  </Card>
+                  <div className="flex-1">
+                    <span className={`text-sm font-bold tracking-widest uppercase ${feature.color}`}>Passo {feature.step}</span>
+                    <h3 className="text-2xl md:text-3xl font-bold mt-2 mb-3">{feature.title}</h3>
+                    <p className="text-muted-foreground leading-relaxed text-base md:text-lg">{feature.description}</p>
+                  </div>
                 </motion.div>
               );
             })}
@@ -349,101 +342,92 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="py-24 px-6 bg-card/50 border-t">
-        <div className="max-w-7xl mx-auto">
+      <section className="py-24 px-6 border-t">
+        <div className="max-w-5xl mx-auto">
           <motion.div
-            className="text-center mb-16"
+            className="text-center mb-20"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             custom={0}
             variants={fadeUp}
           >
-            <Badge variant="secondary" className="mb-4 px-4 py-1.5 text-sm">Funcionalidades</Badge>
             <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4">
               Tudo que você precisa.{" "}
               <span className="bg-gradient-to-r from-emerald-500 to-cyan-500 bg-clip-text text-transparent">Nada que não precisa.</span>
             </h2>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="space-y-20">
             {[
               {
                 icon: Mic,
                 title: "Gravação Inteligente",
                 description: "Grave com um toque. Pause e retome quando quiser. Auto-pausa quando o celular toca ou a tela desliga.",
                 color: "text-emerald-500",
-                bg: "bg-emerald-500/10",
-                span: "md:col-span-2",
-                large: true,
+                borderColor: "from-emerald-500 to-teal-500",
               },
               {
                 icon: Brain,
                 title: "Transcrição com IA",
                 description: "Áudio convertido em texto com precisão impressionante. Suporte completo para português brasileiro.",
                 color: "text-cyan-500",
-                bg: "bg-cyan-500/10",
-                span: "",
-                large: false,
+                borderColor: "from-cyan-500 to-blue-500",
               },
               {
                 icon: Users,
                 title: "Contatos Automáticos",
                 description: "Mencionou alguém no áudio? O contato é criado automaticamente e vinculado à reunião.",
                 color: "text-blue-500",
-                bg: "bg-blue-500/10",
-                span: "",
-                large: false,
+                borderColor: "from-blue-500 to-indigo-500",
               },
               {
                 icon: Building2,
                 title: "Empresas Organizadas",
                 description: "Empresas identificadas e criadas automaticamente. Contatos agrupados por empresa.",
                 color: "text-violet-500",
-                bg: "bg-violet-500/10",
-                span: "md:col-span-2",
-                large: true,
+                borderColor: "from-violet-500 to-purple-500",
               },
               {
                 icon: ListTodo,
                 title: "Tarefas Extraídas",
                 description: "A IA identifica compromissos, prazos e ações mencionadas e cria tarefas automaticamente.",
                 color: "text-amber-500",
-                bg: "bg-amber-500/10",
-                span: "",
-                large: false,
+                borderColor: "from-amber-500 to-orange-500",
               },
               {
                 icon: BarChart3,
                 title: "Relatórios Visuais",
                 description: "Acompanhe reuniões por mês, veja resumos e métricas do seu CRM em gráficos intuitivos.",
                 color: "text-rose-500",
-                bg: "bg-rose-500/10",
-                span: "",
-                large: false,
+                borderColor: "from-rose-500 to-pink-500",
               },
-            ].map((feature, i) => (
-              <motion.div
-                key={feature.title}
-                className={feature.span}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-50px" }}
-                custom={i}
-                variants={i % 2 === 0 ? slideFromLeft : slideFromRight}
-                data-testid={`feature-${i}`}
-              >
-                <Card className="border-0 bg-background h-full hover-elevate">
-                  <CardContent className={feature.large ? "p-8" : "p-6"}>
-                    <div className={`inline-flex items-center justify-center rounded-md ${feature.bg} ${feature.large ? "w-14 h-14 mb-5" : "w-11 h-11 mb-4"}`}>
-                      <feature.icon className={`${feature.large ? "h-7 w-7" : "h-5 w-5"} ${feature.color}`} />
+            ].map((feature, i) => {
+              const isLeft = i % 2 === 0;
+              return (
+                <motion.div
+                  key={feature.title}
+                  className={`flex flex-col gap-4 ${isLeft ? "md:flex-row md:text-left" : "md:flex-row-reverse md:text-right"} items-start md:items-center`}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, margin: "-50px" }}
+                  custom={0}
+                  variants={isLeft ? slideFromLeft : slideFromRight}
+                  data-testid={`feature-${i}`}
+                >
+                  <div className={`shrink-0 flex ${isLeft ? "md:justify-start" : "md:justify-end"}`}>
+                    <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${feature.borderColor} flex items-center justify-center`}>
+                      <feature.icon className="h-7 w-7 text-white" />
                     </div>
-                    <h3 className={`font-bold mb-2 ${feature.large ? "text-xl" : "text-base"}`}>{feature.title}</h3>
-                    <p className={`text-muted-foreground leading-relaxed ${feature.large ? "text-base max-w-lg" : "text-sm"}`}>{feature.description}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+                  </div>
+                  <div className={`flex-1 ${isLeft ? "" : ""}`}>
+                    <h3 className="text-xl md:text-2xl font-bold mb-2">{feature.title}</h3>
+                    <p className="text-muted-foreground leading-relaxed text-base md:text-lg max-w-lg">{feature.description}</p>
+                  </div>
+                  <div className={`hidden md:block w-48 h-px bg-gradient-to-r ${feature.borderColor} opacity-30 shrink-0`} />
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
