@@ -51,7 +51,7 @@ export default function NewMeeting() {
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
         toast({ title: "Sessão expirada", description: "Fazendo login novamente...", variant: "destructive" });
-        setTimeout(() => { window.location.href = "/api/login"; }, 500);
+        setTimeout(() => { window.location.href = "/auth"; }, 500);
         return;
       }
       setState("error");
@@ -115,14 +115,14 @@ export default function NewMeeting() {
       mediaRecorderRef.current.stop();
     }
     if (timerRef.current) clearInterval(timerRef.current);
-    setState("idle");
+    setState("processing");
   };
 
-  const handleProcess = () => {
-    if (!audioBlob) return;
-    setState("processing");
-    processMeeting.mutate(audioBlob);
-  };
+  useEffect(() => {
+    if (audioBlob && state === "processing") {
+      processMeeting.mutate(audioBlob);
+    }
+  }, [audioBlob, state]);
 
   useEffect(() => {
     return () => {
@@ -232,27 +232,6 @@ export default function NewMeeting() {
                     <p className="text-sm text-muted-foreground text-center max-w-xs">
                       Toque no botão para gravar. Conte o que aconteceu na reunião com suas próprias palavras.
                     </p>
-                  )}
-
-                  {state === "idle" && audioBlob && (
-                    <div className="flex flex-col items-center gap-4 w-full">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <CheckCircle className="h-4 w-4 text-primary" />
-                        Áudio gravado ({formatTime(duration)})
-                      </div>
-                      <div className="flex items-center gap-3 w-full max-w-xs">
-                        <Button onClick={handleProcess} className="flex-1 gap-2" data-testid="button-process">
-                          Processar Reunião
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          onClick={() => { setAudioBlob(null); setDuration(0); }}
-                          data-testid="button-discard"
-                        >
-                          Descartar
-                        </Button>
-                      </div>
-                    </div>
                   )}
                 </>
               )}
