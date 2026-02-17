@@ -5,6 +5,7 @@ import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integra
 import { insertContactSchema, insertCompanySchema, insertMeetingSchema } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
+import path from "path";
 import { processAudioMeeting } from "./ai";
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
@@ -23,6 +24,13 @@ export async function registerRoutes(
 ): Promise<Server> {
   await setupAuth(app);
   registerAuthRoutes(app);
+
+  app.get("/voicecrm.apk", (_req, res) => {
+    const apkPath = path.resolve(__dirname, "..", "client", "public", "voicecrm.apk");
+    res.setHeader("Content-Type", "application/vnd.android.package-archive");
+    res.setHeader("Content-Disposition", 'attachment; filename="VoiceCRM.apk"');
+    res.sendFile(apkPath);
+  });
 
   // === MEETINGS ===
   app.get("/api/meetings", isAuthenticated, async (req, res) => {
