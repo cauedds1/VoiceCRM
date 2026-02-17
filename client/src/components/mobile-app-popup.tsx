@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -7,10 +7,14 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Smartphone, X } from "lucide-react";
-import { SiApple, SiGoogleplay } from "react-icons/si";
+import { Download, Smartphone, Check } from "lucide-react";
 
 const POPUP_DISMISSED_KEY = "voicecrm_app_popup_dismissed";
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(
@@ -29,9 +33,36 @@ function useIsMobile() {
 export function MobileAppPopup() {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
+  const [installed, setInstalled] = useState(false);
+  const deferredPromptRef = useRef<BeforeInstallPromptEvent | null>(null);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      deferredPromptRef.current = e as BeforeInstallPromptEvent;
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+
+    const installedHandler = () => {
+      setInstalled(true);
+      setOpen(false);
+      deferredPromptRef.current = null;
+    };
+    window.addEventListener("appinstalled", installedHandler);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+      window.removeEventListener("appinstalled", installedHandler);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isMobile) return;
+
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (navigator as any).standalone === true;
+    if (isStandalone) return;
 
     const dismissed = localStorage.getItem(POPUP_DISMISSED_KEY);
     if (!dismissed) {
@@ -45,11 +76,19 @@ export function MobileAppPopup() {
     localStorage.setItem(POPUP_DISMISSED_KEY, Date.now().toString());
   }
 
-  function handleStoreClick(store: "ios" | "android") {
+  async function handleInstall() {
+    if (deferredPromptRef.current) {
+      await deferredPromptRef.current.prompt();
+      const choice = await deferredPromptRef.current.userChoice;
+      if (choice.outcome === "accepted") {
+        setInstalled(true);
+      }
+      deferredPromptRef.current = null;
+    }
     handleDismiss();
   }
 
-  if (!isMobile) return null;
+  if (!isMobile || installed) return null;
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) handleDismiss(); }}>
@@ -59,36 +98,22 @@ export function MobileAppPopup() {
             <Smartphone className="h-7 w-7 text-primary" />
           </div>
           <DialogTitle className="text-lg" data-testid="text-popup-title">
-            Baixe o App VoiceCRM
+            Instalar VoiceCRM
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            Tenha o VoiceCRM sempre à mão. Grave reuniões, acesse contatos e acompanhe tarefas direto do seu celular.
+            Instale o VoiceCRM no seu celular para acesso rápido. Grave reuniões, acesse contatos e acompanhe tarefas direto da tela inicial.
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-3 mt-2">
           <Button
-            className="w-full gap-3 h-12"
-            onClick={() => handleStoreClick("ios")}
-            data-testid="button-download-ios"
+            className="w-full gap-2"
+            size="lg"
+            onClick={handleInstall}
+            data-testid="button-install-app"
           >
-            <SiApple className="h-5 w-5" />
-            <div className="flex flex-col items-start leading-tight">
-              <span className="text-[10px] opacity-80">Disponível na</span>
-              <span className="text-sm font-semibold">App Store</span>
-            </div>
-          </Button>
-
-          <Button
-            className="w-full gap-3 h-12"
-            onClick={() => handleStoreClick("android")}
-            data-testid="button-download-android"
-          >
-            <SiGoogleplay className="h-5 w-5" />
-            <div className="flex flex-col items-start leading-tight">
-              <span className="text-[10px] opacity-80">Disponível no</span>
-              <span className="text-sm font-semibold">Google Play</span>
-            </div>
+            <Download className="h-5 w-5" />
+            Baixar App
           </Button>
         </div>
 
