@@ -8,7 +8,7 @@ Voice-powered CRM system for professionals. Record audio after meetings, AI tran
 - **Backend**: Express.js + TypeScript
 - **Database**: PostgreSQL (Neon) via Drizzle ORM
 - **AI**: OpenAI via Replit AI Integrations (Whisper for transcription, GPT for entity extraction)
-- **Auth**: Replit Auth (OpenID Connect)
+- **Auth**: Native email/password (bcrypt + express-session)
 
 ## Key Features
 - Voice recording with real-time waveform visualization

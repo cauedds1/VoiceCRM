@@ -10,7 +10,7 @@ import { processAudioMeeting } from "./ai";
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
 
 function getUserId(req: any): string {
-  return req.user?.claims?.sub;
+  return req.session?.userId;
 }
 
 function paramId(req: any): string {

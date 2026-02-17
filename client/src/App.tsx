@@ -9,6 +9,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { useAuth } from "@/hooks/use-auth";
 import Landing from "@/pages/landing";
+import AuthPage from "@/pages/auth-page";
 import Dashboard from "@/pages/dashboard";
 import NewMeeting from "@/pages/new-meeting";
 import MeetingsList from "@/pages/meetings-list";
@@ -66,7 +67,12 @@ function AppRouter() {
   }
 
   if (!user) {
-    return <Landing />;
+    return (
+      <Switch>
+        <Route path="/auth" component={AuthPage} />
+        <Route component={Landing} />
+      </Switch>
+    );
   }
 
   return <AuthenticatedLayout />;

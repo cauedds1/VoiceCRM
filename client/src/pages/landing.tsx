@@ -2,6 +2,7 @@ import { Mic, Zap, Brain, Clock, ArrowRight, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Link } from "wouter";
 
 const features = [
   {
@@ -48,9 +49,9 @@ export default function Landing() {
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <a href="/api/login">
+            <Link href="/auth">
               <Button data-testid="button-login">Entrar</Button>
-            </a>
+            </Link>
           </div>
         </div>
       </nav>
@@ -71,12 +72,12 @@ export default function Landing() {
               Grave um áudio após a reunião e a inteligência artificial transcreve, identifica contatos e empresas, e organiza tudo automaticamente no seu CRM.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4">
-              <a href="/api/login">
+              <Link href="/auth">
                 <Button size="lg" className="gap-2" data-testid="button-get-started">
                   Começar agora
                   <ArrowRight className="h-4 w-4" />
                 </Button>
-              </a>
+              </Link>
             </div>
           </div>
         </div>
