@@ -25,6 +25,24 @@ const scaleIn = {
   }),
 };
 
+const slideFromLeft = {
+  hidden: { opacity: 0, x: -60 },
+  visible: (i: number) => ({
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.7, delay: i * 0.15, ease: [0.22, 1, 0.36, 1] },
+  }),
+};
+
+const slideFromRight = {
+  hidden: { opacity: 0, x: 60 },
+  visible: (i: number) => ({
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.7, delay: i * 0.15, ease: [0.22, 1, 0.36, 1] },
+  }),
+};
+
 function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: string }) {
   const [count, setCount] = useState(0);
   const [started, setStarted] = useState(false);
@@ -267,7 +285,10 @@ export default function Landing() {
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="relative max-w-4xl mx-auto">
+            <div className="absolute left-6 md:left-1/2 top-0 bottom-0 w-px md:-translate-x-px bg-gradient-to-b from-emerald-500 via-cyan-500 to-violet-500 opacity-30" />
+            <div className="absolute left-6 md:left-1/2 top-0 bottom-0 w-px md:-translate-x-px bg-gradient-to-b from-emerald-500 via-cyan-500 to-violet-500 blur-sm opacity-40" />
+
             {[
               {
                 icon: Mic,
@@ -290,27 +311,40 @@ export default function Landing() {
                 description: "Contatos criados, empresas vinculadas, tarefas na fila e decisões registradas. Tudo automático. Abra o CRM e veja tudo organizado, pronto para ação.",
                 gradient: "from-violet-500 to-purple-500",
               },
-            ].map((feature, i) => (
-              <motion.div
-                key={feature.step}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-50px" }}
-                custom={i}
-                variants={scaleIn}
-              >
-                <Card className="border-0 bg-card h-full hover-elevate">
-                  <CardContent className="p-8">
-                    <div className={`inline-flex items-center justify-center w-14 h-14 rounded-md bg-gradient-to-br ${feature.gradient} mb-6`}>
-                      <feature.icon className="h-7 w-7 text-white" />
-                    </div>
-                    <div className="text-xs font-bold text-muted-foreground tracking-widest uppercase mb-3">Passo {feature.step}</div>
-                    <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-                    <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+            ].map((feature, i) => {
+              const isLeft = i % 2 === 0;
+              return (
+                <motion.div
+                  key={feature.step}
+                  className={`relative flex items-start gap-6 mb-16 last:mb-0 pl-16 md:pl-0 ${isLeft ? "md:flex-row md:pr-[calc(50%+2rem)]" : "md:flex-row-reverse md:pl-[calc(50%+2rem)]"}`}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, margin: "-50px" }}
+                  custom={i}
+                  variants={isLeft ? slideFromLeft : slideFromRight}
+                  data-testid={`step-${feature.step}`}
+                >
+                  <div className={`absolute left-3 md:left-1/2 top-2 w-7 h-7 rounded-full bg-gradient-to-br ${feature.gradient} flex items-center justify-center md:-translate-x-1/2 z-10 ring-4 ring-background`}>
+                    <feature.icon className="h-3.5 w-3.5 text-white" />
+                  </div>
+
+                  <Card className="border-0 bg-card hover-elevate flex-1">
+                    <CardContent className="p-6 md:p-8">
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className={`inline-flex items-center justify-center w-12 h-12 rounded-md bg-gradient-to-br ${feature.gradient}`}>
+                          <feature.icon className="h-6 w-6 text-white" />
+                        </div>
+                        <div>
+                          <span className="text-3xl font-extrabold bg-gradient-to-r from-emerald-500 to-cyan-500 bg-clip-text text-transparent">{feature.step}</span>
+                        </div>
+                      </div>
+                      <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
+                      <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -332,7 +366,7 @@ export default function Landing() {
             </h2>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               {
                 icon: Mic,
@@ -340,6 +374,8 @@ export default function Landing() {
                 description: "Grave com um toque. Pause e retome quando quiser. Auto-pausa quando o celular toca ou a tela desliga.",
                 color: "text-emerald-500",
                 bg: "bg-emerald-500/10",
+                span: "md:col-span-2",
+                large: true,
               },
               {
                 icon: Brain,
@@ -347,6 +383,8 @@ export default function Landing() {
                 description: "Áudio convertido em texto com precisão impressionante. Suporte completo para português brasileiro.",
                 color: "text-cyan-500",
                 bg: "bg-cyan-500/10",
+                span: "",
+                large: false,
               },
               {
                 icon: Users,
@@ -354,6 +392,8 @@ export default function Landing() {
                 description: "Mencionou alguém no áudio? O contato é criado automaticamente e vinculado à reunião.",
                 color: "text-blue-500",
                 bg: "bg-blue-500/10",
+                span: "",
+                large: false,
               },
               {
                 icon: Building2,
@@ -361,6 +401,8 @@ export default function Landing() {
                 description: "Empresas identificadas e criadas automaticamente. Contatos agrupados por empresa.",
                 color: "text-violet-500",
                 bg: "bg-violet-500/10",
+                span: "md:col-span-2",
+                large: true,
               },
               {
                 icon: ListTodo,
@@ -368,6 +410,8 @@ export default function Landing() {
                 description: "A IA identifica compromissos, prazos e ações mencionadas e cria tarefas automaticamente.",
                 color: "text-amber-500",
                 bg: "bg-amber-500/10",
+                span: "",
+                large: false,
               },
               {
                 icon: BarChart3,
@@ -375,23 +419,27 @@ export default function Landing() {
                 description: "Acompanhe reuniões por mês, veja resumos e métricas do seu CRM em gráficos intuitivos.",
                 color: "text-rose-500",
                 bg: "bg-rose-500/10",
+                span: "",
+                large: false,
               },
             ].map((feature, i) => (
               <motion.div
                 key={feature.title}
+                className={feature.span}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, margin: "-50px" }}
                 custom={i}
-                variants={fadeUp}
+                variants={i % 2 === 0 ? slideFromLeft : slideFromRight}
+                data-testid={`feature-${i}`}
               >
                 <Card className="border-0 bg-background h-full hover-elevate">
-                  <CardContent className="p-6">
-                    <div className={`inline-flex items-center justify-center w-11 h-11 rounded-md ${feature.bg} mb-4`}>
-                      <feature.icon className={`h-5 w-5 ${feature.color}`} />
+                  <CardContent className={feature.large ? "p-8" : "p-6"}>
+                    <div className={`inline-flex items-center justify-center rounded-md ${feature.bg} ${feature.large ? "w-14 h-14 mb-5" : "w-11 h-11 mb-4"}`}>
+                      <feature.icon className={`${feature.large ? "h-7 w-7" : "h-5 w-5"} ${feature.color}`} />
                     </div>
-                    <h3 className="text-base font-bold mb-2">{feature.title}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
+                    <h3 className={`font-bold mb-2 ${feature.large ? "text-xl" : "text-base"}`}>{feature.title}</h3>
+                    <p className={`text-muted-foreground leading-relaxed ${feature.large ? "text-base max-w-lg" : "text-sm"}`}>{feature.description}</p>
                   </CardContent>
                 </Card>
               </motion.div>
