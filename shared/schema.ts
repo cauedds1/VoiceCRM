@@ -75,6 +75,18 @@ export const decisions = pgTable("decisions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const userSettings = pgTable("user_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().unique(),
+  interfaceLanguage: text("interface_language").notNull().default("pt-BR"),
+  transcriptionLanguage: text("transcription_language").notNull().default("pt-BR"),
+  taskExtractionLevel: text("task_extraction_level").notNull().default("aggressive"),
+});
+
+export const insertUserSettingsSchema = createInsertSchema(userSettings).omit({ id: true });
+export type InsertUserSettings = z.infer<typeof insertUserSettingsSchema>;
+export type UserSettings = typeof userSettings.$inferSelect;
+
 export const companiesRelations = relations(companies, ({ many }) => ({
   contacts: many(contacts),
 }));

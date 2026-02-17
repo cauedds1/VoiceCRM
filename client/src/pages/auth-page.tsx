@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function AuthPage() {
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -51,7 +50,6 @@ export default function AuthPage() {
               </div>
               <span className="text-lg font-semibold tracking-tight">VoiceCRM</span>
             </div>
-            <ThemeToggle />
           </div>
 
           <Card>

@@ -17,18 +17,66 @@ interface ExtractedData {
   decisions: string[];
 }
 
+const LANG_MAP: Record<string, { whisper: string; name: string; outputInstruction: string }> = {
+  "pt-BR": { whisper: "pt", name: "Português (Brasil)", outputInstruction: "Responda TUDO em português brasileiro." },
+  "en": { whisper: "en", name: "English", outputInstruction: "Respond ENTIRELY in English." },
+  "es": { whisper: "es", name: "Español", outputInstruction: "Responde TODO en español." },
+  "fr": { whisper: "fr", name: "Français", outputInstruction: "Répondez ENTIÈREMENT en français." },
+  "de": { whisper: "de", name: "Deutsch", outputInstruction: "Antworten Sie KOMPLETT auf Deutsch." },
+  "it": { whisper: "it", name: "Italiano", outputInstruction: "Rispondi INTERAMENTE in italiano." },
+  "ja": { whisper: "ja", name: "日本語", outputInstruction: "すべて日本語で回答してください。" },
+  "zh": { whisper: "zh", name: "中文", outputInstruction: "请全部用中文回答。" },
+  "ko": { whisper: "ko", name: "한국어", outputInstruction: "모든 내용을 한국어로 응답하세요." },
+};
+
+function getTaskExtractionInstruction(level: string): string {
+  switch (level) {
+    case "conservative":
+      return `NÍVEL DE EXTRAÇÃO: CONSERVADOR
+Extraia APENAS tarefas que foram EXPLICITAMENTE mencionadas como obrigações diretas.
+- Somente frases com verbos de obrigação claros: "preciso fazer", "tenho que", "vou fazer", "prometi entregar"
+- NÃO extraia ações implícitas ou sugestões
+- NÃO extraia compromissos vagos como "deveríamos pensar em X"
+- NÃO crie tarefas de acompanhamento para compromissos de terceiros
+- Na dúvida, NÃO extraia a tarefa`;
+    case "moderate":
+      return `NÍVEL DE EXTRAÇÃO: MODERADO
+Extraia tarefas que representam compromissos claros e ações definidas.
+- Verbos de obrigação: "preciso", "tenho que", "vou", "ficou combinado"
+- Compromissos explícitos assumidos pelo profissional ou pela contraparte
+- Próximos passos claramente definidos
+- NÃO extraia sugestões vagas ou ideias para o futuro sem compromisso
+- Compromissos de terceiros geram tarefas de acompanhamento apenas se o profissional mencionou que vai cobrar`;
+    case "aggressive":
+    default:
+      return `NÍVEL DE EXTRAÇÃO: AGRESSIVO
+Extraia ABSOLUTAMENTE TUDO que indica uma ação a ser realizada. Seja AGRESSIVO na extração — é melhor extrair uma tarefa a mais do que perder uma.
+- Todos os verbos de obrigação, necessidade e intenção
+- Compromissos assumidos e compromissos de terceiros (gerar tarefa de cobrar/acompanhar)
+- Ações implícitas: "falta X", "tá pendente X", "tá parado"
+- Lembretes e anotações de ação
+- Próximos passos mencionados de qualquer forma
+- Ideias que soam como intenções: "seria bom fazer X", "deveríamos X"`;
+  }
+}
+
 export async function processAudioMeeting(
   audioBuffer: Buffer,
   mimeType: string,
   userId: string
 ): Promise<Meeting> {
+  const userSettings = await storage.getUserSettings(userId);
+  const transcriptionLang = userSettings?.transcriptionLanguage || "pt-BR";
+  const extractionLevel = userSettings?.taskExtractionLevel || "aggressive";
+  const langConfig = LANG_MAP[transcriptionLang] || LANG_MAP["pt-BR"];
+
   const file = new File([audioBuffer], "audio.webm", { type: mimeType || "audio/webm" });
 
   const openai = getOpenAIClient();
   const transcription = await openai.audio.transcriptions.create({
     file,
     model: "gpt-4o-mini-transcribe",
-    language: "pt",
+    language: langConfig.whisper,
   });
 
   const transcribedText = transcription.text;
@@ -41,7 +89,11 @@ export async function processAudioMeeting(
     messages: [
       {
         role: "system",
-        content: `Você é o cérebro de um CRM inteligente. Seu trabalho é ouvir a transcrição de um áudio gravado por um profissional (vendedor, gestor, empreendedor, etc.) após qualquer tipo de interação profissional e organizar TUDO no sistema.
+        content: `${langConfig.outputInstruction}
+
+Você é o cérebro de um CRM inteligente. Seu trabalho é ouvir a transcrição de um áudio gravado por um profissional (vendedor, gestor, empreendedor, etc.) após qualquer tipo de interação profissional e organizar TUDO no sistema.
+
+IMPORTANTE: O profissional pode falar em QUALQUER idioma no áudio. Independente do idioma falado, você DEVE gerar TODO o output (título, resumo, nomes de tarefas, descrições, decisões) no idioma: ${langConfig.name}. Os nomes de pessoas e empresas devem ser mantidos como foram falados.
 
 O áudio pode ser gravado em QUALQUER contexto — o profissional pode estar:
 - Resumindo uma reunião que acabou de acontecer
@@ -117,9 +169,9 @@ Identifique TODAS as empresas/organizações mencionadas:
 ═══════════════════════════════════════
 5. TAREFAS — SEÇÃO MAIS CRÍTICA
 ═══════════════════════════════════════
-Extraia ABSOLUTAMENTE TUDO que indica uma ação a ser realizada. Seja AGRESSIVO na extração — é melhor extrair uma tarefa a mais do que perder uma.
+${getTaskExtractionInstruction(extractionLevel)}
 
-PADRÕES DE FALA QUE INDICAM TAREFA (todos os exemplos abaixo devem gerar tarefas):
+PADRÕES DE FALA QUE INDICAM TAREFA:
 
 Verbos de obrigação/necessidade:
 - "Preciso fazer X" / "Tenho que fazer X" / "Devo fazer X"

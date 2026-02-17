@@ -1,5 +1,5 @@
 import { useLocation, Link } from "wouter";
-import { LayoutDashboard, Mic, Users, Building2, CheckSquare, BarChart3, LogOut, ListTodo } from "lucide-react";
+import { LayoutDashboard, Mic, Users, Building2, CheckSquare, BarChart3, LogOut, ListTodo, Settings } from "lucide-react";
 import logoImg from "@/assets/images/logo.png";
 import logoFullImg from "@/assets/images/logo-full.png";
 import {
@@ -26,6 +26,7 @@ const navItems = [
   { title: "Contatos", url: "/contacts", icon: Users },
   { title: "Empresas", url: "/companies", icon: Building2 },
   { title: "Relatórios", url: "/reports", icon: BarChart3 },
+  { title: "Configurações", url: "/settings", icon: Settings },
 ];
 
 export function AppSidebar() {

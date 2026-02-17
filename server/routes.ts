@@ -2,9 +2,11 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
+import { authStorage } from "./replit_integrations/auth/storage";
 import { insertContactSchema, insertCompanySchema, insertMeetingSchema } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
+import bcrypt from "bcryptjs";
 import { processAudioMeeting } from "./ai";
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
@@ -467,6 +469,156 @@ export async function registerRoutes(
         completedTasks,
       });
     } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // === USER SETTINGS ===
+  app.get("/api/settings", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      let settings = await storage.getUserSettings(userId);
+      if (!settings) {
+        settings = await storage.upsertUserSettings(userId, {});
+      }
+      res.json(settings);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.patch("/api/settings", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const schema = z.object({
+        interfaceLanguage: z.enum(["pt-BR", "en"]).optional(),
+        transcriptionLanguage: z.enum(["pt-BR", "en", "es", "fr", "de", "it", "ja", "zh", "ko"]).optional(),
+        taskExtractionLevel: z.enum(["aggressive", "moderate", "conservative"]).optional(),
+      });
+      const data = schema.parse(req.body);
+      const settings = await storage.upsertUserSettings(userId, data);
+      res.json(settings);
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // === ACCOUNT MANAGEMENT ===
+  app.patch("/api/account/profile", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const schema = z.object({
+        firstName: z.string().min(1, "Nome é obrigatório"),
+        lastName: z.string().min(1, "Sobrenome é obrigatório"),
+      });
+      const data = schema.parse(req.body);
+      const user = await authStorage.upsertUser({ id: userId, ...data });
+      const { password, ...safeUser } = user;
+      res.json(safeUser);
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.patch("/api/account/email", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const schema = z.object({
+        email: z.string().email("Email inválido"),
+        password: z.string().min(1, "Senha é obrigatória para confirmar"),
+      });
+      const data = schema.parse(req.body);
+
+      const user = await authStorage.getUser(userId);
+      if (!user || !user.password) {
+        return res.status(401).json({ message: "Usuário não encontrado" });
+      }
+
+      const valid = await bcrypt.compare(data.password, user.password);
+      if (!valid) {
+        return res.status(401).json({ message: "Senha incorreta" });
+      }
+
+      const existing = await authStorage.getUserByEmail(data.email);
+      if (existing && existing.id !== userId) {
+        return res.status(409).json({ message: "Este email já está em uso" });
+      }
+
+      const updated = await authStorage.upsertUser({ id: userId, email: data.email });
+      const { password, ...safeUser } = updated;
+      res.json(safeUser);
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.patch("/api/account/password", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const schema = z.object({
+        currentPassword: z.string().min(1, "Senha atual é obrigatória"),
+        newPassword: z.string().min(6, "Nova senha deve ter pelo menos 6 caracteres"),
+      });
+      const data = schema.parse(req.body);
+
+      const user = await authStorage.getUser(userId);
+      if (!user || !user.password) {
+        return res.status(401).json({ message: "Usuário não encontrado" });
+      }
+
+      const valid = await bcrypt.compare(data.currentPassword, user.password);
+      if (!valid) {
+        return res.status(401).json({ message: "Senha atual incorreta" });
+      }
+
+      const hashedPassword = await bcrypt.hash(data.newPassword, 10);
+      await authStorage.upsertUser({ id: userId, password: hashedPassword });
+      res.json({ success: true });
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/account", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const schema = z.object({
+        password: z.string().min(1, "Senha é obrigatória para confirmar"),
+      });
+      const data = schema.parse(req.body);
+
+      const user = await authStorage.getUser(userId);
+      if (!user || !user.password) {
+        return res.status(401).json({ message: "Usuário não encontrado" });
+      }
+
+      const valid = await bcrypt.compare(data.password, user.password);
+      if (!valid) {
+        return res.status(401).json({ message: "Senha incorreta" });
+      }
+
+      await storage.deleteUserAccount(userId);
+      req.session.destroy((err) => {
+        if (err) console.error("Session destroy error:", err);
+        res.clearCookie("connect.sid");
+        res.json({ success: true });
+      });
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
       res.status(500).json({ message: error.message });
     }
   });

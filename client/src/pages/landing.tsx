@@ -3,7 +3,6 @@ import logoImg from "@/assets/images/logo.png";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -116,7 +115,6 @@ export default function Landing() {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <ThemeToggle />
             <Link href="/auth">
               <Button data-testid="button-login">Entrar</Button>
             </Link>

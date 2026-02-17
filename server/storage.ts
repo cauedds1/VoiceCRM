@@ -1,11 +1,13 @@
 import {
-  companies, contacts, meetings, meetingContacts, tasks, decisions,
+  companies, contacts, meetings, meetingContacts, tasks, decisions, userSettings,
   type Company, type InsertCompany,
   type Contact, type InsertContact,
   type Meeting, type InsertMeeting,
   type Task, type InsertTask,
   type Decision, type InsertDecision,
+  type UserSettings,
 } from "@shared/schema";
+import { users, sessions } from "@shared/models/auth";
 import { db } from "./db";
 import { eq, and, desc, ilike, sql } from "drizzle-orm";
 
@@ -42,6 +44,10 @@ export interface IStorage {
   getContactMeetings(contactId: string): Promise<Meeting[]>;
   getCompanyContacts(companyId: string, userId: string): Promise<Contact[]>;
   getCompanyMeetings(companyId: string, userId: string): Promise<Meeting[]>;
+
+  getUserSettings(userId: string): Promise<UserSettings | undefined>;
+  upsertUserSettings(userId: string, data: Partial<UserSettings>): Promise<UserSettings>;
+  deleteUserAccount(userId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -208,6 +214,38 @@ export class DatabaseStorage implements IStorage {
       }
     }
     return result.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+  }
+
+  async getUserSettings(userId: string): Promise<UserSettings | undefined> {
+    const [settings] = await db.select().from(userSettings).where(eq(userSettings.userId, userId));
+    return settings;
+  }
+
+  async upsertUserSettings(userId: string, data: Partial<UserSettings>): Promise<UserSettings> {
+    const existing = await this.getUserSettings(userId);
+    if (existing) {
+      const [updated] = await db.update(userSettings).set(data)
+        .where(eq(userSettings.userId, userId)).returning();
+      return updated;
+    }
+    const [created] = await db.insert(userSettings).values({ userId, ...data }).returning();
+    return created;
+  }
+
+  async deleteUserAccount(userId: string): Promise<void> {
+    const userMeetings = await db.select().from(meetings).where(eq(meetings.userId, userId));
+    for (const meeting of userMeetings) {
+      await db.delete(meetingContacts).where(eq(meetingContacts.meetingId, meeting.id));
+      await db.delete(tasks).where(eq(tasks.meetingId, meeting.id));
+      await db.delete(decisions).where(eq(decisions.meetingId, meeting.id));
+    }
+    await db.delete(meetings).where(eq(meetings.userId, userId));
+    await db.delete(tasks).where(eq(tasks.userId, userId));
+    await db.delete(contacts).where(eq(contacts.userId, userId));
+    await db.delete(companies).where(eq(companies.userId, userId));
+    await db.delete(userSettings).where(eq(userSettings.userId, userId));
+    await db.delete(sessions).where(sql`(sess->>'passport')::jsonb->>'user' = ${userId}`);
+    await db.delete(users).where(eq(users.id, userId));
   }
 }
 
