@@ -1,14 +1,14 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { Mic, Square, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { Mic, Square, Loader2, CheckCircle, AlertCircle, Pause, Play } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/auth-utils";
 
-type RecordingState = "idle" | "recording" | "processing" | "done" | "error";
+type RecordingState = "idle" | "recording" | "paused" | "processing" | "done" | "error";
 
 export default function NewMeeting() {
   const [, setLocation] = useLocation();
@@ -23,6 +23,12 @@ export default function NewMeeting() {
   const analyserRef = useRef<AnalyserNode | null>(null);
   const animFrameRef = useRef<number | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const stateRef = useRef<RecordingState>("idle");
+
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   const processMeeting = useMutation({
     mutationFn: async (audio: Blob) => {
@@ -59,12 +65,50 @@ export default function NewMeeting() {
     },
   });
 
+  const startTimer = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => setDuration((d) => d + 1), 1000);
+  }, []);
+
+  const stopTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
+
+  const updateBars = useCallback(() => {
+    if (!analyserRef.current) return;
+    const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
+    analyserRef.current.getByteFrequencyData(dataArray);
+    const newBars = Array.from({ length: 32 }, (_, i) => {
+      const idx = Math.floor((i / 32) * dataArray.length);
+      return Math.max(4, (dataArray[idx] / 255) * 40);
+    });
+    setBars(newBars);
+    animFrameRef.current = requestAnimationFrame(updateBars);
+  }, []);
+
+  const startVisualization = useCallback(() => {
+    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    updateBars();
+  }, [updateBars]);
+
+  const stopVisualization = useCallback(() => {
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
+    }
+    setBars(Array.from({ length: 32 }, () => 4));
+  }, []);
+
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
       const audioContext = new AudioContext();
+      audioContextRef.current = audioContext;
       const source = audioContext.createMediaStreamSource(stream);
       const analyser = audioContext.createAnalyser();
       analyser.fftSize = 64;
@@ -90,33 +134,42 @@ export default function NewMeeting() {
       mediaRecorder.start(100);
       setState("recording");
       setDuration(0);
-
-      timerRef.current = setInterval(() => setDuration((d) => d + 1), 1000);
-
-      const updateBars = () => {
-        if (!analyserRef.current) return;
-        const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
-        analyserRef.current.getByteFrequencyData(dataArray);
-        const newBars = Array.from({ length: 32 }, (_, i) => {
-          const idx = Math.floor((i / 32) * dataArray.length);
-          return Math.max(4, (dataArray[idx] / 255) * 40);
-        });
-        setBars(newBars);
-        animFrameRef.current = requestAnimationFrame(updateBars);
-      };
-      updateBars();
+      startTimer();
+      startVisualization();
     } catch {
       toast({ title: "Erro ao acessar microfone", description: "Verifique as permissões do navegador", variant: "destructive" });
     }
   };
 
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-      mediaRecorderRef.current.stop();
+  const pauseRecording = useCallback(() => {
+    const mr = mediaRecorderRef.current;
+    if (mr && mr.state === "recording") {
+      mr.pause();
+      stopTimer();
+      stopVisualization();
+      setState("paused");
     }
-    if (timerRef.current) clearInterval(timerRef.current);
+  }, [stopTimer, stopVisualization]);
+
+  const resumeRecording = useCallback(() => {
+    const mr = mediaRecorderRef.current;
+    if (mr && mr.state === "paused") {
+      mr.resume();
+      startTimer();
+      startVisualization();
+      setState("recording");
+    }
+  }, [startTimer, startVisualization]);
+
+  const stopRecording = useCallback(() => {
+    const mr = mediaRecorderRef.current;
+    if (mr && mr.state !== "inactive") {
+      mr.stop();
+    }
+    stopTimer();
+    stopVisualization();
     setState("processing");
-  };
+  }, [stopTimer, stopVisualization]);
 
   useEffect(() => {
     if (audioBlob && state === "processing") {
@@ -125,12 +178,46 @@ export default function NewMeeting() {
   }, [audioBlob, state]);
 
   useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        if (stateRef.current === "recording") {
+          pauseRecording();
+        }
+      }
+    };
+
+    const handleBlur = () => {
+      if (stateRef.current === "recording") {
+        pauseRecording();
+      }
+    };
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      const s = stateRef.current;
+      if (s === "recording" || s === "paused") {
+        e.preventDefault();
+        e.returnValue = "Você tem uma gravação em andamento. Tem certeza que deseja sair?";
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", handleBlur);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", handleBlur);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [pauseRecording]);
+
+  useEffect(() => {
+    return () => {
+      stopTimer();
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
       if (streamRef.current) streamRef.current.getTracks().forEach((t) => t.stop());
     };
-  }, []);
+  }, [stopTimer]);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -138,25 +225,35 @@ export default function NewMeeting() {
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
+  const isActive = state === "recording" || state === "paused";
+
   return (
     <div className="p-4 sm:p-6 max-w-2xl mx-auto flex items-center justify-center min-h-[calc(100vh-4rem)]">
       <div className="w-full space-y-6">
         <div className="text-center">
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Nova Reunião</h1>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight" data-testid="text-new-meeting-title">Nova Reunião</h1>
           <p className="text-muted-foreground mt-2">
-            Grave um áudio descrevendo sua reunião e a IA organiza tudo automaticamente
+            {state === "idle"
+              ? "Grave um áudio descrevendo sua reunião e a IA organiza tudo automaticamente"
+              : state === "paused"
+                ? "Gravação pausada — toque em continuar para retomar"
+                : state === "recording"
+                  ? "Gravando... a gravação só para quando você decidir"
+                  : ""}
           </p>
         </div>
 
         <Card className="overflow-visible">
-          <CardContent className="p-8">
+          <CardContent className="p-6 sm:p-8">
             <div className="flex flex-col items-center space-y-8">
-              {state === "recording" && (
+              {(state === "recording" || state === "paused") && (
                 <div className="flex items-end justify-center gap-0.5 h-12">
                   {bars.map((h, i) => (
                     <div
                       key={i}
-                      className="w-1.5 rounded-full bg-primary transition-all duration-75"
+                      className={`w-1.5 rounded-full transition-all duration-75 ${
+                        state === "paused" ? "bg-muted-foreground/30" : "bg-primary"
+                      }`}
                       style={{ height: `${h}px` }}
                     />
                   ))}
@@ -187,50 +284,78 @@ export default function NewMeeting() {
                 <div className="flex flex-col items-center gap-4">
                   <AlertCircle className="h-12 w-12 text-destructive" />
                   <p className="text-sm font-medium">Erro ao processar</p>
-                  <Button variant="ghost" onClick={() => setState("idle")}>
+                  <Button variant="ghost" onClick={() => setState("idle")} data-testid="button-retry">
                     Tentar novamente
                   </Button>
                 </div>
               )}
 
-              {(state === "idle" || state === "recording") && (
+              {(state === "idle" || isActive) && (
                 <>
-                  {state === "recording" && (
+                  {isActive && (
                     <div className="text-center">
                       <p className="text-3xl font-mono font-bold text-primary" data-testid="text-duration">
                         {formatTime(duration)}
                       </p>
-                      <p className="text-sm text-muted-foreground mt-1">Gravando...</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {state === "paused" ? "Pausado" : "Gravando..."}
+                      </p>
                     </div>
                   )}
 
-                  <div className="relative">
-                    {state === "recording" && (
-                      <>
-                        <div className="absolute inset-0 rounded-full bg-primary/20 animate-pulse-ring" />
-                        <div className="absolute inset-0 rounded-full bg-primary/10 animate-pulse-ring" style={{ animationDelay: "0.5s" }} />
-                      </>
+                  <div className="flex items-center gap-6">
+                    {isActive && (
+                      <button
+                        onClick={state === "paused" ? resumeRecording : pauseRecording}
+                        className="w-14 h-14 rounded-full flex items-center justify-center bg-accent text-accent-foreground transition-all"
+                        data-testid="button-pause-resume"
+                        aria-label={state === "paused" ? "Retomar gravação" : "Pausar gravação"}
+                      >
+                        {state === "paused" ? (
+                          <Play className="h-6 w-6" />
+                        ) : (
+                          <Pause className="h-6 w-6" />
+                        )}
+                      </button>
                     )}
-                    <button
-                      onClick={state === "recording" ? stopRecording : startRecording}
-                      className={`relative z-10 w-24 h-24 sm:w-20 sm:h-20 rounded-full flex items-center justify-center transition-all ${
-                        state === "recording"
-                          ? "bg-destructive text-destructive-foreground"
-                          : "bg-primary text-primary-foreground"
-                      }`}
-                      data-testid="button-record"
-                    >
-                      {state === "recording" ? (
-                        <Square className="h-8 w-8 sm:h-7 sm:w-7" />
-                      ) : (
-                        <Mic className="h-9 w-9 sm:h-8 sm:w-8" />
+
+                    <div className="relative">
+                      {state === "recording" && (
+                        <>
+                          <div className="absolute inset-0 rounded-full bg-primary/20 animate-pulse-ring" />
+                          <div className="absolute inset-0 rounded-full bg-primary/10 animate-pulse-ring" style={{ animationDelay: "0.5s" }} />
+                        </>
                       )}
-                    </button>
+                      <button
+                        onClick={isActive ? stopRecording : startRecording}
+                        className={`relative z-10 w-24 h-24 sm:w-20 sm:h-20 rounded-full flex items-center justify-center transition-all ${
+                          isActive
+                            ? "bg-destructive text-destructive-foreground"
+                            : "bg-primary text-primary-foreground"
+                        }`}
+                        data-testid="button-record"
+                        aria-label={isActive ? "Parar gravação" : "Iniciar gravação"}
+                      >
+                        {isActive ? (
+                          <Square className="h-8 w-8 sm:h-7 sm:w-7" />
+                        ) : (
+                          <Mic className="h-9 w-9 sm:h-8 sm:w-8" />
+                        )}
+                      </button>
+                    </div>
                   </div>
 
                   {state === "idle" && !audioBlob && (
                     <p className="text-sm text-muted-foreground text-center max-w-xs">
                       Toque no botão para gravar. Conte o que aconteceu na reunião com suas próprias palavras.
+                    </p>
+                  )}
+
+                  {isActive && (
+                    <p className="text-xs text-muted-foreground text-center max-w-xs">
+                      {state === "paused"
+                        ? "A gravação foi pausada. Toque em continuar para retomar ou pare para finalizar."
+                        : "Se a tela desligar ou receber uma ligação, a gravação será pausada automaticamente. Nada será perdido."}
                     </p>
                   )}
                 </>

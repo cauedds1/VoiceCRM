@@ -17,8 +17,8 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 
 const navItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Nova Reunião", url: "/meetings/new", icon: Mic },
+  { title: "Gravar Reunião", url: "/meetings/new", icon: Mic },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Reuniões", url: "/meetings", icon: CheckSquare },
   { title: "Contatos", url: "/contacts", icon: Users },
   { title: "Empresas", url: "/companies", icon: Building2 },
@@ -55,9 +55,16 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => {
-                const isActive = item.url === "/"
-                  ? location === "/"
-                  : location.startsWith(item.url);
+                let isActive: boolean;
+                if (item.url === "/dashboard") {
+                  isActive = location === "/" || location === "/dashboard";
+                } else if (item.url === "/meetings/new") {
+                  isActive = location === "/meetings/new";
+                } else if (item.url === "/meetings") {
+                  isActive = location.startsWith("/meetings") && location !== "/meetings/new" && location !== "/meetings/new-manual";
+                } else {
+                  isActive = location.startsWith(item.url);
+                }
 
                 return (
                   <SidebarMenuItem key={item.title}>

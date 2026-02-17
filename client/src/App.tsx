@@ -9,7 +9,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { useAuth } from "@/hooks/use-auth";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Landing from "@/pages/landing";
 import AuthPage from "@/pages/auth-page";
 import Dashboard from "@/pages/dashboard";
@@ -24,6 +24,25 @@ import NewMeetingManual from "@/pages/new-meeting-manual";
 import Reports from "@/pages/reports";
 import NotFound from "@/pages/not-found";
 import { Loader2 } from "lucide-react";
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" ? window.innerWidth < 768 : false
+  );
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  return isMobile;
+}
+
+function MobileHome() {
+  const isMobile = useIsMobile();
+  return isMobile ? <NewMeeting /> : <Dashboard />;
+}
 
 function SidebarMobileClose() {
   const { setOpenMobile } = useSidebar();
@@ -54,7 +73,8 @@ function AuthenticatedLayout() {
           </header>
           <main className="flex-1 overflow-auto">
             <Switch>
-              <Route path="/" component={Dashboard} />
+              <Route path="/" component={MobileHome} />
+              <Route path="/dashboard" component={Dashboard} />
               <Route path="/meetings/new" component={NewMeeting} />
               <Route path="/meetings/new-manual" component={NewMeetingManual} />
               <Route path="/meetings/:id" component={MeetingDetail} />

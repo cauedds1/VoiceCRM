@@ -11,7 +11,11 @@ Voice-powered CRM system for professionals. Record audio after meetings, AI tran
 - **Auth**: Native email/password (bcrypt + express-session)
 
 ## Key Features
-- Voice recording with real-time waveform visualization
+- Mobile-first recording: on mobile, the home screen IS the recording page (ready to record immediately)
+- Voice recording with real-time waveform visualization, pause/resume support
+- Recording never stops unless user explicitly clicks stop
+- Auto-pause on screen off, incoming calls, app switch (visibilitychange + blur events)
+- beforeunload protection prevents accidental data loss during active recording
 - AI transcription (gpt-4o-mini-transcribe) and entity extraction (gpt-5-mini)
 - Auto-creation of contacts and companies from voice mentions
 - Task and decision extraction from meeting audio
@@ -55,7 +59,7 @@ shared/
 - Vibrant teal/blue theme but NO visual clutter
 - Generous spacing, clear hierarchy
 - Portuguese (pt-BR) interface
-- Desktop-first, mobile apps planned for later
+- Mobile-first recording experience, responsive design works on both desktop and mobile
 
 ## Integration Points (for Flippa buyer)
 - Stripe: `server/integrations/stripe.ts` - Payment/subscription ready
