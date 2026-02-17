@@ -16,6 +16,7 @@ export const companies = pgTable("companies", {
   notes: text("notes"),
   city: text("city"),
   state: text("state"),
+  logoUrl: text("logo_url"),
   userId: varchar("user_id").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });

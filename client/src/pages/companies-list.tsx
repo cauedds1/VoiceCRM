@@ -147,42 +147,44 @@ export default function CompaniesList() {
           </div>
         ) : (
           filtered.map((company) => (
-            <Card key={company.id} className="hover-elevate cursor-pointer" data-testid={`company-item-${company.id}`}>
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <h3 className="text-base font-medium truncate">{company.name}</h3>
-                    {company.industry && (
-                      <p className="text-xs text-muted-foreground mt-1">{company.industry}</p>
+            <Link key={company.id} href={`/companies/${company.id}`}>
+              <Card className="hover-elevate cursor-pointer" data-testid={`company-item-${company.id}`}>
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <h3 className="text-base font-medium truncate">{company.name}</h3>
+                      {company.industry && (
+                        <p className="text-xs text-muted-foreground mt-1">{company.industry}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
+                      <Users className="h-3 w-3" />
+                      {getContactCount(company.id)}
+                    </div>
+                  </div>
+                  <div className="mt-3 space-y-1">
+                    {company.phone && (
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Phone className="h-3 w-3" />
+                        {company.phone}
+                      </p>
+                    )}
+                    {company.email && (
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Mail className="h-3 w-3" />
+                        {company.email}
+                      </p>
+                    )}
+                    {(company.city || company.state) && (
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        {[company.city, company.state].filter(Boolean).join(" - ")}
+                      </p>
                     )}
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
-                    <Users className="h-3 w-3" />
-                    {getContactCount(company.id)}
-                  </div>
-                </div>
-                <div className="mt-3 space-y-1">
-                  {company.phone && (
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Phone className="h-3 w-3" />
-                      {company.phone}
-                    </p>
-                  )}
-                  {company.email && (
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Mail className="h-3 w-3" />
-                      {company.email}
-                    </p>
-                  )}
-                  {(company.city || company.state) && (
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      {[company.city, company.state].filter(Boolean).join(" - ")}
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </Link>
           ))
         )}
       </div>

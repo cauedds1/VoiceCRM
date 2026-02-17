@@ -275,6 +275,41 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/companies/:id", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const company = await storage.getCompany(paramId(req), userId);
+      if (!company) return res.status(404).json({ message: "Empresa não encontrada" });
+      res.json(company);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/companies/:id/contacts", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const company = await storage.getCompany(paramId(req), userId);
+      if (!company) return res.status(404).json({ message: "Empresa não encontrada" });
+      const result = await storage.getCompanyContacts(paramId(req), userId);
+      res.json(result);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/companies/:id/meetings", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const company = await storage.getCompany(paramId(req), userId);
+      if (!company) return res.status(404).json({ message: "Empresa não encontrada" });
+      const result = await storage.getCompanyMeetings(paramId(req), userId);
+      res.json(result);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   app.post("/api/companies", isAuthenticated, async (req, res) => {
     try {
       const userId = getUserId(req);
@@ -309,6 +344,7 @@ export async function registerRoutes(
         notes: z.string().optional().nullable(),
         city: z.string().optional().nullable(),
         state: z.string().optional().nullable(),
+        logoUrl: z.string().optional().nullable(),
       });
       const data = updateSchema.parse(req.body);
       const company = await storage.updateCompany(paramId(req), userId, data);

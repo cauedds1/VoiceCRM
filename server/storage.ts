@@ -40,6 +40,8 @@ export interface IStorage {
   createDecision(data: InsertDecision): Promise<Decision>;
 
   getContactMeetings(contactId: string): Promise<Meeting[]>;
+  getCompanyContacts(companyId: string, userId: string): Promise<Contact[]>;
+  getCompanyMeetings(companyId: string, userId: string): Promise<Meeting[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -179,6 +181,31 @@ export class DatabaseStorage implements IStorage {
     for (const link of links) {
       const [m] = await db.select().from(meetings).where(eq(meetings.id, link.meetingId));
       if (m) result.push(m);
+    }
+    return result.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+  }
+
+  async getCompanyContacts(companyId: string, userId: string): Promise<Contact[]> {
+    return db.select().from(contacts)
+      .where(and(eq(contacts.companyId, companyId), eq(contacts.userId, userId)))
+      .orderBy(contacts.name);
+  }
+
+  async getCompanyMeetings(companyId: string, userId: string): Promise<Meeting[]> {
+    const companyContacts = await this.getCompanyContacts(companyId, userId);
+    if (companyContacts.length === 0) return [];
+    const meetingIds = new Set<string>();
+    const result: Meeting[] = [];
+    for (const contact of companyContacts) {
+      const links = await db.select().from(meetingContacts).where(eq(meetingContacts.contactId, contact.id));
+      for (const link of links) {
+        if (!meetingIds.has(link.meetingId)) {
+          meetingIds.add(link.meetingId);
+          const [m] = await db.select().from(meetings)
+            .where(and(eq(meetings.id, link.meetingId), eq(meetings.userId, userId)));
+          if (m) result.push(m);
+        }
+      }
     }
     return result.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
   }

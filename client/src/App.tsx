@@ -17,6 +17,7 @@ import MeetingDetail from "@/pages/meeting-detail";
 import ContactsList from "@/pages/contacts-list";
 import ContactDetail from "@/pages/contact-detail";
 import CompaniesList from "@/pages/companies-list";
+import CompanyDetail from "@/pages/company-detail";
 import NewMeetingManual from "@/pages/new-meeting-manual";
 import Reports from "@/pages/reports";
 import NotFound from "@/pages/not-found";
@@ -46,6 +47,7 @@ function AuthenticatedLayout() {
               <Route path="/meetings" component={MeetingsList} />
               <Route path="/contacts/:id" component={ContactDetail} />
               <Route path="/contacts" component={ContactsList} />
+              <Route path="/companies/:id" component={CompanyDetail} />
               <Route path="/companies" component={CompaniesList} />
               <Route path="/reports" component={Reports} />
               <Route component={NotFound} />
