@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { Mic, Square, Loader2, CheckCircle, AlertCircle, Pause, Play } from "lucide-react";
+import { Mic, Square, Loader2, CheckCircle, AlertCircle, Pause, Play, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -170,6 +170,32 @@ export default function NewMeeting() {
     stopVisualization();
     setState("processing");
   }, [stopTimer, stopVisualization]);
+
+  const discardRecording = useCallback(() => {
+    const mr = mediaRecorderRef.current;
+    if (mr && mr.state !== "inactive") {
+      mr.ondataavailable = null;
+      mr.onstop = null;
+      mr.stop();
+    }
+    stopTimer();
+    stopVisualization();
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
+    }
+    chunksRef.current = [];
+    mediaRecorderRef.current = null;
+    analyserRef.current = null;
+    setAudioBlob(null);
+    setDuration(0);
+    setState("idle");
+    toast({ title: "Gravação descartada" });
+  }, [stopTimer, stopVisualization, toast]);
 
   useEffect(() => {
     if (audioBlob && state === "processing") {
@@ -343,6 +369,17 @@ export default function NewMeeting() {
                         )}
                       </button>
                     </div>
+
+                    {isActive && (
+                      <button
+                        onClick={discardRecording}
+                        className="w-14 h-14 rounded-full flex items-center justify-center bg-accent text-muted-foreground transition-all"
+                        data-testid="button-discard-recording"
+                        aria-label="Descartar gravação"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </button>
+                    )}
                   </div>
 
                   {state === "idle" && !audioBlob && (
