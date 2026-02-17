@@ -26,7 +26,7 @@ export async function registerRoutes(
   registerAuthRoutes(app);
 
   app.get("/voicecrm.apk", (_req, res) => {
-    const apkPath = path.resolve(__dirname, "..", "client", "public", "voicecrm.apk");
+    const apkPath = path.resolve(process.cwd(), "server", "assets", "voicecrm.apk");
     res.setHeader("Content-Type", "application/vnd.android.package-archive");
     res.setHeader("Content-Disposition", 'attachment; filename="VoiceCRM.apk"');
     res.sendFile(apkPath);
