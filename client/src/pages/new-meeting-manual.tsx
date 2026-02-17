@@ -162,7 +162,7 @@ export default function NewMeetingManual() {
         </Card>
 
         <div className="flex items-center gap-3">
-          <Button type="submit" className="gap-2" disabled={createMeeting.isPending} data-testid="button-create-meeting">
+          <Button type="submit" className="gap-2 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white" disabled={createMeeting.isPending} data-testid="button-create-meeting">
             {createMeeting.isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (

@@ -78,7 +78,9 @@ export default function Reports() {
                     <p className="text-xs text-muted-foreground">Total de Reuniões</p>
                     <p className="text-2xl font-bold mt-1">{summary?.totalMeetings || 0}</p>
                   </div>
-                  <CalendarDays className="h-5 w-5 text-primary shrink-0" />
+                  <div className="p-2 rounded-md bg-gradient-to-br from-emerald-500 to-teal-500 shrink-0">
+                    <CalendarDays className="h-4 w-4 text-white" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -89,7 +91,9 @@ export default function Reports() {
                     <p className="text-xs text-muted-foreground">Contatos</p>
                     <p className="text-2xl font-bold mt-1">{summary?.totalContacts || 0}</p>
                   </div>
-                  <Users className="h-5 w-5 text-primary shrink-0" />
+                  <div className="p-2 rounded-md bg-gradient-to-br from-cyan-500 to-blue-500 shrink-0">
+                    <Users className="h-4 w-4 text-white" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -100,7 +104,9 @@ export default function Reports() {
                     <p className="text-xs text-muted-foreground">Empresas</p>
                     <p className="text-2xl font-bold mt-1">{summary?.totalCompanies || 0}</p>
                   </div>
-                  <Building2 className="h-5 w-5 text-primary shrink-0" />
+                  <div className="p-2 rounded-md bg-gradient-to-br from-violet-500 to-purple-500 shrink-0">
+                    <Building2 className="h-4 w-4 text-white" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -112,7 +118,9 @@ export default function Reports() {
                     <p className="text-2xl font-bold mt-1">{summary?.completedTasks || 0}<span className="text-base font-normal text-muted-foreground">/{summary?.totalTasks || 0}</span></p>
                     <p className="text-xs text-muted-foreground mt-0.5">{summary?.pendingTasks || 0} pendentes</p>
                   </div>
-                  <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
+                  <div className="p-2 rounded-md bg-gradient-to-br from-amber-500 to-orange-500 shrink-0">
+                    <CheckCircle2 className="h-4 w-4 text-white" />
+                  </div>
                 </div>
               </CardContent>
             </Card>

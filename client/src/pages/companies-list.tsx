@@ -54,7 +54,7 @@ export default function CompaniesList() {
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="gap-2" data-testid="button-add-company">
+            <Button className="gap-2 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white" data-testid="button-add-company">
               <Plus className="h-4 w-4" />
               Nova Empresa
             </Button>
@@ -111,7 +111,7 @@ export default function CompaniesList() {
                     </FormItem>
                   )} />
                 </div>
-                <Button type="submit" className="w-full" disabled={createCompany.isPending} data-testid="button-save-company">
+                <Button type="submit" className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white" disabled={createCompany.isPending} data-testid="button-save-company">
                   {createCompany.isPending ? "Salvando..." : "Salvar Empresa"}
                 </Button>
               </form>

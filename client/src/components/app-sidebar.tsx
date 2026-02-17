@@ -37,8 +37,8 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-9 h-9 rounded-md bg-sidebar-primary">
-            <Mic className="h-5 w-5 text-sidebar-primary-foreground" />
+          <div className="flex items-center justify-center w-9 h-9 rounded-md bg-gradient-to-br from-emerald-500 to-cyan-500">
+            <Mic className="h-5 w-5 text-white" />
           </div>
           <div>
             <h1 className="text-base font-semibold text-sidebar-foreground tracking-tight">VoiceCRM</h1>
@@ -66,19 +66,26 @@ export function AppSidebar() {
                   isActive = location.startsWith(item.url);
                 }
 
+                const isGravarReuniao = item.url === "/meetings/new";
+                const buttonClasses = isGravarReuniao && !isActive ? "bg-gradient-to-r from-emerald-500/10 to-cyan-500/10" : "";
+
                 return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={isActive}
-                      data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
-                    >
-                      <Link href={item.url}>
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                  <div key={item.title}>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive}
+                        className={buttonClasses}
+                        data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
+                      >
+                        <Link href={item.url}>
+                          <item.icon className={`h-4 w-4 ${isGravarReuniao ? "text-emerald-500" : ""}`} />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    {isGravarReuniao && <div className="my-2 mx-3 h-px bg-sidebar-border" />}
+                  </div>
                 );
               })}
             </SidebarMenu>

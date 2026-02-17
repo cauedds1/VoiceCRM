@@ -8,11 +8,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
 import type { Meeting, Task, Contact, Company } from "@shared/schema";
 
-function StatCard({ title, value, icon: Icon, color, loading }: {
+function StatCard({ title, value, icon: Icon, gradient, loading }: {
   title: string;
   value: number | string;
   icon: React.ElementType;
-  color: string;
+  gradient: string;
   loading: boolean;
 }) {
   return (
@@ -27,8 +27,8 @@ function StatCard({ title, value, icon: Icon, color, loading }: {
               <p className="text-2xl font-bold" data-testid={`stat-${title.toLowerCase().replace(/\s+/g, '-')}`}>{value}</p>
             )}
           </div>
-          <div className={`p-2.5 rounded-md ${color}`}>
-            <Icon className="h-5 w-5" />
+          <div className={`p-2.5 rounded-md bg-gradient-to-br ${gradient}`}>
+            <Icon className="h-5 w-5 text-white" />
           </div>
         </div>
       </CardContent>
@@ -82,14 +82,14 @@ export default function Dashboard() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight" data-testid="text-welcome">
-            Olá, {user?.firstName || "Usuário"}
+            Olá, <span className="bg-gradient-to-r from-emerald-500 to-cyan-500 bg-clip-text text-transparent">{user?.firstName || "Usuário"}</span>
           </h1>
           <p className="text-muted-foreground mt-1">
             Aqui está o resumo das suas atividades
           </p>
         </div>
         <Link href="/meetings/new">
-          <Button className="gap-2" data-testid="button-new-meeting">
+          <Button className="gap-2 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white" data-testid="button-new-meeting">
             <Mic className="h-4 w-4" />
             Nova Reunião
           </Button>
@@ -97,10 +97,10 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Reuniões" value={meetings.length} icon={Mic} color="bg-primary/10 text-primary" loading={isLoading} />
-        <StatCard title="Tarefas Pendentes" value={pendingTasks.length} icon={CheckSquare} color="bg-chart-3/10 text-chart-3" loading={isLoading} />
-        <StatCard title="Contatos" value={contacts.length} icon={Users} color="bg-chart-4/10 text-chart-4" loading={isLoading} />
-        <StatCard title="Empresas" value={companies.length} icon={Building2} color="bg-chart-2/10 text-chart-2" loading={isLoading} />
+        <StatCard title="Reuniões" value={meetings.length} icon={Mic} gradient="from-emerald-500 to-teal-500" loading={isLoading} />
+        <StatCard title="Tarefas Pendentes" value={pendingTasks.length} icon={CheckSquare} gradient="from-amber-500 to-orange-500" loading={isLoading} />
+        <StatCard title="Contatos" value={contacts.length} icon={Users} gradient="from-cyan-500 to-blue-500" loading={isLoading} />
+        <StatCard title="Empresas" value={companies.length} icon={Building2} gradient="from-violet-500 to-purple-500" loading={isLoading} />
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">

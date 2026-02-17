@@ -170,7 +170,9 @@ export default function MeetingDetail() {
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <FileText className="h-4 w-4 text-primary" />
+                <div className="p-1.5 rounded-md bg-gradient-to-br from-emerald-500 to-teal-500">
+                  <FileText className="h-3.5 w-3.5 text-white" />
+                </div>
                 <h2 className="text-base font-semibold">Resumo</h2>
               </div>
             </CardHeader>
@@ -195,7 +197,9 @@ export default function MeetingDetail() {
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-chart-2" />
+                  <div className="p-1.5 rounded-md bg-gradient-to-br from-cyan-500 to-blue-500">
+                    <FileText className="h-3.5 w-3.5 text-white" />
+                  </div>
                   <h2 className="text-base font-semibold">Transcrição</h2>
                 </div>
               </CardHeader>
@@ -211,7 +215,9 @@ export default function MeetingDetail() {
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2">
-                  <CheckSquare className="h-4 w-4 text-chart-3" />
+                  <div className="p-1.5 rounded-md bg-gradient-to-br from-amber-500 to-orange-500">
+                    <CheckSquare className="h-3.5 w-3.5 text-white" />
+                  </div>
                   <h2 className="text-base font-semibold">Tarefas ({meetingTasks.length})</h2>
                 </div>
               </CardHeader>
@@ -258,7 +264,9 @@ export default function MeetingDetail() {
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2">
-                  <Lightbulb className="h-4 w-4 text-chart-3" />
+                  <div className="p-1.5 rounded-md bg-gradient-to-br from-violet-500 to-purple-500">
+                    <Lightbulb className="h-3.5 w-3.5 text-white" />
+                  </div>
                   <h2 className="text-base font-semibold">Decisões ({meetingDecisions.length})</h2>
                 </div>
               </CardHeader>
@@ -277,7 +285,9 @@ export default function MeetingDetail() {
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-chart-4" />
+                <div className="p-1.5 rounded-md bg-gradient-to-br from-cyan-500 to-blue-500">
+                  <Users className="h-3.5 w-3.5 text-white" />
+                </div>
                 <h2 className="text-base font-semibold">Participantes</h2>
               </div>
             </CardHeader>

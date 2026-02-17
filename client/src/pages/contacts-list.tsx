@@ -65,7 +65,7 @@ export default function ContactsList() {
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="gap-2" data-testid="button-add-contact">
+            <Button className="gap-2 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white" data-testid="button-add-contact">
               <Plus className="h-4 w-4" />
               Novo Contato
             </Button>
@@ -122,7 +122,7 @@ export default function ContactsList() {
                     </FormItem>
                   )} />
                 </div>
-                <Button type="submit" className="w-full" disabled={createContact.isPending} data-testid="button-save-contact">
+                <Button type="submit" className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white" disabled={createContact.isPending} data-testid="button-save-contact">
                   {createContact.isPending ? "Salvando..." : "Salvar Contato"}
                 </Button>
               </form>

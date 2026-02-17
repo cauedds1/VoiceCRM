@@ -69,9 +69,10 @@ function AuthenticatedLayout() {
       <div className="flex h-screen w-full">
         <AppSidebar />
         <div className="flex flex-col flex-1 min-w-0">
-          <header className="flex items-center justify-between gap-4 p-2 border-b sticky top-0 z-50 bg-background/80 backdrop-blur-xl">
+          <header className="flex items-center justify-between gap-4 p-2 sticky top-0 z-50 bg-background/80 backdrop-blur-xl relative">
             <SidebarTrigger data-testid="button-sidebar-toggle" />
             <ThemeToggle />
+            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
           </header>
           <main className="flex-1 overflow-auto">
             <Switch>

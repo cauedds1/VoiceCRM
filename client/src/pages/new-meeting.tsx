@@ -252,7 +252,7 @@ export default function NewMeeting() {
                     <div
                       key={i}
                       className={`w-1.5 rounded-full transition-all duration-75 ${
-                        state === "paused" ? "bg-muted-foreground/30" : "bg-primary"
+                        state === "paused" ? "bg-muted-foreground/30" : "bg-emerald-500"
                       }`}
                       style={{ height: `${h}px` }}
                     />
@@ -262,7 +262,7 @@ export default function NewMeeting() {
 
               {state === "processing" && (
                 <div className="flex flex-col items-center gap-4">
-                  <Loader2 className="h-12 w-12 text-primary animate-spin" />
+                  <Loader2 className="h-12 w-12 text-emerald-500 animate-spin" />
                   <div className="text-center">
                     <p className="text-sm font-medium">Processando reunião...</p>
                     <p className="text-xs text-muted-foreground mt-1">
@@ -274,7 +274,7 @@ export default function NewMeeting() {
 
               {state === "done" && (
                 <div className="flex flex-col items-center gap-4">
-                  <CheckCircle className="h-12 w-12 text-primary" />
+                  <CheckCircle className="h-12 w-12 text-emerald-500" />
                   <p className="text-sm font-medium">Reunião registrada com sucesso!</p>
                   <p className="text-xs text-muted-foreground">Redirecionando...</p>
                 </div>
@@ -294,7 +294,7 @@ export default function NewMeeting() {
                 <>
                   {isActive && (
                     <div className="text-center">
-                      <p className="text-3xl font-mono font-bold text-primary" data-testid="text-duration">
+                      <p className="text-3xl font-mono font-bold bg-gradient-to-r from-emerald-500 to-cyan-500 bg-clip-text text-transparent" data-testid="text-duration">
                         {formatTime(duration)}
                       </p>
                       <p className="text-sm text-muted-foreground mt-1">
@@ -322,8 +322,8 @@ export default function NewMeeting() {
                     <div className="relative">
                       {state === "recording" && (
                         <>
-                          <div className="absolute inset-0 rounded-full bg-primary/20 animate-pulse-ring" />
-                          <div className="absolute inset-0 rounded-full bg-primary/10 animate-pulse-ring" style={{ animationDelay: "0.5s" }} />
+                          <div className="absolute inset-0 rounded-full bg-emerald-500/20 animate-pulse-ring" />
+                          <div className="absolute inset-0 rounded-full bg-emerald-500/10 animate-pulse-ring" style={{ animationDelay: "0.5s" }} />
                         </>
                       )}
                       <button
@@ -331,7 +331,7 @@ export default function NewMeeting() {
                         className={`relative z-10 w-24 h-24 sm:w-20 sm:h-20 rounded-full flex items-center justify-center transition-all ${
                           isActive
                             ? "bg-destructive text-destructive-foreground"
-                            : "bg-primary text-primary-foreground"
+                            : "bg-gradient-to-br from-emerald-500 to-cyan-500 text-white"
                         }`}
                         data-testid="button-record"
                         aria-label={isActive ? "Parar gravação" : "Iniciar gravação"}

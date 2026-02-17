@@ -34,7 +34,7 @@ export default function MeetingsList() {
             </Button>
           </Link>
           <Link href="/meetings/new">
-            <Button className="gap-2" data-testid="button-new-meeting">
+            <Button className="gap-2 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white" data-testid="button-new-meeting">
               <Mic className="h-4 w-4" />
               Nova Reunião
             </Button>
@@ -75,7 +75,7 @@ export default function MeetingsList() {
             </p>
             {!search && (
               <Link href="/meetings/new">
-                <Button className="gap-2">
+                <Button className="gap-2 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white">
                   <Plus className="h-4 w-4" />
                   Gravar reunião
                 </Button>
