@@ -1,4 +1,4 @@
-import { Mic, Zap, Brain, Clock, ArrowRight, CheckCircle, Users, Building2, ListTodo, BarChart3, Shield, Sparkles, ChevronRight, Play, Smartphone } from "lucide-react";
+import { Mic, Zap, Brain, Clock, ArrowRight, CheckCircle, Users, Building2, ListTodo, BarChart3, Shield, Sparkles, ChevronRight, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -111,18 +111,6 @@ export default function Landing() {
 
         <div className="max-w-7xl mx-auto relative">
           <div className="max-w-4xl mx-auto text-center">
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              custom={0}
-              variants={fadeUp}
-            >
-              <Badge variant="secondary" className="mb-8 px-4 py-1.5 text-sm gap-2" data-testid="badge-hero">
-                <Sparkles className="h-3.5 w-3.5" />
-                Inteligência Artificial + CRM
-              </Badge>
-            </motion.div>
-
             <motion.h1
               className="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.1] mb-8"
               initial="hidden"
@@ -161,10 +149,6 @@ export default function Landing() {
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Button variant="outline" size="lg" className="gap-2 text-base" data-testid="button-see-demo">
-                <Play className="h-4 w-4" />
-                Ver demonstração
-              </Button>
             </motion.div>
           </div>
 
