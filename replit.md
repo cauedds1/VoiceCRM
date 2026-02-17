@@ -17,8 +17,12 @@ Voice-powered CRM system for professionals. Record audio after meetings, AI tran
 - Auto-pause on screen off, incoming calls, app switch (visibilitychange + blur events)
 - beforeunload protection prevents accidental data loss during active recording
 - AI transcription (gpt-4o-mini-transcribe) and entity extraction (gpt-5-mini)
-- Auto-creation of contacts and companies from voice mentions
-- Task and decision extraction from meeting audio with enhanced natural language understanding
+- Ultra-calibrated AI prompt that understands ANY professional context (meetings, calls, quick notes, daily summaries, negotiations, etc.)
+- Auto-creation of contacts and companies from voice mentions with smart name/company disambiguation
+- Task extraction with aggressive pattern matching (obligations, commitments, follow-ups, implicit actions, reminders)
+- AI links contacts to tasks automatically (contactName → contactId resolution with fuzzy matching)
+- Smart date interpretation (relative dates, "até sexta", "semana que vem", etc.)
+- Priority inference from tone and context (urgency words, deadlines, blocking status)
 - Dedicated Tasks page with status/priority filtering, overdue detection, meeting links
 - Full CRUD for contacts, companies, meetings, tasks
 - Contacts grouped by company with city/state location
