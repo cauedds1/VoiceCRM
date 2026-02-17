@@ -112,7 +112,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto relative">
           <div className="max-w-4xl mx-auto text-center">
             <motion.h1
-              className="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.1] mb-8"
+              className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.15] mb-8"
               initial="hidden"
               animate="visible"
               custom={1}
