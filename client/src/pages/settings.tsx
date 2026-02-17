@@ -12,26 +12,26 @@ import { Settings, User, Mail, Lock, Globe, Brain, Trash2, Loader2, AlertTriangl
 import type { UserSettings } from "@shared/schema";
 
 const transcriptionLanguages = [
-  { value: "pt-BR", label: "Portugu\u00eas (Brasil)" },
+  { value: "pt-BR", label: "Português (Brasil)" },
   { value: "en", label: "English" },
-  { value: "es", label: "Espa\u00f1ol" },
-  { value: "fr", label: "Fran\u00e7ais" },
+  { value: "es", label: "Español" },
+  { value: "fr", label: "Français" },
   { value: "de", label: "Deutsch" },
   { value: "it", label: "Italiano" },
-  { value: "ja", label: "\u65e5\u672c\u8a9e" },
-  { value: "zh", label: "\u4e2d\u6587" },
-  { value: "ko", label: "\ud55c\uad6d\uc5b4" },
+  { value: "ja", label: "日本語" },
+  { value: "zh", label: "中文" },
+  { value: "ko", label: "한국어" },
 ];
 
 const interfaceLanguages = [
-  { value: "pt-BR", label: "Portugu\u00eas (Brasil)" },
+  { value: "pt-BR", label: "Português (Brasil)" },
   { value: "en", label: "English" },
 ];
 
 const extractionLevels = [
-  { value: "aggressive", label: "Agressivo", desc: "Extrai o m\u00e1ximo de tarefas poss\u00edvel, incluindo a\u00e7\u00f5es impl\u00edcitas" },
-  { value: "moderate", label: "Moderado", desc: "Extrai tarefas claras e compromissos expl\u00edcitos" },
-  { value: "conservative", label: "Conservador", desc: "Apenas tarefas diretamente mencionadas como obriga\u00e7\u00f5es" },
+  { value: "aggressive", label: "Agressivo", desc: "Extrai o máximo de tarefas possível, incluindo ações implícitas" },
+  { value: "moderate", label: "Moderado", desc: "Extrai tarefas claras e compromissos explícitos" },
+  { value: "conservative", label: "Conservador", desc: "Apenas tarefas diretamente mencionadas como obrigações" },
 ];
 
 export default function SettingsPage() {
@@ -113,10 +113,10 @@ export default function SettingsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
-      toast({ title: "Configura\u00e7\u00f5es salvas" });
+      toast({ title: "Configurações salvas" });
     },
     onError: (err: Error) => {
-      toast({ title: "Erro ao salvar configura\u00e7\u00f5es", description: err.message, variant: "destructive" });
+      toast({ title: "Erro ao salvar configurações", description: err.message, variant: "destructive" });
     },
   });
 
@@ -151,7 +151,7 @@ export default function SettingsPage() {
 
   const handlePasswordChange = () => {
     if (newPassword !== confirmPassword) {
-      toast({ title: "As senhas n\u00e3o coincidem", variant: "destructive" });
+      toast({ title: "As senhas não coincidem", variant: "destructive" });
       return;
     }
     if (!currentPassword || !newPassword) {
@@ -188,9 +188,9 @@ export default function SettingsPage() {
           <div className="p-1.5 rounded-md bg-gradient-to-br from-emerald-500 to-cyan-500">
             <Settings className="h-4 w-4 text-white" />
           </div>
-          Configura\u00e7\u00f5es
+          Configurações
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">Gerencie sua conta e prefer\u00eancias</p>
+        <p className="text-sm text-muted-foreground mt-1">Gerencie sua conta e preferências</p>
       </div>
 
       <Card>
@@ -347,10 +347,10 @@ export default function SettingsPage() {
             </Select>
           </div>
           <div>
-            <label className="text-xs text-muted-foreground mb-1 block">Idioma das transcri\u00e7\u00f5es</label>
+            <label className="text-xs text-muted-foreground mb-1 block">Idioma das transcrições</label>
             <p className="text-xs text-muted-foreground/70 mb-2 flex items-start gap-1">
               <Info className="h-3 w-3 mt-0.5 shrink-0" />
-              A IA entende qualquer idioma falado, mas transcreve e cria a reuni\u00e3o no idioma selecionado aqui.
+              A IA entende qualquer idioma falado, mas transcreve e cria a reunião no idioma selecionado aqui.
             </p>
             <Select
               value={settings?.transcriptionLanguage || "pt-BR"}
@@ -373,12 +373,12 @@ export default function SettingsPage() {
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <Brain className="h-4 w-4 text-amber-500" />
-            <h2 className="text-base font-semibold">Intelig\u00eancia Artificial</h2>
+            <h2 className="text-base font-semibold">Inteligência Artificial</h2>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="text-xs text-muted-foreground mb-1 block">N\u00edvel de extra\u00e7\u00e3o de tarefas</label>
+            <label className="text-xs text-muted-foreground mb-1 block">Nível de extração de tarefas</label>
             <div className="space-y-2 mt-2">
               {extractionLevels.map((level) => {
                 const isActive = (settings?.taskExtractionLevel || "aggressive") === level.value;
@@ -417,7 +417,7 @@ export default function SettingsPage() {
           <div className="flex items-start gap-2 p-3 rounded-md bg-destructive/10">
             <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
             <p className="text-xs text-destructive">
-              Esta a\u00e7\u00e3o \u00e9 permanente e irrevers\u00edvel. Todos os seus dados (reuni\u00f5es, contatos, empresas, tarefas) ser\u00e3o exclu\u00eddos para sempre.
+              Esta ação é permanente e irreversível. Todos os seus dados (reuniões, contatos, empresas, tarefas) serão excluídos para sempre.
             </p>
           </div>
           <div>
