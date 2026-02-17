@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,11 +11,6 @@ import { Download, Smartphone } from "lucide-react";
 
 const POPUP_DISMISSED_KEY = "voicecrm_app_popup_dismissed";
 const DISMISS_DURATION_MS = 24 * 60 * 60 * 1000;
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt(): Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-}
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(
@@ -34,28 +29,6 @@ function useIsMobile() {
 export function MobileAppPopup() {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
-  const [installing, setInstalling] = useState(false);
-  const deferredPromptRef = useRef<BeforeInstallPromptEvent | null>(null);
-
-  useEffect(() => {
-    const handler = (e: Event) => {
-      e.preventDefault();
-      deferredPromptRef.current = e as BeforeInstallPromptEvent;
-    };
-    window.addEventListener("beforeinstallprompt", handler);
-
-    const installedHandler = () => {
-      setOpen(false);
-      localStorage.setItem(POPUP_DISMISSED_KEY, "installed");
-      deferredPromptRef.current = null;
-    };
-    window.addEventListener("appinstalled", installedHandler);
-
-    return () => {
-      window.removeEventListener("beforeinstallprompt", handler);
-      window.removeEventListener("appinstalled", installedHandler);
-    };
-  }, []);
 
   useEffect(() => {
     if (!isMobile) return;
@@ -66,11 +39,9 @@ export function MobileAppPopup() {
     if (isStandalone) return;
 
     const dismissed = localStorage.getItem(POPUP_DISMISSED_KEY);
-    if (dismissed === "installed") return;
-
     if (dismissed) {
       const dismissedAt = parseInt(dismissed, 10);
-      if (Date.now() - dismissedAt < DISMISS_DURATION_MS) return;
+      if (!isNaN(dismissedAt) && Date.now() - dismissedAt < DISMISS_DURATION_MS) return;
     }
 
     const timer = setTimeout(() => setOpen(true), 1500);
@@ -82,35 +53,17 @@ export function MobileAppPopup() {
     localStorage.setItem(POPUP_DISMISSED_KEY, Date.now().toString());
   }
 
-  async function handleInstall() {
-    if (deferredPromptRef.current) {
-      setInstalling(true);
-      try {
-        await deferredPromptRef.current.prompt();
-        const choice = await deferredPromptRef.current.userChoice;
-        if (choice.outcome === "accepted") {
-          localStorage.setItem(POPUP_DISMISSED_KEY, "installed");
-          setOpen(false);
-        }
-      } finally {
-        setInstalling(false);
-        deferredPromptRef.current = null;
-      }
-    } else {
-      alert(
-        "Para instalar o VoiceCRM:\n\n" +
-        "1. Toque no menu do navegador (⋮ ou ⫶)\n" +
-        "2. Selecione \"Adicionar à tela inicial\"\n" +
-        "3. Confirme a instalação\n\n" +
-        "O app será adicionado à sua tela inicial!"
-      );
-    }
+  function handleDownload() {
+    const link = document.createElement("a");
+    link.href = "/voicecrm.apk";
+    link.download = "VoiceCRM.apk";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    handleDismiss();
   }
 
   if (!isMobile) return null;
-
-  const isInstalled = localStorage.getItem(POPUP_DISMISSED_KEY) === "installed";
-  if (isInstalled) return null;
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) handleDismiss(); }}>
@@ -120,7 +73,7 @@ export function MobileAppPopup() {
             <Smartphone className="h-7 w-7 text-primary" />
           </div>
           <DialogTitle className="text-lg" data-testid="text-popup-title">
-            Instalar VoiceCRM
+            Baixe o App VoiceCRM
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
             Instale o VoiceCRM no seu celular para acesso rápido. Grave reuniões, acesse contatos e acompanhe tarefas direto da tela inicial.
@@ -131,12 +84,11 @@ export function MobileAppPopup() {
           <Button
             className="w-full gap-2"
             size="lg"
-            onClick={handleInstall}
-            disabled={installing}
+            onClick={handleDownload}
             data-testid="button-install-app"
           >
             <Download className="h-5 w-5" />
-            {installing ? "Instalando..." : "Baixar App"}
+            Baixar App
           </Button>
         </div>
 
