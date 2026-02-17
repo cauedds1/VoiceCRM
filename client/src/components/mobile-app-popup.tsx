@@ -117,19 +117,12 @@ export function MobileAppPopup() {
       (navigator as any).standalone === true;
     if (isStandalone) return;
 
-    const dismissed = localStorage.getItem(POPUP_DISMISSED_KEY);
-    if (dismissed) {
-      const dismissedAt = parseInt(dismissed, 10);
-      if (!isNaN(dismissedAt) && Date.now() - dismissedAt < DISMISS_DURATION_MS) return;
-    }
-
     const timer = setTimeout(() => setOpen(true), 1500);
     return () => clearTimeout(timer);
   }, [isMobile]);
 
   function handleDismiss() {
     setOpen(false);
-    localStorage.setItem(POPUP_DISMISSED_KEY, Date.now().toString());
   }
 
   function handleDownload() {
