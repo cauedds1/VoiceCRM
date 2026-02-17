@@ -1,6 +1,7 @@
 import { useLocation, Link } from "wouter";
 import { LayoutDashboard, Mic, Users, Building2, CheckSquare, BarChart3, LogOut, ListTodo } from "lucide-react";
 import logoImg from "@/assets/images/logo.png";
+import logoFullImg from "@/assets/images/logo-full.png";
 import {
   Sidebar,
   SidebarContent,
@@ -38,15 +39,9 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="p-4 pb-5">
-        <div className="flex items-center gap-3">
-          <img src={logoImg} alt="VoiceCRM" className="w-14 h-14" />
-          <div>
-            <h1 className="text-lg font-bold tracking-tight">
-              <span style={{ color: "#ffffff" }}>Voice</span>
-              <span className="text-sidebar-foreground">CRM</span>
-            </h1>
-            <p className="text-xs text-sidebar-foreground/60">Reuniões inteligentes</p>
-          </div>
+        <div className="flex flex-col items-center gap-1 pt-2">
+          <img src={logoFullImg} alt="VoiceCRM" className="w-36 h-auto" />
+          <p className="text-xs text-sidebar-foreground/60">Reuniões inteligentes</p>
         </div>
       </SidebarHeader>
 
