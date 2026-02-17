@@ -276,7 +276,6 @@ export default function Landing() {
             custom={0}
             variants={fadeUp}
           >
-            <Badge variant="secondary" className="mb-4 px-4 py-1.5 text-sm">Como funciona</Badge>
             <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4" data-testid="text-how-it-works">
               Três passos. Zero esforço.
             </h2>
@@ -444,7 +443,6 @@ export default function Landing() {
               custom={0}
               variants={fadeUp}
             >
-              <Badge variant="secondary" className="mb-4 px-4 py-1.5 text-sm">O problema</Badge>
               <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-6">
                 Você perde informação valiosa{" "}
                 <span className="bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">todo dia</span>
@@ -563,7 +561,6 @@ export default function Landing() {
             custom={0}
             variants={fadeUp}
           >
-            <Badge variant="secondary" className="mb-4 px-4 py-1.5 text-sm">Por que VoiceCRM</Badge>
             <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4">
               Feito para quem não tem tempo a perder
             </h2>
