@@ -30,14 +30,16 @@ Voice-powered CRM system for professionals. Record audio after meetings, AI tran
 - Meeting detail with participants, tasks, decisions, transcription
 - Contact detail with meeting history
 - Monthly meeting reports with bar chart (Recharts)
-- Dark/light theme toggle
+- Dark mode only (no light theme)
+- Settings page: profile, email, password, interface language (pt-BR/en), transcription language (9 langs), task extraction level (aggressive/moderate/conservative), account deletion
+- AI respects user settings: transcription language drives Whisper API language param + output language; task extraction level adjusts prompt aggressiveness
 - PWA "Add to Home Screen" popup: Android uses beforeinstallprompt API for one-tap install, iOS shows step-by-step guide. Popup appears every visit on mobile until app is installed (standalone mode).
 
 ## Project Structure
 ```
 client/src/
-  pages/         - All page components (dashboard, meetings, contacts, companies, tasks, reports)
-  components/    - Reusable components (sidebar, theme toggle)
+  pages/         - All page components (dashboard, meetings, contacts, companies, tasks, reports, settings)
+  components/    - Reusable components (sidebar)
   hooks/         - Custom hooks (use-auth, use-toast)
   lib/           - Query client, auth utilities
 server/
@@ -60,6 +62,12 @@ shared/
 - `GET/PATCH /api/tasks` - Task management
 - `GET /api/reports/meetings-by-month` - Monthly meeting aggregation (last 12 months)
 - `GET /api/reports/summary` - Overall CRM summary stats
+- `GET /api/settings` - Get user settings (language, extraction level)
+- `PATCH /api/settings` - Update user settings
+- `PATCH /api/account/profile` - Update user name (password required)
+- `PATCH /api/account/email` - Update user email (password required)
+- `PATCH /api/account/password` - Change password (current password required)
+- `DELETE /api/account` - Delete account with cascade (password + confirmation required)
 
 ## Design Principles
 - Vibrant teal/blue theme but NO visual clutter
