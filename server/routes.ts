@@ -367,6 +367,33 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/tasks", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const createSchema = z.object({
+        title: z.string().min(1),
+        description: z.string().optional().nullable(),
+        priority: z.enum(["high", "medium", "low"]).default("medium"),
+        dueDate: z.string().optional().nullable(),
+        status: z.enum(["pending", "in_progress", "completed"]).default("pending"),
+      });
+      const data = createSchema.parse(req.body);
+      const task = await storage.createTask({
+        title: data.title,
+        description: data.description || null,
+        priority: data.priority,
+        dueDate: data.dueDate ? new Date(data.dueDate) : null,
+        status: data.status,
+        meetingId: null,
+        userId,
+      });
+      res.status(201).json(task);
+    } catch (error: any) {
+      if (error instanceof z.ZodError) return res.status(400).json({ message: error.errors });
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   app.patch("/api/tasks/:id", isAuthenticated, async (req, res) => {
     try {
       const userId = getUserId(req);

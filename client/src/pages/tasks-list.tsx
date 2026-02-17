@@ -1,12 +1,21 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
 import {
-  CheckSquare, Clock, Calendar, Filter, AlertCircle, Mic
+  CheckSquare, Clock, Calendar, Filter, AlertCircle, Mic, Plus
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -52,6 +61,11 @@ export default function TasksList() {
   const { toast } = useToast();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("all");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newDescription, setNewDescription] = useState("");
+  const [newPriority, setNewPriority] = useState("medium");
+  const [newDueDate, setNewDueDate] = useState("");
 
   const { data: tasks = [], isLoading } = useQuery<Task[]>({
     queryKey: ["/api/tasks"],
@@ -69,6 +83,37 @@ export default function TasksList() {
       toast({ title: "Tarefa atualizada" });
     },
   });
+
+  const createTask = useMutation({
+    mutationFn: async (data: { title: string; description?: string; priority: string; dueDate?: string }) =>
+      apiRequest("POST", "/api/tasks", data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      toast({ title: "Tarefa criada com sucesso!" });
+      setDialogOpen(false);
+      setNewTitle("");
+      setNewDescription("");
+      setNewPriority("medium");
+      setNewDueDate("");
+    },
+    onError: (error: Error) => {
+      toast({ title: "Erro ao criar tarefa", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const handleCreateTask = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim()) {
+      toast({ title: "Informe o título da tarefa", variant: "destructive" });
+      return;
+    }
+    createTask.mutate({
+      title: newTitle.trim(),
+      description: newDescription.trim() || undefined,
+      priority: newPriority,
+      dueDate: newDueDate || undefined,
+    });
+  };
 
   const meetingsMap = new Map(meetings.map((m) => [m.id, m]));
 
@@ -90,9 +135,76 @@ export default function TasksList() {
             Tarefas
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Tarefas extraídas automaticamente das suas reuniões
+            Geradas pela IA ou adicionadas manualmente
           </p>
         </div>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="gap-2 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white" data-testid="button-add-task">
+              <Plus className="h-4 w-4" />
+              Nova Tarefa
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Nova Tarefa</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleCreateTask} className="space-y-4 mt-2">
+              <div>
+                <label className="text-xs text-muted-foreground mb-1.5 block">Título</label>
+                <Input
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  placeholder="Ex: Enviar proposta para o cliente"
+                  required
+                  data-testid="input-task-title"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1.5 block">Descrição (opcional)</label>
+                <Textarea
+                  value={newDescription}
+                  onChange={(e) => setNewDescription(e.target.value)}
+                  placeholder="Detalhes sobre a tarefa..."
+                  rows={3}
+                  data-testid="input-task-description"
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1.5 block">Prioridade</label>
+                  <Select value={newPriority} onValueChange={setNewPriority}>
+                    <SelectTrigger data-testid="select-task-priority">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Baixa</SelectItem>
+                      <SelectItem value="medium">Média</SelectItem>
+                      <SelectItem value="high">Alta</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1.5 block">Prazo (opcional)</label>
+                  <Input
+                    type="date"
+                    value={newDueDate}
+                    onChange={(e) => setNewDueDate(e.target.value)}
+                    data-testid="input-task-due-date"
+                  />
+                </div>
+              </div>
+              <Button
+                type="submit"
+                className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white"
+                disabled={createTask.isPending}
+                data-testid="button-save-task"
+              >
+                {createTask.isPending ? "Criando..." : "Criar Tarefa"}
+              </Button>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
@@ -201,16 +313,26 @@ export default function TasksList() {
           </h3>
           <p className="text-sm text-muted-foreground max-w-sm mx-auto">
             {tasks.length === 0
-              ? "Grave uma reunião e a IA identificará automaticamente as tarefas mencionadas"
+              ? "Adicione tarefas manualmente ou grave uma reunião para a IA identificar automaticamente"
               : "Tente alterar os filtros para encontrar suas tarefas"}
           </p>
           {tasks.length === 0 && (
-            <Link href="/meetings/new">
-              <Button className="mt-4 gap-2 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white" data-testid="button-new-meeting-from-tasks">
-                <Mic className="h-4 w-4" />
-                Gravar Reunião
+            <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
+              <Button
+                className="gap-2 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white"
+                onClick={() => setDialogOpen(true)}
+                data-testid="button-add-task-empty"
+              >
+                <Plus className="h-4 w-4" />
+                Nova Tarefa
               </Button>
-            </Link>
+              <Link href="/meetings/new">
+                <Button variant="outline" className="gap-2" data-testid="button-new-meeting-from-tasks">
+                  <Mic className="h-4 w-4" />
+                  Gravar Reunião
+                </Button>
+              </Link>
+            </div>
           )}
         </div>
       ) : (
@@ -259,6 +381,12 @@ export default function TasksList() {
                               {meeting.title}
                             </span>
                           </Link>
+                        )}
+                        {!task.meetingId && (
+                          <span className="text-xs text-muted-foreground flex items-center gap-1" data-testid={`task-manual-label-${task.id}`}>
+                            <Plus className="h-3 w-3" />
+                            Manual
+                          </span>
                         )}
                       </div>
                     </div>
