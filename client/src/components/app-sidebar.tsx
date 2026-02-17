@@ -38,10 +38,10 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="p-4 pb-5">
-        <div className="flex flex-col items-center gap-1 pt-2">
-          <img src={logoFullImg} alt="VoiceCRM" className="w-36 h-auto" />
-          <p className="text-xs text-sidebar-foreground/60">Reuniões inteligentes</p>
+      <SidebarHeader className="px-4 pt-3 pb-2">
+        <div className="flex items-center gap-2">
+          <img src={logoFullImg} alt="VoiceCRM" className="w-28 h-auto" />
+          <span className="text-[10px] text-sidebar-foreground/50 leading-tight">Reuniões<br/>inteligentes</span>
         </div>
       </SidebarHeader>
 
