@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import type { Company, Contact, Meeting } from "@shared/schema";
 import { useTranslation } from "react-i18next";
 import i18n from "@/i18n";
@@ -37,6 +37,8 @@ export default function CompanyDetail() {
     queryKey: ["/api/companies", params.id, "meetings"],
   });
 
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
   const updateCompany = useMutation({
     mutationFn: async (data: Partial<Company>) =>
       apiRequest("PATCH", `/api/companies/${params.id}`, data),
@@ -45,6 +47,28 @@ export default function CompanyDetail() {
       queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
       setEditing(false);
       toast({ title: t("companyDetail.updated") });
+    },
+  });
+
+  const uploadLogo = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("logo", file);
+      const res = await fetch(`/api/companies/${params.id}/logo`, {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Upload failed");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/companies", params.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
+      toast({ title: t("companyDetail.logoUploaded") });
+    },
+    onError: () => {
+      toast({ title: t("companyDetail.logoUploadError"), variant: "destructive" });
     },
   });
 
@@ -174,8 +198,49 @@ export default function CompanyDetail() {
                   <Input value={editData.industry || ""} onChange={(e) => setEditData({ ...editData, industry: e.target.value })} placeholder={t("companyDetail.industryEditPlaceholder")} data-testid="input-edit-industry" />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1.5 block">{t("companyDetail.logoUrl")}</label>
-                  <Input value={editData.logoUrl || ""} onChange={(e) => setEditData({ ...editData, logoUrl: e.target.value })} placeholder={t("companyDetail.logoUrlPlaceholder")} data-testid="input-edit-logo" />
+                  <label className="text-xs text-muted-foreground mb-1.5 block">{t("companyDetail.logo")}</label>
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={editData.logoUrl || company.logoUrl || undefined} alt={company.name} />
+                      <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">{initials}</AvatarFallback>
+                    </Avatar>
+                    <input
+                      ref={logoInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) uploadLogo.mutate(file);
+                      }}
+                      data-testid="input-upload-logo"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="gap-2"
+                      onClick={() => logoInputRef.current?.click()}
+                      disabled={uploadLogo.isPending}
+                      data-testid="button-upload-logo"
+                    >
+                      <ImageIcon className="h-4 w-4" />
+                      {uploadLogo.isPending ? t("common.loading") : t("companyDetail.uploadLogo")}
+                    </Button>
+                    {company.logoUrl && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setEditData({ ...editData, logoUrl: null });
+                          updateCompany.mutate({ logoUrl: null });
+                        }}
+                        data-testid="button-remove-logo"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>

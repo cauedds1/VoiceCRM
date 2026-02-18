@@ -420,6 +420,21 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/companies/:id/logo", isAuthenticated, upload.single("logo"), async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const file = req.file;
+      if (!file) return res.status(400).json({ message: "No file uploaded" });
+      if (file.size > 2 * 1024 * 1024) return res.status(400).json({ message: "File too large (max 2MB)" });
+      const base64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+      const company = await storage.updateCompany(paramId(req), userId, { logoUrl: base64 });
+      if (!company) return res.status(404).json({ message: "Company not found" });
+      res.json(company);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // === TASKS ===
   app.get("/api/tasks", isAuthenticated, async (req, res) => {
     try {
