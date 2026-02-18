@@ -18,6 +18,7 @@
     "equal": "Equal",
     "user": "User",
     "manual": "Manual",
+    "create": "Create",
     "notNow": "Not now"
   },
   "nav": {
@@ -473,7 +474,9 @@
     "moveToFolder": "Move to folder",
     "removeFromFolder": "Remove from folder",
     "meetingMoved": "Meeting moved",
-    "noFolders": "No folders created yet"
+    "noFolders": "No folders created yet",
+    "newFolder": "New folder",
+    "created": "Folder created"
   },
   "mobilePopup": {
     "title": "Add to Home Screen",

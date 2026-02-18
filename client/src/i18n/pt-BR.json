@@ -18,6 +18,7 @@
     "equal": "Igual",
     "user": "Usuário",
     "manual": "Manual",
+    "create": "Criar",
     "notNow": "Agora não"
   },
   "nav": {
@@ -473,7 +474,9 @@
     "moveToFolder": "Mover para pasta",
     "removeFromFolder": "Remover da pasta",
     "meetingMoved": "Reunião movida",
-    "noFolders": "Nenhuma pasta criada ainda"
+    "noFolders": "Nenhuma pasta criada ainda",
+    "newFolder": "Nova pasta",
+    "created": "Pasta criada"
   },
   "mobilePopup": {
     "title": "Adicionar à Tela Inicial",

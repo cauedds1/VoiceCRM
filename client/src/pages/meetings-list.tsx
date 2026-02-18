@@ -30,6 +30,8 @@ export default function MeetingsList() {
   const [editFolderName, setEditFolderName] = useState("");
   const [deletingFolder, setDeletingFolder] = useState<MeetingFolder | null>(null);
   const [movingMeeting, setMovingMeeting] = useState<Meeting | null>(null);
+  const [showCreateFolder, setShowCreateFolder] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
 
   const dateLocale = i18n.language === "en" ? "en-US" : "pt-BR";
 
@@ -89,6 +91,19 @@ export default function MeetingsList() {
       queryClient.invalidateQueries({ queryKey: ["/api/meetings"] });
       setDeletingFolder(null);
       toast({ title: t("folders.deleted") });
+    },
+  });
+
+  const createFolderMutation = useMutation({
+    mutationFn: async (name: string) => {
+      const res = await apiRequest("POST", "/api/meeting-folders", { name });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/meeting-folders"] });
+      setShowCreateFolder(false);
+      setNewFolderName("");
+      toast({ title: t("folders.created") });
     },
   });
 
@@ -249,6 +264,15 @@ export default function MeetingsList() {
             </SelectContent>
           </Select>
         )}
+        <Button
+          variant="outline"
+          className="gap-2"
+          onClick={() => setShowCreateFolder(true)}
+          data-testid="button-create-folder"
+        >
+          <FolderPlus className="h-4 w-4" />
+          {t("folders.newFolder")}
+        </Button>
         <div className="flex items-center border rounded-md">
           <Button
             variant={viewMode === "list" ? "secondary" : "ghost"}
@@ -396,6 +420,35 @@ export default function MeetingsList() {
               <p className="text-sm text-muted-foreground text-center py-4">{t("folders.noFolders")}</p>
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showCreateFolder} onOpenChange={setShowCreateFolder}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("folders.newFolder")}</DialogTitle>
+          </DialogHeader>
+          <Input
+            value={newFolderName}
+            onChange={(e) => setNewFolderName(e.target.value)}
+            placeholder={t("folders.folderName")}
+            data-testid="input-new-folder-name"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && newFolderName.trim()) {
+                createFolderMutation.mutate(newFolderName.trim());
+              }
+            }}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreateFolder(false)}>{t("common.cancel")}</Button>
+            <Button
+              onClick={() => createFolderMutation.mutate(newFolderName.trim())}
+              disabled={!newFolderName.trim() || createFolderMutation.isPending}
+              data-testid="button-confirm-create-folder"
+            >
+              {t("common.create")}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
