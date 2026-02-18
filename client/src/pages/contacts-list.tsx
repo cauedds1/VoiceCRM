@@ -14,8 +14,12 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useState } from "react";
 import type { Contact, Company } from "@shared/schema";
+import { useTranslation } from "react-i18next";
+
+const NO_COMPANY_KEY = "__no_company__";
 
 export default function ContactsList() {
+  const { t } = useTranslation();
   const { data: contacts = [], isLoading } = useQuery<Contact[]>({ queryKey: ["/api/contacts"] });
   const { data: companies = [] } = useQuery<Company[]>({ queryKey: ["/api/companies"] });
   const [search, setSearch] = useState("");
@@ -33,7 +37,7 @@ export default function ContactsList() {
       queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
       setDialogOpen(false);
       form.reset();
-      toast({ title: "Contato criado" });
+      toast({ title: t("contactsList.contactCreated") });
     },
   });
 
@@ -44,15 +48,15 @@ export default function ContactsList() {
   );
 
   const grouped = filtered.reduce<Record<string, Contact[]>>((acc, contact) => {
-    const key = contact.companyName || "Sem empresa";
+    const key = contact.companyName || NO_COMPANY_KEY;
     if (!acc[key]) acc[key] = [];
     acc[key].push(contact);
     return acc;
   }, {});
 
   const sortedGroups = Object.entries(grouped).sort(([a], [b]) => {
-    if (a === "Sem empresa") return 1;
-    if (b === "Sem empresa") return -1;
+    if (a === NO_COMPANY_KEY) return 1;
+    if (b === NO_COMPANY_KEY) return -1;
     return a.localeCompare(b);
   });
 
@@ -60,70 +64,70 @@ export default function ContactsList() {
     <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Contatos</h1>
-          <p className="text-muted-foreground mt-1">Todos os contatos organizados por empresa</p>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{t("contactsList.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("contactsList.subtitle")}</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white" data-testid="button-add-contact">
               <Plus className="h-4 w-4" />
-              Novo Contato
+              {t("contactsList.newContact")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Novo Contato</DialogTitle>
+              <DialogTitle>{t("contactsList.newContactTitle")}</DialogTitle>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit((data) => createContact.mutate(data))} className="space-y-4">
                 <FormField control={form.control} name="name" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nome</FormLabel>
-                    <FormControl><Input {...field} placeholder="Nome do contato" data-testid="input-contact-name" /></FormControl>
+                    <FormLabel>{t("contactsList.nameLabel")}</FormLabel>
+                    <FormControl><Input {...field} placeholder={t("contactsList.namePlaceholder")} data-testid="input-contact-name" /></FormControl>
                   </FormItem>
                 )} />
                 <FormField control={form.control} name="companyName" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Empresa</FormLabel>
-                    <FormControl><Input {...field} placeholder="Nome da empresa" data-testid="input-contact-company" /></FormControl>
+                    <FormLabel>{t("contactsList.companyLabel")}</FormLabel>
+                    <FormControl><Input {...field} placeholder={t("contactsList.companyPlaceholder")} data-testid="input-contact-company" /></FormControl>
                   </FormItem>
                 )} />
                 <FormField control={form.control} name="role" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Cargo</FormLabel>
-                    <FormControl><Input {...field} placeholder="Cargo (opcional)" data-testid="input-contact-role" /></FormControl>
+                    <FormLabel>{t("contactsList.roleLabel")}</FormLabel>
+                    <FormControl><Input {...field} placeholder={t("contactsList.rolePlaceholder")} data-testid="input-contact-role" /></FormControl>
                   </FormItem>
                 )} />
                 <div className="grid grid-cols-2 gap-4">
                   <FormField control={form.control} name="phone" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Telefone</FormLabel>
+                      <FormLabel>{t("contactsList.phoneLabel")}</FormLabel>
                       <FormControl><Input {...field} placeholder="(00) 00000-0000" data-testid="input-contact-phone" /></FormControl>
                     </FormItem>
                   )} />
                   <FormField control={form.control} name="email" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl><Input {...field} placeholder="email@exemplo.com" data-testid="input-contact-email" /></FormControl>
+                      <FormLabel>{t("contactsList.emailLabel")}</FormLabel>
+                      <FormControl><Input {...field} placeholder={t("contactsList.emailPlaceholder")} data-testid="input-contact-email" /></FormControl>
                     </FormItem>
                   )} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField control={form.control} name="city" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Cidade</FormLabel>
-                      <FormControl><Input {...field} placeholder="Cidade (opcional)" data-testid="input-contact-city" /></FormControl>
+                      <FormLabel>{t("contactsList.cityLabel")}</FormLabel>
+                      <FormControl><Input {...field} placeholder={t("contactsList.cityPlaceholder")} data-testid="input-contact-city" /></FormControl>
                     </FormItem>
                   )} />
                   <FormField control={form.control} name="state" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Estado</FormLabel>
-                      <FormControl><Input {...field} placeholder="Estado (opcional)" data-testid="input-contact-state" /></FormControl>
+                      <FormLabel>{t("contactsList.stateLabel")}</FormLabel>
+                      <FormControl><Input {...field} placeholder={t("contactsList.statePlaceholder")} data-testid="input-contact-state" /></FormControl>
                     </FormItem>
                   )} />
                 </div>
                 <Button type="submit" className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white" disabled={createContact.isPending} data-testid="button-save-contact">
-                  {createContact.isPending ? "Salvando..." : "Salvar Contato"}
+                  {createContact.isPending ? t("common.saving") : t("contactsList.saveContact")}
                 </Button>
               </form>
             </Form>
@@ -134,7 +138,7 @@ export default function ContactsList() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Buscar contatos..."
+          placeholder={t("contactsList.searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-9"
@@ -154,10 +158,10 @@ export default function ContactsList() {
           <div className="text-center py-16">
             <Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
             <h3 className="text-lg font-medium mb-2">
-              {search ? "Nenhum contato encontrado" : "Nenhum contato ainda"}
+              {search ? t("contactsList.noContactFound") : t("contactsList.noContactYet")}
             </h3>
             <p className="text-muted-foreground mb-4">
-              {search ? "Tente buscar com outros termos" : "Contatos são criados automaticamente ao processar reuniões"}
+              {search ? t("common.tryOtherTerms") : t("contactsList.contactsAutoCreated")}
             </p>
           </div>
         ) : (
@@ -166,7 +170,7 @@ export default function ContactsList() {
               <div className="flex items-center gap-2 mb-3">
                 <Building2 className="h-4 w-4 text-muted-foreground" />
                 <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                  {companyName}
+                  {companyName === NO_COMPANY_KEY ? t("contactsList.noCompany") : companyName}
                 </h2>
                 <span className="text-xs text-muted-foreground">({companyContacts.length})</span>
               </div>

@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Settings, User, Mail, Lock, Globe, Brain, Trash2, Loader2, AlertTriangle, Info } from "lucide-react";
 import type { UserSettings } from "@shared/schema";
+import { useTranslation } from "react-i18next";
+import i18n from "@/i18n";
 
 const transcriptionLanguages = [
   { value: "pt-BR", label: "Português (Brasil)" },
@@ -29,15 +31,16 @@ const interfaceLanguages = [
   { value: "en", label: "English" },
 ];
 
-const extractionLevels = [
-  { value: "aggressive", label: "Agressivo", desc: "Extrai o máximo de tarefas possível, incluindo ações implícitas" },
-  { value: "moderate", label: "Moderado", desc: "Extrai tarefas claras e compromissos explícitos" },
-  { value: "conservative", label: "Conservador", desc: "Apenas tarefas diretamente mencionadas como obrigações" },
-];
-
 export default function SettingsPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
+
+  const extractionLevels = [
+    { value: "aggressive", label: t("settings.aggressive"), desc: t("settings.aggressiveDesc") },
+    { value: "moderate", label: t("settings.moderate"), desc: t("settings.moderateDesc") },
+    { value: "conservative", label: t("settings.conservative"), desc: t("settings.conservativeDesc") },
+  ];
 
   const { data: settings, isLoading: settingsLoading } = useQuery<UserSettings>({
     queryKey: ["/api/settings"],
@@ -68,10 +71,10 @@ export default function SettingsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      toast({ title: "Perfil atualizado com sucesso" });
+      toast({ title: t("settings.profileUpdated") });
     },
     onError: (err: Error) => {
-      toast({ title: "Erro ao atualizar perfil", description: err.message, variant: "destructive" });
+      toast({ title: t("settings.profileError"), description: err.message, variant: "destructive" });
     },
   });
 
@@ -84,10 +87,10 @@ export default function SettingsPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       setNewEmail("");
       setEmailPassword("");
-      toast({ title: "Email atualizado com sucesso" });
+      toast({ title: t("settings.emailUpdated") });
     },
     onError: (err: Error) => {
-      toast({ title: "Erro ao atualizar email", description: err.message, variant: "destructive" });
+      toast({ title: t("settings.emailError"), description: err.message, variant: "destructive" });
     },
   });
 
@@ -100,10 +103,10 @@ export default function SettingsPage() {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      toast({ title: "Senha alterada com sucesso" });
+      toast({ title: t("settings.passwordUpdated") });
     },
     onError: (err: Error) => {
-      toast({ title: "Erro ao alterar senha", description: err.message, variant: "destructive" });
+      toast({ title: t("settings.passwordError"), description: err.message, variant: "destructive" });
     },
   });
 
@@ -114,10 +117,10 @@ export default function SettingsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
-      toast({ title: "Configurações salvas" });
+      toast({ title: t("settings.settingsSaved") });
     },
     onError: (err: Error) => {
-      toast({ title: "Erro ao salvar configurações", description: err.message, variant: "destructive" });
+      toast({ title: t("settings.settingsError"), description: err.message, variant: "destructive" });
     },
   });
 
@@ -130,13 +133,13 @@ export default function SettingsPage() {
       window.location.href = "/";
     },
     onError: (err: Error) => {
-      toast({ title: "Erro ao excluir conta", description: err.message, variant: "destructive" });
+      toast({ title: t("settings.deleteError"), description: err.message, variant: "destructive" });
     },
   });
 
   const handleProfileSave = () => {
     if (!firstName.trim() || !lastName.trim()) {
-      toast({ title: "Preencha nome e sobrenome", variant: "destructive" });
+      toast({ title: t("settings.fillNameRequired"), variant: "destructive" });
       return;
     }
     profileMutation.mutate({ firstName: firstName.trim(), lastName: lastName.trim() });
@@ -144,7 +147,7 @@ export default function SettingsPage() {
 
   const handleEmailChange = () => {
     if (!newEmail.trim() || !emailPassword) {
-      toast({ title: "Preencha o novo email e sua senha", variant: "destructive" });
+      toast({ title: t("settings.fillEmailAndPassword"), variant: "destructive" });
       return;
     }
     emailMutation.mutate({ email: newEmail.trim(), password: emailPassword });
@@ -152,23 +155,23 @@ export default function SettingsPage() {
 
   const handlePasswordChange = () => {
     if (newPassword !== confirmPassword) {
-      toast({ title: "As senhas não coincidem", variant: "destructive" });
+      toast({ title: t("settings.passwordMismatch"), variant: "destructive" });
       return;
     }
     if (!currentPassword || !newPassword) {
-      toast({ title: "Preencha todos os campos", variant: "destructive" });
+      toast({ title: t("settings.fillAllFields"), variant: "destructive" });
       return;
     }
     passwordMutation.mutate({ currentPassword, newPassword });
   };
 
   const handleDeleteAccount = () => {
-    if (deleteConfirm !== "EXCLUIR") {
-      toast({ title: "Digite EXCLUIR para confirmar", variant: "destructive" });
+    if (deleteConfirm !== t("settings.deleteConfirmWord")) {
+      toast({ title: t("settings.typeDeleteRequired"), variant: "destructive" });
       return;
     }
     if (!deletePassword) {
-      toast({ title: "Informe sua senha para confirmar", variant: "destructive" });
+      toast({ title: t("settings.passwordRequired"), variant: "destructive" });
       return;
     }
     deleteMutation.mutate({ password: deletePassword });
@@ -189,28 +192,28 @@ export default function SettingsPage() {
           <div className="p-1.5 rounded-md bg-gradient-to-br from-emerald-500 to-cyan-500">
             <Settings className="h-4 w-4 text-white" />
           </div>
-          Configurações
+          {t("settings.title")}
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">Gerencie sua conta e preferências</p>
+        <p className="text-sm text-muted-foreground mt-1">{t("settings.subtitle")}</p>
       </div>
 
       <Tabs defaultValue="conta" className="w-full">
         <TabsList className="w-full grid grid-cols-4" data-testid="settings-tabs">
           <TabsTrigger value="conta" className="gap-1.5" data-testid="tab-conta">
             <User className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Conta</span>
+            <span className="hidden sm:inline">{t("settings.tabAccount")}</span>
           </TabsTrigger>
           <TabsTrigger value="idioma" className="gap-1.5" data-testid="tab-idioma">
             <Globe className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Idioma</span>
+            <span className="hidden sm:inline">{t("settings.tabLanguage")}</span>
           </TabsTrigger>
           <TabsTrigger value="ia" className="gap-1.5" data-testid="tab-ia">
             <Brain className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">IA</span>
+            <span className="hidden sm:inline">{t("settings.tabAI")}</span>
           </TabsTrigger>
           <TabsTrigger value="perigo" className="gap-1.5" data-testid="tab-perigo">
             <AlertTriangle className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Perigo</span>
+            <span className="hidden sm:inline">{t("settings.tabDanger")}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -219,13 +222,13 @@ export default function SettingsPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <User className="h-4 w-4 text-emerald-500" />
-                <h2 className="text-base font-semibold">Perfil</h2>
+                <h2 className="text-base font-semibold">{t("settings.profile")}</h2>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Nome</label>
+                  <label className="text-xs text-muted-foreground mb-1 block">{t("settings.firstName")}</label>
                   <Input
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
@@ -233,7 +236,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Sobrenome</label>
+                  <label className="text-xs text-muted-foreground mb-1 block">{t("settings.lastName")}</label>
                   <Input
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
@@ -248,7 +251,7 @@ export default function SettingsPage() {
                 data-testid="button-save-profile"
               >
                 {profileMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                Salvar perfil
+                {t("settings.saveProfile")}
               </Button>
             </CardContent>
           </Card>
@@ -257,31 +260,31 @@ export default function SettingsPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-cyan-500" />
-                <h2 className="text-base font-semibold">Alterar Email</h2>
+                <h2 className="text-base font-semibold">{t("settings.changeEmail")}</h2>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Email atual</label>
+                <label className="text-xs text-muted-foreground mb-1 block">{t("settings.currentEmail")}</label>
                 <Input value={user?.email || ""} disabled className="opacity-60" />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Novo email</label>
+                <label className="text-xs text-muted-foreground mb-1 block">{t("settings.newEmail")}</label>
                 <Input
                   type="email"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
-                  placeholder="novo@email.com"
+                  placeholder={t("settings.newEmailPlaceholder")}
                   data-testid="input-new-email"
                 />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Senha (para confirmar)</label>
+                <label className="text-xs text-muted-foreground mb-1 block">{t("settings.passwordToConfirm")}</label>
                 <Input
                   type="password"
                   value={emailPassword}
                   onChange={(e) => setEmailPassword(e.target.value)}
-                  placeholder="Sua senha atual"
+                  placeholder={t("settings.currentPasswordPlaceholder")}
                   data-testid="input-email-password"
                 />
               </div>
@@ -292,7 +295,7 @@ export default function SettingsPage() {
                 data-testid="button-change-email"
               >
                 {emailMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                Alterar email
+                {t("settings.changeEmailButton")}
               </Button>
             </CardContent>
           </Card>
@@ -301,12 +304,12 @@ export default function SettingsPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <Lock className="h-4 w-4 text-violet-500" />
-                <h2 className="text-base font-semibold">Alterar Senha</h2>
+                <h2 className="text-base font-semibold">{t("settings.changePassword")}</h2>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Senha atual</label>
+                <label className="text-xs text-muted-foreground mb-1 block">{t("settings.currentPassword")}</label>
                 <Input
                   type="password"
                   value={currentPassword}
@@ -315,7 +318,7 @@ export default function SettingsPage() {
                 />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Nova senha</label>
+                <label className="text-xs text-muted-foreground mb-1 block">{t("settings.newPassword")}</label>
                 <Input
                   type="password"
                   value={newPassword}
@@ -324,7 +327,7 @@ export default function SettingsPage() {
                 />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Confirmar nova senha</label>
+                <label className="text-xs text-muted-foreground mb-1 block">{t("settings.confirmNewPassword")}</label>
                 <Input
                   type="password"
                   value={confirmPassword}
@@ -339,7 +342,7 @@ export default function SettingsPage() {
                 data-testid="button-change-password"
               >
                 {passwordMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                Alterar senha
+                {t("settings.changePasswordButton")}
               </Button>
             </CardContent>
           </Card>
@@ -350,14 +353,17 @@ export default function SettingsPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <Globe className="h-4 w-4 text-emerald-500" />
-                <h2 className="text-base font-semibold">Idioma da Interface</h2>
+                <h2 className="text-base font-semibold">{t("settings.interfaceLanguage")}</h2>
               </div>
             </CardHeader>
             <CardContent>
-              <label className="text-xs text-muted-foreground mb-1 block">Selecione o idioma do sistema</label>
+              <label className="text-xs text-muted-foreground mb-1 block">{t("settings.selectInterfaceLanguage")}</label>
               <Select
                 value={settings?.interfaceLanguage || "pt-BR"}
-                onValueChange={(val) => settingsMutation.mutate({ interfaceLanguage: val })}
+                onValueChange={(val) => {
+                  settingsMutation.mutate({ interfaceLanguage: val });
+                  i18n.changeLanguage(val);
+                }}
               >
                 <SelectTrigger data-testid="select-interface-language">
                   <SelectValue />
@@ -375,13 +381,13 @@ export default function SettingsPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <Globe className="h-4 w-4 text-cyan-500" />
-                <h2 className="text-base font-semibold">Idioma das Transcrições</h2>
+                <h2 className="text-base font-semibold">{t("settings.transcriptionLanguage")}</h2>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
               <p className="text-xs text-muted-foreground/70 flex items-start gap-1">
                 <Info className="h-3 w-3 mt-0.5 shrink-0" />
-                A IA entende qualquer idioma falado, mas transcreve e cria a reunião no idioma selecionado aqui.
+                {t("settings.transcriptionLanguageHint")}
               </p>
               <Select
                 value={settings?.transcriptionLanguage || "pt-BR"}
@@ -405,15 +411,15 @@ export default function SettingsPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <Brain className="h-4 w-4 text-amber-500" />
-                <h2 className="text-base font-semibold">Inteligência Artificial</h2>
+                <h2 className="text-base font-semibold">{t("settings.aiTitle")}</h2>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Nível de extração de tarefas</label>
+                <label className="text-xs text-muted-foreground mb-1 block">{t("settings.taskExtractionLevel")}</label>
                 <p className="text-xs text-muted-foreground/70 mb-3 flex items-start gap-1">
                   <Info className="h-3 w-3 mt-0.5 shrink-0" />
-                  Define a intensidade com que a IA identifica tarefas nas suas gravações.
+                  {t("settings.taskExtractionHint")}
                 </p>
                 <div className="space-y-2">
                   {extractionLevels.map((level) => {
@@ -431,7 +437,7 @@ export default function SettingsPage() {
                       >
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium">{level.label}</span>
-                          {isActive && <Badge variant="secondary" className="text-xs">Ativo</Badge>}
+                          {isActive && <Badge variant="secondary" className="text-xs">{t("status.active")}</Badge>}
                         </div>
                         <p className="text-xs text-muted-foreground mt-0.5">{level.desc}</p>
                       </button>
@@ -448,45 +454,45 @@ export default function SettingsPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <Trash2 className="h-4 w-4 text-destructive" />
-                <h2 className="text-base font-semibold text-destructive">Excluir Conta</h2>
+                <h2 className="text-base font-semibold text-destructive">{t("settings.deleteAccount")}</h2>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-start gap-2 p-3 rounded-md bg-destructive/10">
                 <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
                 <p className="text-xs text-destructive">
-                  Esta ação é permanente e irreversível. Todos os seus dados (reuniões, contatos, empresas, tarefas) serão excluídos para sempre.
+                  {t("settings.deleteWarning")}
                 </p>
               </div>
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Sua senha</label>
+                <label className="text-xs text-muted-foreground mb-1 block">{t("settings.yourPassword")}</label>
                 <Input
                   type="password"
                   value={deletePassword}
                   onChange={(e) => setDeletePassword(e.target.value)}
-                  placeholder="Confirme com sua senha"
+                  placeholder={t("settings.confirmWithPassword")}
                   data-testid="input-delete-password"
                 />
               </div>
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">
-                  Digite <span className="font-bold text-destructive">EXCLUIR</span> para confirmar
+                  Digite <span className="font-bold text-destructive">{t("settings.deleteConfirmWord")}</span> para confirmar
                 </label>
                 <Input
                   value={deleteConfirm}
                   onChange={(e) => setDeleteConfirm(e.target.value)}
-                  placeholder="EXCLUIR"
+                  placeholder={t("settings.deleteConfirmWord")}
                   data-testid="input-delete-confirm"
                 />
               </div>
               <Button
                 variant="destructive"
                 onClick={handleDeleteAccount}
-                disabled={deleteMutation.isPending || deleteConfirm !== "EXCLUIR" || !deletePassword}
+                disabled={deleteMutation.isPending || deleteConfirm !== t("settings.deleteConfirmWord") || !deletePassword}
                 data-testid="button-delete-account"
               >
                 {deleteMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                Excluir minha conta permanentemente
+                {t("settings.deleteButton")}
               </Button>
             </CardContent>
           </Card>

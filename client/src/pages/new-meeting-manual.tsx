@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import { CalendarDays, Users, Loader2, FileText } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import type { Contact } from "@shared/schema";
 export default function NewMeetingManual() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
@@ -45,18 +47,18 @@ export default function NewMeetingManual() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/meetings"] });
-      toast({ title: "Reunião criada com sucesso!" });
+      toast({ title: t("newMeetingManual.meetingCreated") });
       navigate(`/meetings/${data.id}`);
     },
     onError: (error: Error) => {
-      toast({ title: "Erro ao criar reunião", description: error.message, variant: "destructive" });
+      toast({ title: t("newMeetingManual.errorCreating"), description: error.message, variant: "destructive" });
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
-      toast({ title: "Informe o título da reunião", variant: "destructive" });
+      toast({ title: t("newMeetingManual.titleRequired"), variant: "destructive" });
       return;
     }
     createMeeting.mutate();
@@ -65,9 +67,9 @@ export default function NewMeetingManual() {
   return (
     <div className="p-4 sm:p-6 max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Nova Reunião Manual</h1>
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{t("newMeetingManual.title")}</h1>
         <p className="text-muted-foreground mt-1">
-          Registre uma reunião preenchendo as informações manualmente
+          {t("newMeetingManual.subtitle")}
         </p>
       </div>
 
@@ -76,22 +78,22 @@ export default function NewMeetingManual() {
           <CardHeader className="pb-3">
             <h2 className="text-sm font-medium flex items-center gap-2">
               <FileText className="h-4 w-4 text-muted-foreground" />
-              Informações da Reunião
+              {t("newMeetingManual.meetingInfo")}
             </h2>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-xs text-muted-foreground mb-1.5 block">Título</label>
+              <label className="text-xs text-muted-foreground mb-1.5 block">{t("newMeetingManual.titleLabel")}</label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ex: Reunião com equipe de vendas"
+                placeholder={t("newMeetingManual.titlePlaceholder")}
                 required
                 data-testid="input-meeting-title"
               />
             </div>
             <div>
-              <label className="text-xs text-muted-foreground mb-1.5 block">Data</label>
+              <label className="text-xs text-muted-foreground mb-1.5 block">{t("newMeetingManual.dateLabel")}</label>
               <Input
                 type="date"
                 value={date}
@@ -100,11 +102,11 @@ export default function NewMeetingManual() {
               />
             </div>
             <div>
-              <label className="text-xs text-muted-foreground mb-1.5 block">Resumo</label>
+              <label className="text-xs text-muted-foreground mb-1.5 block">{t("newMeetingManual.summaryLabel")}</label>
               <Textarea
                 value={summary}
                 onChange={(e) => setSummary(e.target.value)}
-                placeholder="Descreva o que foi discutido na reunião..."
+                placeholder={t("newMeetingManual.summaryPlaceholder")}
                 rows={4}
                 data-testid="input-meeting-summary"
               />
@@ -116,7 +118,7 @@ export default function NewMeetingManual() {
           <CardHeader className="pb-3">
             <h2 className="text-sm font-medium flex items-center gap-2">
               <Users className="h-4 w-4 text-muted-foreground" />
-              Participantes
+              {t("newMeetingManual.participants")}
             </h2>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -124,7 +126,7 @@ export default function NewMeetingManual() {
               <>
                 {contacts.length > 5 && (
                   <Input
-                    placeholder="Buscar contato..."
+                    placeholder={t("newMeetingManual.searchContact")}
                     value={contactSearch}
                     onChange={(e) => setContactSearch(e.target.value)}
                     data-testid="input-search-contacts"
@@ -155,7 +157,7 @@ export default function NewMeetingManual() {
               </>
             ) : (
               <p className="text-sm text-muted-foreground py-2">
-                Nenhum contato cadastrado ainda. Você pode adicionar participantes depois.
+                {t("newMeetingManual.noContactsYet")}
               </p>
             )}
           </CardContent>
@@ -168,10 +170,10 @@ export default function NewMeetingManual() {
             ) : (
               <CalendarDays className="h-4 w-4" />
             )}
-            Criar Reunião
+            {t("newMeetingManual.createMeeting")}
           </Button>
           <Button type="button" variant="ghost" onClick={() => navigate("/meetings")} data-testid="button-cancel">
-            Cancelar
+            {t("common.cancel")}
           </Button>
         </div>
       </form>

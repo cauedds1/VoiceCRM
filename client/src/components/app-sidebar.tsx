@@ -17,21 +17,23 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
-
-const navItems = [
-  { title: "Gravar Reunião", url: "/meetings/new", icon: Mic },
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Reuniões", url: "/meetings", icon: CheckSquare },
-  { title: "Tarefas", url: "/tasks", icon: ListTodo },
-  { title: "Contatos", url: "/contacts", icon: Users },
-  { title: "Empresas", url: "/companies", icon: Building2 },
-  { title: "Relatórios", url: "/reports", icon: BarChart3 },
-  { title: "Configurações", url: "/settings", icon: Settings },
-];
+import { useTranslation } from "react-i18next";
 
 export function AppSidebar() {
+  const { t } = useTranslation();
   const [location] = useLocation();
   const { user, logout } = useAuth();
+
+  const navItems = [
+    { title: t("nav.recordMeeting"), url: "/meetings/new", icon: Mic },
+    { title: t("nav.dashboard"), url: "/dashboard", icon: LayoutDashboard },
+    { title: t("nav.meetings"), url: "/meetings", icon: CheckSquare },
+    { title: t("nav.tasks"), url: "/tasks", icon: ListTodo },
+    { title: t("nav.contacts"), url: "/contacts", icon: Users },
+    { title: t("nav.companies"), url: "/companies", icon: Building2 },
+    { title: t("nav.reports"), url: "/reports", icon: BarChart3 },
+    { title: t("nav.settings"), url: "/settings", icon: Settings },
+  ];
 
   const initials = user
     ? `${(user.firstName || "")[0] || ""}${(user.lastName || "")[0] || ""}`.toUpperCase() || "U"
@@ -42,14 +44,14 @@ export function AppSidebar() {
       <SidebarHeader className="px-4 pt-3 pb-2">
         <div className="flex items-center gap-2">
           <img src={logoFullImg} alt="VoiceCRM" className="w-28 h-auto" />
-          <span className="text-[10px] text-sidebar-foreground/50 leading-tight">Reuniões<br/>inteligentes</span>
+          <span className="text-[10px] text-sidebar-foreground/50 leading-tight">{t("nav.smartMeetings")}</span>
         </div>
       </SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/50 text-xs uppercase tracking-wider">
-            Menu
+            {t("nav.menu")}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -69,7 +71,7 @@ export function AppSidebar() {
                 const buttonClasses = isGravarReuniao && !isActive ? "bg-gradient-to-r from-emerald-500/10 to-cyan-500/10" : "";
 
                 return (
-                  <div key={item.title}>
+                  <div key={item.url}>
                     <SidebarMenuItem>
                       <SidebarMenuButton
                         asChild

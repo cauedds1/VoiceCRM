@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
 import type { Meeting, Task, Contact, Company } from "@shared/schema";
+import { useTranslation } from "react-i18next";
+import i18n from "@/i18n";
 
 function StatCard({ title, value, icon: Icon, gradient, loading }: {
   title: string;
@@ -45,25 +47,8 @@ function priorityColor(priority: string) {
   }
 }
 
-function priorityLabel(priority: string) {
-  switch (priority) {
-    case "high": return "Alta";
-    case "medium": return "Média";
-    case "low": return "Baixa";
-    default: return priority;
-  }
-}
-
-function statusLabel(status: string) {
-  switch (status) {
-    case "pending": return "Pendente";
-    case "in_progress": return "Em progresso";
-    case "completed": return "Concluída";
-    default: return status;
-  }
-}
-
 export default function Dashboard() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { data: meetings = [], isLoading: loadingMeetings } = useQuery<Meeting[]>({ queryKey: ["/api/meetings"] });
   const { data: tasks = [], isLoading: loadingTasks } = useQuery<Task[]>({ queryKey: ["/api/tasks"] });
@@ -77,42 +62,62 @@ export default function Dashboard() {
 
   const isLoading = loadingMeetings || loadingTasks || loadingContacts || loadingCompanies;
 
+  const dateLocale = i18n.language === "en" ? "en-US" : "pt-BR";
+
+  function priorityLabel(priority: string) {
+    switch (priority) {
+      case "high": return t("priority.high");
+      case "medium": return t("priority.medium");
+      case "low": return t("priority.low");
+      default: return priority;
+    }
+  }
+
+  function statusLabel(status: string) {
+    switch (status) {
+      case "pending": return t("status.pending");
+      case "in_progress": return t("status.in_progress");
+      case "completed": return t("status.completed");
+      default: return status;
+    }
+  }
+
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight" data-testid="text-welcome">
-            Olá, <span className="bg-gradient-to-r from-emerald-500 to-cyan-500 bg-clip-text text-transparent">{user?.firstName || "Usuário"}</span>
+            {t("dashboard.hello")} <span className="bg-gradient-to-r from-emerald-500 to-cyan-500 bg-clip-text text-transparent">{user?.firstName || t("common.user")}</span>
           </h1>
           <p className="text-muted-foreground mt-1">
-            Aqui está o resumo das suas atividades
+            {t("dashboard.activitySummary")}
           </p>
         </div>
         <Link href="/meetings/new">
           <Button className="gap-2 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white" data-testid="button-new-meeting">
             <Mic className="h-4 w-4" />
-            Nova Reunião
+            {t("dashboard.newMeeting")}
           </Button>
         </Link>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Reuniões" value={meetings.length} icon={Mic} gradient="from-emerald-500 to-teal-500" loading={isLoading} />
-        <StatCard title="Tarefas Pendentes" value={pendingTasks.length} icon={CheckSquare} gradient="from-amber-500 to-orange-500" loading={isLoading} />
-        <StatCard title="Contatos" value={contacts.length} icon={Users} gradient="from-cyan-500 to-blue-500" loading={isLoading} />
-        <StatCard title="Empresas" value={companies.length} icon={Building2} gradient="from-violet-500 to-purple-500" loading={isLoading} />
+        <StatCard title={t("dashboard.meetings")} value={meetings.length} icon={Mic} gradient="from-emerald-500 to-teal-500" loading={isLoading} />
+        <StatCard title={t("dashboard.pendingTasks")} value={pendingTasks.length} icon={CheckSquare} gradient="from-amber-500 to-orange-500" loading={isLoading} />
+        <StatCard title={t("dashboard.contacts")} value={contacts.length} icon={Users} gradient="from-cyan-500 to-blue-500" loading={isLoading} />
+        <StatCard title={t("dashboard.companies")} value={companies.length} icon={Building2} gradient="from-violet-500 to-purple-500" loading={isLoading} />
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between gap-4 pb-4">
             <div>
-              <h2 className="text-base font-semibold">Reuniões Recentes</h2>
-              <p className="text-sm text-muted-foreground">Últimas reuniões registradas</p>
+              <h2 className="text-base font-semibold">{t("dashboard.recentMeetings")}</h2>
+              <p className="text-sm text-muted-foreground">{t("dashboard.latestMeetings")}</p>
             </div>
             <Link href="/meetings">
               <Button variant="ghost" size="sm" className="gap-1" data-testid="link-all-meetings">
-                Ver todas
+                {t("common.viewAll")}
                 <ArrowRight className="h-3.5 w-3.5" />
               </Button>
             </Link>
@@ -128,11 +133,11 @@ export default function Dashboard() {
             ) : recentMeetings.length === 0 ? (
               <div className="text-center py-8">
                 <Mic className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">Nenhuma reunião registrada ainda</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.noMeetingsYet")}</p>
                 <Link href="/meetings/new">
                   <Button variant="ghost" size="sm" className="mt-2 gap-1">
                     <Plus className="h-3.5 w-3.5" />
-                    Gravar primeira reunião
+                    {t("dashboard.recordFirst")}
                   </Button>
                 </Link>
               </div>
@@ -145,7 +150,7 @@ export default function Dashboard() {
                         <p className="text-sm font-medium truncate">{meeting.title}</p>
                         <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          {meeting.date ? new Date(meeting.date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
+                          {meeting.date ? new Date(meeting.date).toLocaleDateString(dateLocale, { day: "2-digit", month: "short", year: "numeric" }) : "—"}
                         </p>
                       </div>
                     </div>
@@ -162,8 +167,8 @@ export default function Dashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between gap-4 pb-4">
             <div>
-              <h2 className="text-base font-semibold">Tarefas Pendentes</h2>
-              <p className="text-sm text-muted-foreground">Ações que precisam de atenção</p>
+              <h2 className="text-base font-semibold">{t("dashboard.pendingTasksTitle")}</h2>
+              <p className="text-sm text-muted-foreground">{t("dashboard.actionsNeeded")}</p>
             </div>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -177,7 +182,7 @@ export default function Dashboard() {
             ) : pendingTasks.length === 0 ? (
               <div className="text-center py-8">
                 <CheckSquare className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">Nenhuma tarefa pendente</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.noPendingTasks")}</p>
               </div>
             ) : (
               pendingTasks.slice(0, 5).map((task) => (
@@ -196,7 +201,7 @@ export default function Dashboard() {
                   {task.dueDate && (
                     <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
                       <Clock className="h-3 w-3" />
-                      {new Date(task.dueDate).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+                      {new Date(task.dueDate).toLocaleDateString(dateLocale, { day: "2-digit", month: "short" })}
                     </p>
                   )}
                 </div>

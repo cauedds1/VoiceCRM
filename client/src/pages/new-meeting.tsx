@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import { Mic, Square, Loader2, CheckCircle, AlertCircle, Pause, Play, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ type RecordingState = "idle" | "recording" | "paused" | "processing" | "done" | 
 export default function NewMeeting() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [state, setState] = useState<RecordingState>("idle");
   const [duration, setDuration] = useState(0);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -53,17 +55,17 @@ export default function NewMeeting() {
       queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       setState("done");
-      toast({ title: "Reunião registrada com sucesso!" });
+      toast({ title: t("newMeeting.success") });
       setTimeout(() => setLocation(`/meetings/${data.id}`), 1500);
     },
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
-        toast({ title: "Sessão expirada", description: "Fazendo login novamente...", variant: "destructive" });
+        toast({ title: t("newMeeting.sessionExpired"), description: t("newMeeting.sessionExpiredDesc"), variant: "destructive" });
         setTimeout(() => { window.location.href = "/auth"; }, 500);
         return;
       }
       setState("error");
-      toast({ title: "Erro ao processar", description: error.message, variant: "destructive" });
+      toast({ title: t("newMeeting.errorProcessing"), description: error.message, variant: "destructive" });
     },
   });
 
@@ -139,7 +141,7 @@ export default function NewMeeting() {
       startTimer();
       startVisualization();
     } catch {
-      toast({ title: "Erro ao acessar microfone", description: "Verifique as permissões do navegador", variant: "destructive" });
+      toast({ title: t("newMeeting.micError"), description: t("newMeeting.micErrorDesc"), variant: "destructive" });
     }
   };
 
@@ -212,8 +214,8 @@ export default function NewMeeting() {
     setAudioBlob(null);
     setDuration(0);
     setState("idle");
-    toast({ title: "Gravação descartada" });
-  }, [stopTimer, stopVisualization, toast]);
+    toast({ title: t("newMeeting.discardDismissed") });
+  }, [stopTimer, stopVisualization, toast, t]);
 
   useEffect(() => {
     if (audioBlob && state === "processing") {
@@ -240,7 +242,7 @@ export default function NewMeeting() {
       const s = stateRef.current;
       if (s === "recording" || s === "paused") {
         e.preventDefault();
-        e.returnValue = "Você tem uma gravação em andamento. Tem certeza que deseja sair?";
+        e.returnValue = t("newMeeting.beforeUnload");
       }
     };
 
@@ -253,7 +255,7 @@ export default function NewMeeting() {
       window.removeEventListener("blur", handleBlur);
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [pauseRecording]);
+  }, [pauseRecording, t]);
 
   useEffect(() => {
     return () => {
@@ -275,14 +277,14 @@ export default function NewMeeting() {
     <div className="p-4 sm:p-6 max-w-2xl mx-auto flex items-center justify-center min-h-[calc(100vh-4rem)]">
       <div className="w-full space-y-6">
         <div className="text-center">
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight" data-testid="text-new-meeting-title">Nova Reunião</h1>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight" data-testid="text-new-meeting-title">{t("newMeeting.title")}</h1>
           <p className="text-muted-foreground mt-2">
             {state === "idle"
-              ? "Grave um áudio descrevendo sua reunião e a IA organiza tudo automaticamente"
+              ? t("newMeeting.idleDescription")
               : state === "paused"
-                ? "Gravação pausada — toque em continuar para retomar"
+                ? t("newMeeting.pausedDescription")
                 : state === "recording"
-                  ? "Gravando... a gravação só para quando você decidir"
+                  ? t("newMeeting.recordingDescription")
                   : ""}
           </p>
         </div>
@@ -308,9 +310,9 @@ export default function NewMeeting() {
                 <div className="flex flex-col items-center gap-4">
                   <Loader2 className="h-12 w-12 text-emerald-500 animate-spin" />
                   <div className="text-center">
-                    <p className="text-sm font-medium">Processando reunião...</p>
+                    <p className="text-sm font-medium">{t("newMeeting.processing")}</p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Transcrevendo áudio e organizando informações
+                      {t("newMeeting.processingDescription")}
                     </p>
                   </div>
                 </div>
@@ -319,17 +321,17 @@ export default function NewMeeting() {
               {state === "done" && (
                 <div className="flex flex-col items-center gap-4">
                   <CheckCircle className="h-12 w-12 text-emerald-500" />
-                  <p className="text-sm font-medium">Reunião registrada com sucesso!</p>
-                  <p className="text-xs text-muted-foreground">Redirecionando...</p>
+                  <p className="text-sm font-medium">{t("newMeeting.success")}</p>
+                  <p className="text-xs text-muted-foreground">{t("newMeeting.redirecting")}</p>
                 </div>
               )}
 
               {state === "error" && (
                 <div className="flex flex-col items-center gap-4">
                   <AlertCircle className="h-12 w-12 text-destructive" />
-                  <p className="text-sm font-medium">Erro ao processar</p>
+                  <p className="text-sm font-medium">{t("newMeeting.error")}</p>
                   <Button variant="ghost" onClick={() => setState("idle")} data-testid="button-retry">
-                    Tentar novamente
+                    {t("newMeeting.retry")}
                   </Button>
                 </div>
               )}
@@ -342,7 +344,7 @@ export default function NewMeeting() {
                         {formatTime(duration)}
                       </p>
                       <p className="text-sm text-muted-foreground mt-1">
-                        {state === "paused" ? "Pausado" : "Gravando..."}
+                        {state === "paused" ? t("newMeeting.paused") : t("newMeeting.recording")}
                       </p>
                     </div>
                   )}
@@ -353,7 +355,7 @@ export default function NewMeeting() {
                         onClick={state === "paused" ? resumeRecording : pauseRecording}
                         className="w-14 h-14 rounded-full flex items-center justify-center bg-accent text-accent-foreground transition-all"
                         data-testid="button-pause-resume"
-                        aria-label={state === "paused" ? "Retomar gravação" : "Pausar gravação"}
+                        aria-label={state === "paused" ? t("newMeeting.resumeRecording") : t("newMeeting.pauseRecording")}
                       >
                         {state === "paused" ? (
                           <Play className="h-6 w-6" />
@@ -378,7 +380,7 @@ export default function NewMeeting() {
                             : "bg-gradient-to-br from-emerald-500 to-cyan-500 text-white"
                         }`}
                         data-testid="button-record"
-                        aria-label={isActive ? "Parar gravação" : "Iniciar gravação"}
+                        aria-label={isActive ? t("newMeeting.stopRecording") : t("newMeeting.startRecording")}
                       >
                         {isActive ? (
                           <Square className="h-8 w-8 sm:h-7 sm:w-7" />
@@ -393,7 +395,7 @@ export default function NewMeeting() {
                         onClick={askDiscard}
                         className="w-14 h-14 rounded-full flex items-center justify-center bg-accent text-muted-foreground transition-all"
                         data-testid="button-discard-recording"
-                        aria-label="Descartar gravação"
+                        aria-label={t("newMeeting.discardRecording")}
                       >
                         <Trash2 className="h-5 w-5" />
                       </button>
@@ -403,10 +405,10 @@ export default function NewMeeting() {
                   {showDiscardConfirm && (
                     <div className="flex flex-col items-center gap-3 p-4 rounded-md border border-destructive/30 bg-destructive/5 max-w-xs w-full">
                       <p className="text-sm font-medium text-center">
-                        Tem certeza que deseja descartar a gravação?
+                        {t("newMeeting.discardTitle")}
                       </p>
                       <p className="text-xs text-muted-foreground text-center">
-                        Todo o áudio gravado será perdido e não poderá ser recuperado.
+                        {t("newMeeting.discardDescription")}
                       </p>
                       <div className="flex items-center gap-3">
                         <Button
@@ -415,7 +417,7 @@ export default function NewMeeting() {
                           onClick={discardRecording}
                           data-testid="button-confirm-discard"
                         >
-                          Sim, descartar
+                          {t("newMeeting.discardConfirm")}
                         </Button>
                         <Button
                           variant="outline"
@@ -423,7 +425,7 @@ export default function NewMeeting() {
                           onClick={cancelDiscard}
                           data-testid="button-cancel-discard"
                         >
-                          Cancelar
+                          {t("common.cancel")}
                         </Button>
                       </div>
                     </div>
@@ -431,15 +433,15 @@ export default function NewMeeting() {
 
                   {!showDiscardConfirm && state === "idle" && !audioBlob && (
                     <p className="text-sm text-muted-foreground text-center max-w-xs">
-                      Toque no botão para gravar. Conte o que aconteceu na reunião com suas próprias palavras.
+                      {t("newMeeting.tapToRecord")}
                     </p>
                   )}
 
                   {!showDiscardConfirm && isActive && (
                     <p className="text-xs text-muted-foreground text-center max-w-xs">
                       {state === "paused"
-                        ? "A gravação foi pausada. Toque em continuar para retomar ou pare para finalizar."
-                        : "Se a tela desligar ou receber uma ligação, a gravação será pausada automaticamente. Nada será perdido."}
+                        ? t("newMeeting.pausedHelp")
+                        : t("newMeeting.recordingHelp")}
                     </p>
                   )}
                 </>

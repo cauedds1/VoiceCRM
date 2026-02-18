@@ -15,8 +15,10 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useState } from "react";
 import type { Company, Contact } from "@shared/schema";
+import { useTranslation } from "react-i18next";
 
 export default function CompaniesList() {
+  const { t } = useTranslation();
   const { data: companies = [], isLoading } = useQuery<Company[]>({ queryKey: ["/api/companies"] });
   const { data: contacts = [] } = useQuery<Contact[]>({ queryKey: ["/api/contacts"] });
   const [search, setSearch] = useState("");
@@ -33,7 +35,7 @@ export default function CompaniesList() {
       queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
       setDialogOpen(false);
       form.reset();
-      toast({ title: "Empresa criada" });
+      toast({ title: t("companiesList.companyCreated") });
     },
   });
 
@@ -49,70 +51,70 @@ export default function CompaniesList() {
     <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Empresas</h1>
-          <p className="text-muted-foreground mt-1">Todas as empresas cadastradas</p>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{t("companiesList.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("companiesList.subtitle")}</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white" data-testid="button-add-company">
               <Plus className="h-4 w-4" />
-              Nova Empresa
+              {t("companiesList.newCompany")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Nova Empresa</DialogTitle>
+              <DialogTitle>{t("companiesList.newCompanyTitle")}</DialogTitle>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit((data) => createCompany.mutate(data))} className="space-y-4">
                 <FormField control={form.control} name="name" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nome</FormLabel>
-                    <FormControl><Input {...field} placeholder="Nome da empresa" data-testid="input-company-name" /></FormControl>
+                    <FormLabel>{t("companiesList.nameLabel")}</FormLabel>
+                    <FormControl><Input {...field} placeholder={t("companiesList.namePlaceholder")} data-testid="input-company-name" /></FormControl>
                   </FormItem>
                 )} />
                 <FormField control={form.control} name="industry" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Segmento</FormLabel>
-                    <FormControl><Input {...field} placeholder="Ex: Construção Civil" data-testid="input-company-industry" /></FormControl>
+                    <FormLabel>{t("companiesList.industryLabel")}</FormLabel>
+                    <FormControl><Input {...field} placeholder={t("companiesList.industryPlaceholder")} data-testid="input-company-industry" /></FormControl>
                   </FormItem>
                 )} />
                 <div className="grid grid-cols-2 gap-4">
                   <FormField control={form.control} name="phone" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Telefone</FormLabel>
+                      <FormLabel>{t("companiesList.phoneLabel")}</FormLabel>
                       <FormControl><Input {...field} placeholder="(00) 00000-0000" data-testid="input-company-phone" /></FormControl>
                     </FormItem>
                   )} />
                   <FormField control={form.control} name="email" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl><Input {...field} placeholder="contato@empresa.com" data-testid="input-company-email" /></FormControl>
+                      <FormLabel>{t("companiesList.emailLabel")}</FormLabel>
+                      <FormControl><Input {...field} placeholder={t("companiesList.emailPlaceholder")} data-testid="input-company-email" /></FormControl>
                     </FormItem>
                   )} />
                 </div>
                 <FormField control={form.control} name="address" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Endereço</FormLabel>
-                    <FormControl><Input {...field} placeholder="Endereço (opcional)" data-testid="input-company-address" /></FormControl>
+                    <FormLabel>{t("companiesList.addressLabel")}</FormLabel>
+                    <FormControl><Input {...field} placeholder={t("companiesList.addressPlaceholder")} data-testid="input-company-address" /></FormControl>
                   </FormItem>
                 )} />
                 <div className="grid grid-cols-2 gap-4">
                   <FormField control={form.control} name="city" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Cidade</FormLabel>
-                      <FormControl><Input {...field} placeholder="Cidade (opcional)" data-testid="input-company-city" /></FormControl>
+                      <FormLabel>{t("companiesList.cityLabel")}</FormLabel>
+                      <FormControl><Input {...field} placeholder={t("companiesList.cityPlaceholder")} data-testid="input-company-city" /></FormControl>
                     </FormItem>
                   )} />
                   <FormField control={form.control} name="state" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Estado</FormLabel>
-                      <FormControl><Input {...field} placeholder="Estado (opcional)" data-testid="input-company-state" /></FormControl>
+                      <FormLabel>{t("companiesList.stateLabel")}</FormLabel>
+                      <FormControl><Input {...field} placeholder={t("companiesList.statePlaceholder")} data-testid="input-company-state" /></FormControl>
                     </FormItem>
                   )} />
                 </div>
                 <Button type="submit" className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white" disabled={createCompany.isPending} data-testid="button-save-company">
-                  {createCompany.isPending ? "Salvando..." : "Salvar Empresa"}
+                  {createCompany.isPending ? t("common.saving") : t("companiesList.saveCompany")}
                 </Button>
               </form>
             </Form>
@@ -123,7 +125,7 @@ export default function CompaniesList() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Buscar empresas..."
+          placeholder={t("companiesList.searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-9"
@@ -140,10 +142,10 @@ export default function CompaniesList() {
           <div className="col-span-full text-center py-16">
             <Building2 className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
             <h3 className="text-lg font-medium mb-2">
-              {search ? "Nenhuma empresa encontrada" : "Nenhuma empresa ainda"}
+              {search ? t("companiesList.noCompanyFound") : t("companiesList.noCompanyYet")}
             </h3>
             <p className="text-muted-foreground">
-              {search ? "Tente buscar com outros termos" : "Empresas são criadas automaticamente ao processar reuniões"}
+              {search ? t("common.tryOtherTerms") : t("companiesList.companiesAutoCreated")}
             </p>
           </div>
         ) : (

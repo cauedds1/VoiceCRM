@@ -6,8 +6,10 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 export default function AuthPage() {
+  const { t } = useTranslation();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,7 +31,7 @@ export default function AuthPage() {
       }
       navigate("/");
     } catch (error: any) {
-      const message = error?.message || "Erro inesperado";
+      const message = error?.message || t("auth.unexpectedError");
       let parsed = message;
       try {
         const body = JSON.parse(message.replace(/^\d+:\s*/, ""));
@@ -55,12 +57,12 @@ export default function AuthPage() {
           <Card>
             <CardHeader className="pb-4">
               <h1 className="text-xl font-bold" data-testid="text-auth-title">
-                {mode === "login" ? "Entrar na sua conta" : "Criar sua conta"}
+                {mode === "login" ? t("auth.loginTitle") : t("auth.registerTitle")}
               </h1>
               <p className="text-sm text-muted-foreground">
                 {mode === "login"
-                  ? "Use seu email e senha para acessar"
-                  : "Preencha os dados para começar"}
+                  ? t("auth.loginSubtitle")
+                  : t("auth.registerSubtitle")}
               </p>
             </CardHeader>
             <CardContent>
@@ -68,21 +70,21 @@ export default function AuthPage() {
                 {mode === "register" && (
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs text-muted-foreground mb-1.5 block">Nome</label>
+                      <label className="text-xs text-muted-foreground mb-1.5 block">{t("auth.firstName")}</label>
                       <Input
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-                        placeholder="Nome"
+                        placeholder={t("auth.firstName")}
                         required
                         data-testid="input-first-name"
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-muted-foreground mb-1.5 block">Sobrenome</label>
+                      <label className="text-xs text-muted-foreground mb-1.5 block">{t("auth.lastName")}</label>
                       <Input
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
-                        placeholder="Sobrenome"
+                        placeholder={t("auth.lastName")}
                         required
                         data-testid="input-last-name"
                       />
@@ -90,7 +92,7 @@ export default function AuthPage() {
                   </div>
                 )}
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1.5 block">Email</label>
+                  <label className="text-xs text-muted-foreground mb-1.5 block">{t("auth.email")}</label>
                   <Input
                     type="email"
                     value={email}
@@ -101,12 +103,12 @@ export default function AuthPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1.5 block">Senha</label>
+                  <label className="text-xs text-muted-foreground mb-1.5 block">{t("auth.password")}</label>
                   <Input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder={mode === "register" ? "Mínimo 6 caracteres" : "Sua senha"}
+                    placeholder={mode === "register" ? t("auth.passwordMinChars") : t("auth.passwordPlaceholder")}
                     required
                     minLength={mode === "register" ? 6 : undefined}
                     data-testid="input-password"
@@ -118,20 +120,20 @@ export default function AuthPage() {
                   ) : (
                     <ArrowRight className="h-4 w-4" />
                   )}
-                  {mode === "login" ? "Entrar" : "Criar conta"}
+                  {mode === "login" ? t("auth.login") : t("auth.register")}
                 </Button>
               </form>
 
               <div className="mt-6 text-center">
                 <p className="text-sm text-muted-foreground">
-                  {mode === "login" ? "Não tem uma conta?" : "Já tem uma conta?"}
+                  {mode === "login" ? t("auth.noAccount") : t("auth.hasAccount")}
                   <button
                     type="button"
                     onClick={() => setMode(mode === "login" ? "register" : "login")}
                     className="ml-1 text-primary font-medium"
                     data-testid="button-toggle-mode"
                   >
-                    {mode === "login" ? "Criar conta" : "Entrar"}
+                    {mode === "login" ? t("auth.register") : t("auth.login")}
                   </button>
                 </p>
               </div>
@@ -143,16 +145,16 @@ export default function AuthPage() {
       <div className="hidden lg:flex flex-1 items-center justify-center bg-gradient-to-br from-emerald-950 via-teal-950 to-cyan-950 p-12">
         <div className="max-w-md">
           <h2 className="text-2xl font-bold tracking-tight mb-4 text-white">
-            Suas reuniões viram <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">ações concretas</span> em segundos
+            {t("auth.heroTitle")} <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">{t("auth.heroHighlight")}</span> {t("auth.heroTitleEnd")}
           </h2>
           <p className="text-emerald-100/70 leading-relaxed mb-6">
-            Grave um áudio após a reunião e a inteligência artificial transcreve, identifica contatos e empresas, e organiza tudo automaticamente no seu CRM.
+            {t("auth.heroDescription")}
           </p>
           <div className="space-y-3">
             {[
-              "Registre reuniões em segundos",
-              "Contatos criados automaticamente",
-              "Tarefas extraídas da conversa",
+              t("auth.heroBullet1"),
+              t("auth.heroBullet2"),
+              t("auth.heroBullet3"),
             ].map((item) => (
               <div key={item} className="flex items-center gap-2 text-sm text-emerald-100/80">
                 <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 shrink-0" />

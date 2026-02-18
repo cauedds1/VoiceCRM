@@ -14,10 +14,13 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useState } from "react";
 import type { Company, Contact, Meeting } from "@shared/schema";
+import { useTranslation } from "react-i18next";
+import i18n from "@/i18n";
 
 type Tab = "info" | "meetings" | "contacts";
 
 export default function CompanyDetail() {
+  const { t } = useTranslation();
   const params = useParams<{ id: string }>();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<Tab>("info");
@@ -41,9 +44,11 @@ export default function CompanyDetail() {
       queryClient.invalidateQueries({ queryKey: ["/api/companies", params.id] });
       queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
       setEditing(false);
-      toast({ title: "Empresa atualizada" });
+      toast({ title: t("companyDetail.updated") });
     },
   });
+
+  const dateLocale = i18n.language === "en" ? "en-US" : "pt-BR";
 
   if (isLoading) {
     return (
@@ -57,11 +62,11 @@ export default function CompanyDetail() {
   if (!company) {
     return (
       <div className="p-4 sm:p-6 max-w-4xl mx-auto text-center py-20">
-        <p className="text-muted-foreground">Empresa não encontrada</p>
+        <p className="text-muted-foreground">{t("companyDetail.notFound")}</p>
         <Link href="/companies">
           <Button variant="ghost" className="mt-4 gap-2">
             <ArrowLeft className="h-4 w-4" />
-            Voltar
+            {t("common.back")}
           </Button>
         </Link>
       </div>
@@ -71,9 +76,9 @@ export default function CompanyDetail() {
   const initials = company.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 
   const tabs: { key: Tab; label: string; count?: number }[] = [
-    { key: "info", label: "Informações" },
-    { key: "meetings", label: "Reuniões", count: companyMeetings.length },
-    { key: "contacts", label: "Pessoas", count: companyContacts.length },
+    { key: "info", label: t("companyDetail.info") },
+    { key: "meetings", label: t("companyDetail.meetings"), count: companyMeetings.length },
+    { key: "contacts", label: t("companyDetail.contacts"), count: companyContacts.length },
   ];
 
   return (
@@ -113,7 +118,7 @@ export default function CompanyDetail() {
             data-testid="button-edit-company"
           >
             <Edit2 className="h-3.5 w-3.5" />
-            Editar
+            {t("common.edit")}
           </Button>
         )}
         {editing && (
@@ -126,7 +131,7 @@ export default function CompanyDetail() {
               data-testid="button-save-company"
             >
               <Save className="h-3.5 w-3.5" />
-              Salvar
+              {t("common.save")}
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setEditing(false)}>
               <X className="h-3.5 w-3.5" />
@@ -161,62 +166,62 @@ export default function CompanyDetail() {
             {editing ? (
               <div className="space-y-4">
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1.5 block">Nome</label>
+                  <label className="text-xs text-muted-foreground mb-1.5 block">{t("companyDetail.name")}</label>
                   <Input value={editData.name || ""} onChange={(e) => setEditData({ ...editData, name: e.target.value })} data-testid="input-edit-name" />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1.5 block">Segmento / Ramo</label>
-                  <Input value={editData.industry || ""} onChange={(e) => setEditData({ ...editData, industry: e.target.value })} placeholder="Ex: Tecnologia, Construção Civil" data-testid="input-edit-industry" />
+                  <label className="text-xs text-muted-foreground mb-1.5 block">{t("companyDetail.industryEditLabel")}</label>
+                  <Input value={editData.industry || ""} onChange={(e) => setEditData({ ...editData, industry: e.target.value })} placeholder={t("companyDetail.industryEditPlaceholder")} data-testid="input-edit-industry" />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1.5 block">URL do Logo</label>
-                  <Input value={editData.logoUrl || ""} onChange={(e) => setEditData({ ...editData, logoUrl: e.target.value })} placeholder="https://exemplo.com/logo.png" data-testid="input-edit-logo" />
+                  <label className="text-xs text-muted-foreground mb-1.5 block">{t("companyDetail.logoUrl")}</label>
+                  <Input value={editData.logoUrl || ""} onChange={(e) => setEditData({ ...editData, logoUrl: e.target.value })} placeholder={t("companyDetail.logoUrlPlaceholder")} data-testid="input-edit-logo" />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1.5 block">Telefone</label>
+                    <label className="text-xs text-muted-foreground mb-1.5 block">{t("companyDetail.phone")}</label>
                     <Input value={editData.phone || ""} onChange={(e) => setEditData({ ...editData, phone: e.target.value })} data-testid="input-edit-phone" />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1.5 block">Email</label>
+                    <label className="text-xs text-muted-foreground mb-1.5 block">{t("companyDetail.email")}</label>
                     <Input value={editData.email || ""} onChange={(e) => setEditData({ ...editData, email: e.target.value })} data-testid="input-edit-email" />
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1.5 block">Endereço</label>
+                  <label className="text-xs text-muted-foreground mb-1.5 block">{t("companyDetail.address")}</label>
                   <Input value={editData.address || ""} onChange={(e) => setEditData({ ...editData, address: e.target.value })} data-testid="input-edit-address" />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1.5 block">Cidade</label>
+                    <label className="text-xs text-muted-foreground mb-1.5 block">{t("companyDetail.city")}</label>
                     <Input value={editData.city || ""} onChange={(e) => setEditData({ ...editData, city: e.target.value })} data-testid="input-edit-city" />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1.5 block">Estado</label>
+                    <label className="text-xs text-muted-foreground mb-1.5 block">{t("companyDetail.state")}</label>
                     <Input value={editData.state || ""} onChange={(e) => setEditData({ ...editData, state: e.target.value })} data-testid="input-edit-state" />
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1.5 block">Notas</label>
+                  <label className="text-xs text-muted-foreground mb-1.5 block">{t("companyDetail.notes")}</label>
                   <Textarea value={editData.notes || ""} onChange={(e) => setEditData({ ...editData, notes: e.target.value })} rows={3} data-testid="textarea-edit-notes" />
                 </div>
               </div>
             ) : (
               <div className="space-y-4">
                 <div className="grid sm:grid-cols-2 gap-4">
-                  <InfoRow icon={Globe} label="Segmento" value={company.industry} />
-                  <InfoRow icon={Phone} label="Telefone" value={company.phone} />
-                  <InfoRow icon={Mail} label="Email" value={company.email} />
-                  <InfoRow icon={MapPin} label="Localização" value={[company.city, company.state].filter(Boolean).join(" - ") || null} />
+                  <InfoRow icon={Globe} label={t("companyDetail.industry")} value={company.industry} />
+                  <InfoRow icon={Phone} label={t("companyDetail.phone")} value={company.phone} />
+                  <InfoRow icon={Mail} label={t("companyDetail.email")} value={company.email} />
+                  <InfoRow icon={MapPin} label={t("companyDetail.location")} value={[company.city, company.state].filter(Boolean).join(" - ") || null} />
                 </div>
                 {company.address && (
-                  <InfoRow icon={MapPin} label="Endereço" value={company.address} />
+                  <InfoRow icon={MapPin} label={t("companyDetail.address")} value={company.address} />
                 )}
                 {company.logoUrl && (
                   <div>
                     <p className="text-xs text-muted-foreground mb-1.5 flex items-center gap-1">
                       <ImageIcon className="h-3 w-3" />
-                      Logo
+                      {t("companyDetail.logo")}
                     </p>
                     <img
                       src={company.logoUrl}
@@ -230,7 +235,7 @@ export default function CompanyDetail() {
                   <div>
                     <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
                       <FileText className="h-3 w-3" />
-                      Notas
+                      {t("companyDetail.notes")}
                     </p>
                     <p className="text-sm leading-relaxed text-muted-foreground">{company.notes}</p>
                   </div>
@@ -246,8 +251,8 @@ export default function CompanyDetail() {
           {companyMeetings.length === 0 ? (
             <div className="text-center py-16">
               <CalendarDays className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">Nenhuma reunião</h3>
-              <p className="text-sm text-muted-foreground">Reuniões com participantes desta empresa aparecerão aqui</p>
+              <h3 className="text-lg font-medium mb-2">{t("companyDetail.noMeetings")}</h3>
+              <p className="text-sm text-muted-foreground">{t("companyDetail.noMeetingsDesc")}</p>
             </div>
           ) : (
             companyMeetings.map((meeting) => (
@@ -258,7 +263,7 @@ export default function CompanyDetail() {
                     <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                       <Clock className="h-3 w-3" />
                       {meeting.date
-                        ? new Date(meeting.date).toLocaleDateString("pt-BR", {
+                        ? new Date(meeting.date).toLocaleDateString(dateLocale, {
                             weekday: "long",
                             day: "2-digit",
                             month: "long",
@@ -282,8 +287,8 @@ export default function CompanyDetail() {
           {companyContacts.length === 0 ? (
             <div className="text-center py-16">
               <Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">Nenhuma pessoa vinculada</h3>
-              <p className="text-sm text-muted-foreground">Contatos ligados a esta empresa aparecerão aqui</p>
+              <h3 className="text-lg font-medium mb-2">{t("companyDetail.noContacts")}</h3>
+              <p className="text-sm text-muted-foreground">{t("companyDetail.noContactsDesc")}</p>
             </div>
           ) : (
             companyContacts.map((contact) => (
@@ -333,13 +338,14 @@ export default function CompanyDetail() {
 }
 
 function InfoRow({ icon: Icon, label, value }: { icon: any; label: string; value: string | null | undefined }) {
+  const { t } = useTranslation();
   return (
     <div>
       <p className="text-xs text-muted-foreground mb-0.5 flex items-center gap-1">
         <Icon className="h-3 w-3" />
         {label}
       </p>
-      <p className="text-sm">{value || <span className="text-muted-foreground">Não informado</span>}</p>
+      <p className="text-sm">{value || <span className="text-muted-foreground">{t("common.notProvided")}</span>}</p>
     </div>
   );
 }

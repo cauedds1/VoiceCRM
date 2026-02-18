@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Smartphone, SquarePlus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 type Platform = "ios" | "android" | "other";
 
@@ -38,24 +39,25 @@ function useIsMobile() {
 }
 
 function IOSInstructions() {
+  const { t } = useTranslation();
   const steps = [
     {
       number: 1,
       icon: <ShareIcon />,
-      text: "Toque no botão Compartilhar",
-      detail: "na barra inferior do Safari",
+      text: t("mobilePopup.iosStep1"),
+      detail: t("mobilePopup.iosStep1Detail"),
     },
     {
       number: 2,
       icon: <SquarePlus className="h-5 w-5 text-primary" />,
-      text: 'Toque em "Adicionar à Tela de Início"',
-      detail: "role para baixo se necessário",
+      text: t("mobilePopup.iosStep2"),
+      detail: t("mobilePopup.iosStep2Detail"),
     },
     {
       number: 3,
       icon: <Smartphone className="h-5 w-5 text-primary" />,
-      text: 'Toque em "Adicionar"',
-      detail: "o VoiceCRM aparecerá como um app",
+      text: t("mobilePopup.iosStep3"),
+      detail: t("mobilePopup.iosStep3Detail"),
     },
   ];
 
@@ -102,6 +104,7 @@ function ShareIcon() {
 }
 
 export function MobileAppPopup() {
+  const { t } = useTranslation();
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const platform = typeof window !== "undefined" ? detectPlatform() : "other";
@@ -159,10 +162,10 @@ export function MobileAppPopup() {
             <Smartphone className="h-7 w-7 text-primary" />
           </div>
           <DialogTitle className="text-lg" data-testid="text-popup-title">
-            Adicionar à Tela Inicial
+            {t("mobilePopup.title")}
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground" data-testid="text-popup-description">
-            Adicione o VoiceCRM à sua tela inicial para acesso rápido. Funciona como um app nativo no seu celular.
+            {t("mobilePopup.description")}
           </DialogDescription>
         </DialogHeader>
 
@@ -177,7 +180,7 @@ export function MobileAppPopup() {
               data-testid="button-install-app"
             >
               <Smartphone className="h-5 w-5" />
-              Adicionar à Tela Inicial
+              {t("mobilePopup.installButton")}
             </Button>
           </div>
         ) : (
@@ -187,8 +190,8 @@ export function MobileAppPopup() {
                 1
               </div>
               <div className="flex flex-col gap-0.5 min-w-0">
-                <span className="text-sm font-medium">Abra o menu do navegador</span>
-                <span className="text-xs text-muted-foreground">toque nos 3 pontos no canto superior</span>
+                <span className="text-sm font-medium">{t("mobilePopup.androidStep1")}</span>
+                <span className="text-xs text-muted-foreground">{t("mobilePopup.androidStep1Detail")}</span>
               </div>
             </div>
             <div className="flex items-start gap-3 p-3 rounded-md bg-muted/50">
@@ -196,8 +199,8 @@ export function MobileAppPopup() {
                 2
               </div>
               <div className="flex flex-col gap-0.5 min-w-0">
-                <span className="text-sm font-medium">Toque em "Adicionar à tela inicial"</span>
-                <span className="text-xs text-muted-foreground">ou "Instalar aplicativo"</span>
+                <span className="text-sm font-medium">{t("mobilePopup.androidStep2")}</span>
+                <span className="text-xs text-muted-foreground">{t("mobilePopup.androidStep2Detail")}</span>
               </div>
             </div>
           </div>
@@ -208,7 +211,7 @@ export function MobileAppPopup() {
           className="mt-1 text-sm text-muted-foreground hover:text-foreground transition-colors text-center w-full"
           data-testid="button-dismiss-popup"
         >
-          Agora não
+          {t("common.notNow")}
         </button>
       </DialogContent>
     </Dialog>

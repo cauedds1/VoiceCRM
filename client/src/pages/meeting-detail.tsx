@@ -14,24 +14,29 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import i18n from "@/i18n";
 import type { Meeting, Task, Decision, Contact } from "@shared/schema";
-
-function priorityLabel(p: string) {
-  switch (p) { case "high": return "Alta"; case "medium": return "Média"; case "low": return "Baixa"; default: return p; }
-}
-function priorityColor(p: string): "destructive" | "secondary" | "outline" {
-  switch (p) { case "high": return "destructive"; case "medium": return "secondary"; default: return "outline"; }
-}
-function statusLabel(s: string) {
-  switch (s) { case "pending": return "Pendente"; case "in_progress": return "Em progresso"; case "completed": return "Concluída"; default: return s; }
-}
 
 export default function MeetingDetail() {
   const params = useParams<{ id: string }>();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editSummary, setEditSummary] = useState("");
+
+  const priorityLabel = (p: string) => {
+    switch (p) { case "high": return t("priority.high"); case "medium": return t("priority.medium"); case "low": return t("priority.low"); default: return p; }
+  };
+  const priorityColor = (p: string): "destructive" | "secondary" | "outline" => {
+    switch (p) { case "high": return "destructive"; case "medium": return "secondary"; default: return "outline"; }
+  };
+  const statusLabel = (s: string) => {
+    switch (s) { case "pending": return t("status.pending"); case "in_progress": return t("status.in_progress"); case "completed": return t("status.completed"); default: return s; }
+  };
+
+  const dateLocale = i18n.language === "en" ? "en-US" : "pt-BR";
 
   const { data: meeting, isLoading } = useQuery<Meeting>({
     queryKey: ["/api/meetings", params.id],
@@ -53,7 +58,7 @@ export default function MeetingDetail() {
       queryClient.invalidateQueries({ queryKey: ["/api/meetings", params.id] });
       queryClient.invalidateQueries({ queryKey: ["/api/meetings"] });
       setEditing(false);
-      toast({ title: "Reunião atualizada" });
+      toast({ title: t("meetingDetail.updated") });
     },
   });
 
@@ -85,11 +90,11 @@ export default function MeetingDetail() {
   if (!meeting) {
     return (
       <div className="p-4 sm:p-6 max-w-5xl mx-auto text-center py-20">
-        <p className="text-muted-foreground">Reunião não encontrada</p>
+        <p className="text-muted-foreground">{t("meetingDetail.notFound")}</p>
         <Link href="/meetings">
           <Button variant="ghost" className="mt-4 gap-2">
             <ArrowLeft className="h-4 w-4" />
-            Voltar
+            {t("common.back")}
           </Button>
         </Link>
       </div>
@@ -120,7 +125,7 @@ export default function MeetingDetail() {
           <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
             <Clock className="h-3.5 w-3.5" />
             {meeting.date
-              ? new Date(meeting.date).toLocaleDateString("pt-BR", {
+              ? new Date(meeting.date).toLocaleDateString(dateLocale, {
                   weekday: "long",
                   day: "2-digit",
                   month: "long",
@@ -141,7 +146,7 @@ export default function MeetingDetail() {
               data-testid="button-save-meeting"
             >
               <Save className="h-3.5 w-3.5" />
-              Salvar
+              {t("common.save")}
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setEditing(false)} data-testid="button-cancel-edit">
               <X className="h-3.5 w-3.5" />
@@ -160,7 +165,7 @@ export default function MeetingDetail() {
             data-testid="button-edit-meeting"
           >
             <Edit2 className="h-3.5 w-3.5" />
-            Editar
+            {t("common.edit")}
           </Button>
         )}
       </div>
@@ -173,7 +178,7 @@ export default function MeetingDetail() {
                 <div className="p-1.5 rounded-md bg-gradient-to-br from-emerald-500 to-teal-500">
                   <FileText className="h-3.5 w-3.5 text-white" />
                 </div>
-                <h2 className="text-base font-semibold">Resumo</h2>
+                <h2 className="text-base font-semibold">{t("meetingDetail.summary")}</h2>
               </div>
             </CardHeader>
             <CardContent>
@@ -187,7 +192,7 @@ export default function MeetingDetail() {
                 />
               ) : (
                 <p className="text-sm text-muted-foreground leading-relaxed" data-testid="text-meeting-summary">
-                  {meeting.summary || "Nenhum resumo disponível"}
+                  {meeting.summary || t("meetingDetail.noSummary")}
                 </p>
               )}
             </CardContent>
@@ -200,7 +205,7 @@ export default function MeetingDetail() {
                   <div className="p-1.5 rounded-md bg-gradient-to-br from-cyan-500 to-blue-500">
                     <FileText className="h-3.5 w-3.5 text-white" />
                   </div>
-                  <h2 className="text-base font-semibold">Transcrição</h2>
+                  <h2 className="text-base font-semibold">{t("meetingDetail.transcription")}</h2>
                 </div>
               </CardHeader>
               <CardContent>
@@ -218,7 +223,7 @@ export default function MeetingDetail() {
                   <div className="p-1.5 rounded-md bg-gradient-to-br from-amber-500 to-orange-500">
                     <CheckSquare className="h-3.5 w-3.5 text-white" />
                   </div>
-                  <h2 className="text-base font-semibold">Tarefas ({meetingTasks.length})</h2>
+                  <h2 className="text-base font-semibold">{t("meetingDetail.tasks")} ({meetingTasks.length})</h2>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -232,7 +237,7 @@ export default function MeetingDetail() {
                       {task.dueDate && (
                         <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          {new Date(task.dueDate).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+                          {new Date(task.dueDate).toLocaleDateString(dateLocale, { day: "2-digit", month: "short" })}
                         </p>
                       )}
                     </div>
@@ -248,9 +253,9 @@ export default function MeetingDetail() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="pending">Pendente</SelectItem>
-                          <SelectItem value="in_progress">Em progresso</SelectItem>
-                          <SelectItem value="completed">Concluída</SelectItem>
+                          <SelectItem value="pending">{t("status.pending")}</SelectItem>
+                          <SelectItem value="in_progress">{t("status.in_progress")}</SelectItem>
+                          <SelectItem value="completed">{t("status.completed")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -267,7 +272,7 @@ export default function MeetingDetail() {
                   <div className="p-1.5 rounded-md bg-gradient-to-br from-violet-500 to-purple-500">
                     <Lightbulb className="h-3.5 w-3.5 text-white" />
                   </div>
-                  <h2 className="text-base font-semibold">Decisões ({meetingDecisions.length})</h2>
+                  <h2 className="text-base font-semibold">{t("meetingDetail.decisions")} ({meetingDecisions.length})</h2>
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -288,12 +293,12 @@ export default function MeetingDetail() {
                 <div className="p-1.5 rounded-md bg-gradient-to-br from-cyan-500 to-blue-500">
                   <Users className="h-3.5 w-3.5 text-white" />
                 </div>
-                <h2 className="text-base font-semibold">Participantes</h2>
+                <h2 className="text-base font-semibold">{t("meetingDetail.participants")}</h2>
               </div>
             </CardHeader>
             <CardContent className="space-y-2">
               {meetingContacts.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nenhum participante identificado</p>
+                <p className="text-sm text-muted-foreground">{t("meetingDetail.noParticipants")}</p>
               ) : (
                 meetingContacts.map((contact) => (
                   <Link key={contact.id} href={`/contacts/${contact.id}`}>

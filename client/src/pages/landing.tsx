@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -103,6 +104,96 @@ function WaveformAnimation() {
 }
 
 export default function Landing() {
+  const { t } = useTranslation();
+
+  const stats = [
+    { value: 10, suffix: "x", label: t("landing.stat1Label") },
+    { value: 95, suffix: "%", label: t("landing.stat2Label") },
+    { value: 30, suffix: "s", label: t("landing.stat3Label") },
+    { value: 100, suffix: "%", label: t("landing.stat4Label") },
+  ];
+
+  const steps = [
+    {
+      icon: Mic,
+      step: t("landing.step01"),
+      title: t("landing.step1Title"),
+      description: t("landing.step1Desc"),
+      gradient: "from-emerald-500 to-teal-500",
+      color: "text-emerald-500",
+    },
+    {
+      icon: Brain,
+      step: t("landing.step02"),
+      title: t("landing.step2Title"),
+      description: t("landing.step2Desc"),
+      gradient: "from-cyan-500 to-blue-500",
+      color: "text-cyan-500",
+    },
+    {
+      icon: Zap,
+      step: t("landing.step03"),
+      title: t("landing.step3Title"),
+      description: t("landing.step3Desc"),
+      gradient: "from-violet-500 to-purple-500",
+      color: "text-violet-500",
+    },
+  ];
+
+  const features = [
+    {
+      icon: Mic,
+      title: t("landing.feature1Title"),
+      description: t("landing.feature1Desc"),
+      color: "text-emerald-500",
+      borderColor: "from-emerald-500 to-teal-500",
+    },
+    {
+      icon: Brain,
+      title: t("landing.feature2Title"),
+      description: t("landing.feature2Desc"),
+      color: "text-cyan-500",
+      borderColor: "from-cyan-500 to-blue-500",
+    },
+    {
+      icon: Users,
+      title: t("landing.feature3Title"),
+      description: t("landing.feature3Desc"),
+      color: "text-blue-500",
+      borderColor: "from-blue-500 to-indigo-500",
+    },
+    {
+      icon: Building2,
+      title: t("landing.feature4Title"),
+      description: t("landing.feature4Desc"),
+      color: "text-violet-500",
+      borderColor: "from-violet-500 to-purple-500",
+    },
+    {
+      icon: ListTodo,
+      title: t("landing.feature5Title"),
+      description: t("landing.feature5Desc"),
+      color: "text-amber-500",
+      borderColor: "from-amber-500 to-orange-500",
+    },
+    {
+      icon: BarChart3,
+      title: t("landing.feature6Title"),
+      description: t("landing.feature6Desc"),
+      color: "text-rose-500",
+      borderColor: "from-rose-500 to-pink-500",
+    },
+  ];
+
+  const benefits = [
+    t("landing.benefit1"),
+    t("landing.benefit2"),
+    t("landing.benefit3"),
+    t("landing.benefit4"),
+    t("landing.benefit5"),
+    t("landing.benefit6"),
+  ];
+
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
       <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-background/70 border-b">
@@ -116,7 +207,7 @@ export default function Landing() {
           </div>
           <div className="flex items-center gap-2">
             <Link href="/auth">
-              <Button data-testid="button-login">Entrar</Button>
+              <Button data-testid="button-login">{t("landing.login")}</Button>
             </Link>
           </div>
         </div>
@@ -137,11 +228,11 @@ export default function Landing() {
               variants={fadeUp}
               data-testid="text-hero-title"
             >
-              Fale. A IA{" "}
+              {t("landing.heroTitle1")}{" "}
               <span className="bg-gradient-to-r from-emerald-500 via-cyan-500 to-blue-500 bg-clip-text text-transparent">
-                organiza tudo
+                {t("landing.heroTitle2")}
               </span>{" "}
-              pra você.
+              {t("landing.heroTitle3")}
             </motion.h1>
 
             <motion.p
@@ -151,7 +242,7 @@ export default function Landing() {
               custom={2}
               variants={fadeUp}
             >
-              Grave um áudio rápido após cada reunião. Nossa IA transcreve, identifica contatos e empresas, extrai tarefas e decisões. Tudo organizado no seu CRM em segundos.
+              {t("landing.heroDescription")}
             </motion.p>
 
             <motion.div
@@ -165,7 +256,7 @@ export default function Landing() {
                 <div className="group relative inline-flex" data-testid="button-get-started">
                   <div className="absolute -inset-0.5 rounded-md bg-gradient-to-r from-emerald-500 via-cyan-500 to-blue-500 opacity-30 blur-md transition-all duration-500 group-hover:opacity-50" />
                   <Button size="lg" className="relative gap-2 text-base px-8 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0">
-                    Comece grátis agora
+                    {t("landing.getStarted")}
                     <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                   </Button>
                 </div>
@@ -191,8 +282,8 @@ export default function Landing() {
                     <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 animate-pulse" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-semibold">Gravando reunião...</p>
-                    <p className="text-xs text-muted-foreground">00:47 de áudio</p>
+                    <p className="text-sm font-semibold">{t("landing.demoRecording")}</p>
+                    <p className="text-xs text-muted-foreground">{t("landing.demoAudioTime")}</p>
                   </div>
                   <WaveformAnimation />
                 </div>
@@ -207,28 +298,28 @@ export default function Landing() {
                   <div className="p-3 rounded-md bg-emerald-500/10 dark:bg-emerald-500/5">
                     <div className="flex items-center gap-1.5 mb-1">
                       <Users className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-                      <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">Contato</p>
+                      <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">{t("landing.demoContact")}</p>
                     </div>
                     <p className="text-sm font-semibold">Marcos da Silva</p>
                   </div>
                   <div className="p-3 rounded-md bg-cyan-500/10 dark:bg-cyan-500/5">
                     <div className="flex items-center gap-1.5 mb-1">
                       <Building2 className="h-3 w-3 text-cyan-600 dark:text-cyan-400" />
-                      <p className="text-[11px] text-cyan-700 dark:text-cyan-400 font-medium">Empresa</p>
+                      <p className="text-[11px] text-cyan-700 dark:text-cyan-400 font-medium">{t("landing.demoCompany")}</p>
                     </div>
                     <p className="text-sm font-semibold">TechBrasil</p>
                   </div>
                   <div className="p-3 rounded-md bg-amber-500/10 dark:bg-amber-500/5">
                     <div className="flex items-center gap-1.5 mb-1">
                       <ListTodo className="h-3 w-3 text-amber-600 dark:text-amber-400" />
-                      <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium">Tarefa</p>
+                      <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium">{t("landing.demoTask")}</p>
                     </div>
                     <p className="text-sm font-semibold">Enviar proposta</p>
                   </div>
                   <div className="p-3 rounded-md bg-violet-500/10 dark:bg-violet-500/5">
                     <div className="flex items-center gap-1.5 mb-1">
                       <Clock className="h-3 w-3 text-violet-600 dark:text-violet-400" />
-                      <p className="text-[11px] text-violet-700 dark:text-violet-400 font-medium">Prazo</p>
+                      <p className="text-[11px] text-violet-700 dark:text-violet-400 font-medium">{t("landing.demoDeadline")}</p>
                     </div>
                     <p className="text-sm font-semibold">Sexta-feira</p>
                   </div>
@@ -242,12 +333,7 @@ export default function Landing() {
       <section className="py-20 px-6 border-t">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
-            {[
-              { value: 10, suffix: "x", label: "mais rápido que digitar" },
-              { value: 95, suffix: "%", label: "precisão na transcrição" },
-              { value: 30, suffix: "s", label: "para organizar uma reunião" },
-              { value: 100, suffix: "%", label: "automático com IA" },
-            ].map((stat, i) => (
+            {stats.map((stat, i) => (
               <motion.div
                 key={stat.label}
                 className="text-center"
@@ -280,42 +366,17 @@ export default function Landing() {
             variants={fadeUp}
           >
             <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4" data-testid="text-how-it-works">
-              Três passos. Zero esforço.
+              {t("landing.howItWorksTitle")}
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              Da reunião à ação em menos de um minuto
+              {t("landing.howItWorksSubtitle")}
             </p>
           </motion.div>
 
           <div className="relative max-w-5xl mx-auto">
             <div className="absolute left-[19px] md:left-1/2 top-0 bottom-0 w-px md:-translate-x-px bg-gradient-to-b from-emerald-500/40 via-cyan-500/40 to-violet-500/40" />
 
-            {[
-              {
-                icon: Mic,
-                step: "01",
-                title: "Grave um áudio",
-                description: "Saiu da reunião? Abra o app e conte o que aconteceu. Sem digitar, sem formulários, sem burocracia. Fale naturalmente como se estivesse contando para um colega.",
-                gradient: "from-emerald-500 to-teal-500",
-                color: "text-emerald-500",
-              },
-              {
-                icon: Brain,
-                step: "02",
-                title: "A IA processa tudo",
-                description: "Inteligência artificial avançada transcreve o áudio, identifica pessoas e empresas mencionadas, extrai tarefas e prazos, e organiza decisões importantes.",
-                gradient: "from-cyan-500 to-blue-500",
-                color: "text-cyan-500",
-              },
-              {
-                icon: Zap,
-                step: "03",
-                title: "CRM atualizado",
-                description: "Contatos criados, empresas vinculadas, tarefas na fila e decisões registradas. Tudo automático. Abra o CRM e veja tudo organizado, pronto para ação.",
-                gradient: "from-violet-500 to-purple-500",
-                color: "text-violet-500",
-              },
-            ].map((feature, i) => {
+            {steps.map((feature, i) => {
               const isLeft = i % 2 === 0;
               return (
                 <motion.div
@@ -333,7 +394,7 @@ export default function Landing() {
                   </div>
 
                   <div className="flex-1">
-                    <span className={`text-sm font-bold tracking-widest uppercase ${feature.color}`}>Passo {feature.step}</span>
+                    <span className={`text-sm font-bold tracking-widest uppercase ${feature.color}`}>{t("landing.stepLabel")} {feature.step}</span>
                     <h3 className="text-2xl md:text-3xl font-bold mt-2 mb-3">{feature.title}</h3>
                     <p className="text-muted-foreground leading-relaxed text-base md:text-lg">{feature.description}</p>
                   </div>
@@ -355,56 +416,13 @@ export default function Landing() {
             variants={fadeUp}
           >
             <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4">
-              Tudo que você precisa.{" "}
-              <span className="bg-gradient-to-r from-emerald-500 to-cyan-500 bg-clip-text text-transparent">Nada que não precisa.</span>
+              {t("landing.featuresTitle1")}{" "}
+              <span className="bg-gradient-to-r from-emerald-500 to-cyan-500 bg-clip-text text-transparent">{t("landing.featuresTitle2")}</span>
             </h2>
           </motion.div>
 
           <div className="space-y-20">
-            {[
-              {
-                icon: Mic,
-                title: "Gravação Inteligente",
-                description: "Grave com um toque. Pause e retome quando quiser. Auto-pausa quando o celular toca ou a tela desliga.",
-                color: "text-emerald-500",
-                borderColor: "from-emerald-500 to-teal-500",
-              },
-              {
-                icon: Brain,
-                title: "Transcrição com IA",
-                description: "Áudio convertido em texto com precisão impressionante. Suporte completo para português brasileiro.",
-                color: "text-cyan-500",
-                borderColor: "from-cyan-500 to-blue-500",
-              },
-              {
-                icon: Users,
-                title: "Contatos Automáticos",
-                description: "Mencionou alguém no áudio? O contato é criado automaticamente e vinculado à reunião.",
-                color: "text-blue-500",
-                borderColor: "from-blue-500 to-indigo-500",
-              },
-              {
-                icon: Building2,
-                title: "Empresas Organizadas",
-                description: "Empresas identificadas e criadas automaticamente. Contatos agrupados por empresa.",
-                color: "text-violet-500",
-                borderColor: "from-violet-500 to-purple-500",
-              },
-              {
-                icon: ListTodo,
-                title: "Tarefas Extraídas",
-                description: "A IA identifica compromissos, prazos e ações mencionadas e cria tarefas automaticamente.",
-                color: "text-amber-500",
-                borderColor: "from-amber-500 to-orange-500",
-              },
-              {
-                icon: BarChart3,
-                title: "Relatórios Visuais",
-                description: "Acompanhe reuniões por mês, veja resumos e métricas do seu CRM em gráficos intuitivos.",
-                color: "text-rose-500",
-                borderColor: "from-rose-500 to-pink-500",
-              },
-            ].map((feature, i) => {
+            {features.map((feature, i) => {
               const isLeft = i % 2 === 0;
               return (
                 <motion.div
@@ -447,21 +465,14 @@ export default function Landing() {
               variants={fadeUp}
             >
               <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-6">
-                Você perde informação valiosa{" "}
-                <span className="bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">todo dia</span>
+                {t("landing.painTitle1")}{" "}
+                <span className="bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">{t("landing.painTitle2")}</span>
               </h2>
               <p className="text-muted-foreground text-lg mb-8 leading-relaxed">
-                Sai da reunião, pega trânsito, chega no escritório e já esqueceu metade do que foi combinado. Nomes, prazos, decisões... tudo perdido. Até agora.
+                {t("landing.painDescription")}
               </p>
               <ul className="space-y-4">
-                {[
-                  "Registre reuniões em segundos, não em minutos",
-                  "Contatos e empresas criados sem digitar nada",
-                  "Tarefas e prazos extraídos automaticamente",
-                  "Histórico completo de cada contato e empresa",
-                  "Funciona offline. Sincroniza quando conectar",
-                  "Interface limpa, sem poluição visual",
-                ].map((benefit) => (
+                {benefits.map((benefit) => (
                   <li key={benefit} className="flex items-start gap-3">
                     <div className="mt-0.5 shrink-0">
                       <CheckCircle className="h-5 w-5 text-emerald-500" />
@@ -626,19 +637,19 @@ export default function Landing() {
             variants={fadeUp}
           >
             <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-6">
-              Pronto para nunca mais{" "}
+              {t("landing.ctaTitle1")}{" "}
               <span className="bg-gradient-to-r from-emerald-500 via-cyan-500 to-blue-500 bg-clip-text text-transparent">
-                perder uma informação
+                {t("landing.ctaTitle2")}
               </span>
-              ?
+              {" "}{t("landing.ctaTitle3")}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-              Junte-se a profissionais que já transformaram a forma como registram reuniões. Comece agora, é grátis.
+              {t("landing.ctaDescription")}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4">
               <Link href="/auth">
                 <Button size="lg" className="gap-2 text-base px-8 bg-gradient-to-r from-emerald-500 to-cyan-500 border-emerald-500" data-testid="button-cta-final">
-                  Criar conta gratuita
+                  {t("landing.ctaButton")}
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </Link>
@@ -661,7 +672,7 @@ export default function Landing() {
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
-              {new Date().getFullYear()} VoiceCRM. Todos os direitos reservados.
+              {new Date().getFullYear()} {t("landing.footer")}
             </p>
           </div>
         </div>
@@ -669,4 +680,3 @@ export default function Landing() {
     </div>
   );
 }
-

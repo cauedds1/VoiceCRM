@@ -3,6 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CalendarDays, Users, Building2, CheckCircle2, Clock, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface MeetingsByMonth {
   months: { month: string; label: string; count: number }[];
@@ -21,6 +22,7 @@ interface ReportSummary {
 }
 
 function TrendIndicator({ current, previous }: { current: number; previous: number }) {
+  const { t } = useTranslation();
   if (current > previous) {
     const pct = previous === 0 ? 100 : Math.round(((current - previous) / previous) * 100);
     return (
@@ -42,12 +44,13 @@ function TrendIndicator({ current, previous }: { current: number; previous: numb
   return (
     <span className="text-xs text-muted-foreground flex items-center gap-0.5">
       <Minus className="h-3 w-3" />
-      Igual
+      {t("common.equal")}
     </span>
   );
 }
 
 export default function Reports() {
+  const { t } = useTranslation();
   const { data: meetingsData, isLoading: loadingMeetings } = useQuery<MeetingsByMonth>({
     queryKey: ["/api/reports/meetings-by-month"],
   });
@@ -60,8 +63,8 @@ export default function Reports() {
   return (
     <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6">
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight" data-testid="text-reports-title">Relatórios</h1>
-        <p className="text-muted-foreground mt-1">Visão geral da sua atividade nos últimos 12 meses</p>
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight" data-testid="text-reports-title">{t("reports.title")}</h1>
+        <p className="text-muted-foreground mt-1">{t("reports.subtitle")}</p>
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -75,7 +78,7 @@ export default function Reports() {
               <CardContent className="p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs text-muted-foreground">Total de Reuniões</p>
+                    <p className="text-xs text-muted-foreground">{t("reports.totalMeetings")}</p>
                     <p className="text-2xl font-bold mt-1">{summary?.totalMeetings || 0}</p>
                   </div>
                   <div className="p-2 rounded-md bg-gradient-to-br from-emerald-500 to-teal-500 shrink-0">
@@ -88,7 +91,7 @@ export default function Reports() {
               <CardContent className="p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs text-muted-foreground">Contatos</p>
+                    <p className="text-xs text-muted-foreground">{t("reports.contacts")}</p>
                     <p className="text-2xl font-bold mt-1">{summary?.totalContacts || 0}</p>
                   </div>
                   <div className="p-2 rounded-md bg-gradient-to-br from-cyan-500 to-blue-500 shrink-0">
@@ -101,7 +104,7 @@ export default function Reports() {
               <CardContent className="p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs text-muted-foreground">Empresas</p>
+                    <p className="text-xs text-muted-foreground">{t("reports.companies")}</p>
                     <p className="text-2xl font-bold mt-1">{summary?.totalCompanies || 0}</p>
                   </div>
                   <div className="p-2 rounded-md bg-gradient-to-br from-violet-500 to-purple-500 shrink-0">
@@ -114,9 +117,9 @@ export default function Reports() {
               <CardContent className="p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs text-muted-foreground">Tarefas</p>
+                    <p className="text-xs text-muted-foreground">{t("reports.tasks")}</p>
                     <p className="text-2xl font-bold mt-1">{summary?.completedTasks || 0}<span className="text-base font-normal text-muted-foreground">/{summary?.totalTasks || 0}</span></p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{summary?.pendingTasks || 0} pendentes</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{summary?.pendingTasks || 0} {t("reports.pendingCount")}</p>
                   </div>
                   <div className="p-2 rounded-md bg-gradient-to-br from-amber-500 to-orange-500 shrink-0">
                     <CheckCircle2 className="h-4 w-4 text-white" />
@@ -132,13 +135,13 @@ export default function Reports() {
         <CardHeader className="pb-2">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h2 className="text-base font-semibold">Reuniões por Mês</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">Últimos 12 meses</p>
+              <h2 className="text-base font-semibold">{t("reports.meetingsByMonth")}</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">{t("reports.last12Months")}</p>
             </div>
             {meetingsData && (
               <div className="flex items-center gap-4">
                 <div className="text-right">
-                  <p className="text-xs text-muted-foreground">Este mês</p>
+                  <p className="text-xs text-muted-foreground">{t("reports.thisMonth")}</p>
                   <div className="flex items-center gap-2">
                     <p className="text-lg font-bold" data-testid="text-this-month">{meetingsData.thisMonth}</p>
                     <TrendIndicator current={meetingsData.thisMonth} previous={meetingsData.lastMonth} />
@@ -177,7 +180,7 @@ export default function Reports() {
                     fontSize: "12px",
                   }}
                   labelStyle={{ color: "hsl(var(--foreground))" }}
-                  formatter={(value: number) => [value, "Reuniões"]}
+                  formatter={(value: number) => [value, t("reports.chartLabel")]}
                 />
                 <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} maxBarSize={40} />
               </BarChart>
@@ -185,8 +188,8 @@ export default function Reports() {
           ) : (
             <div className="text-center py-16">
               <Clock className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-              <p className="text-sm text-muted-foreground">Nenhuma reunião registrada ainda</p>
-              <p className="text-xs text-muted-foreground mt-1">Grave seu primeiro áudio para começar a gerar relatórios</p>
+              <p className="text-sm text-muted-foreground">{t("reports.noMeetingsYet")}</p>
+              <p className="text-xs text-muted-foreground mt-1">{t("reports.recordFirstAudio")}</p>
             </div>
           )}
         </CardContent>

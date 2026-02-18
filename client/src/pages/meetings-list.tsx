@@ -7,10 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
 import type { Meeting } from "@shared/schema";
+import { useTranslation } from "react-i18next";
+import i18n from "@/i18n";
 
 export default function MeetingsList() {
+  const { t } = useTranslation();
   const { data: meetings = [], isLoading } = useQuery<Meeting[]>({ queryKey: ["/api/meetings"] });
   const [search, setSearch] = useState("");
+
+  const dateLocale = i18n.language === "en" ? "en-US" : "pt-BR";
 
   const filtered = meetings
     .filter((m) =>
@@ -23,20 +28,20 @@ export default function MeetingsList() {
     <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Reuniões</h1>
-          <p className="text-muted-foreground mt-1">Histórico de todas as suas reuniões</p>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{t("meetingsList.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("meetingsList.subtitle")}</p>
         </div>
         <div className="flex items-center gap-2">
           <Link href="/meetings/new-manual">
             <Button variant="outline" className="gap-2" data-testid="button-new-meeting-manual">
               <PenLine className="h-4 w-4" />
-              Manual
+              {t("common.manual")}
             </Button>
           </Link>
           <Link href="/meetings/new">
             <Button className="gap-2 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white" data-testid="button-new-meeting">
               <Mic className="h-4 w-4" />
-              Nova Reunião
+              {t("meetingsList.newMeeting")}
             </Button>
           </Link>
         </div>
@@ -45,7 +50,7 @@ export default function MeetingsList() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Buscar reuniões..."
+          placeholder={t("meetingsList.searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-9"
@@ -68,16 +73,16 @@ export default function MeetingsList() {
           <div className="text-center py-16">
             <Mic className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
             <h3 className="text-lg font-medium mb-2">
-              {search ? "Nenhuma reunião encontrada" : "Nenhuma reunião ainda"}
+              {search ? t("meetingsList.noMeetingsFound") : t("meetingsList.noMeetingsYet")}
             </h3>
             <p className="text-muted-foreground mb-4">
-              {search ? "Tente buscar com outros termos" : "Grave sua primeira reunião por áudio"}
+              {search ? t("meetingsList.tryOtherSearch") : t("meetingsList.recordFirstMeeting")}
             </p>
             {!search && (
               <Link href="/meetings/new">
                 <Button className="gap-2 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white">
                   <Plus className="h-4 w-4" />
-                  Gravar reunião
+                  {t("meetingsList.recordMeeting")}
                 </Button>
               </Link>
             )}
@@ -93,7 +98,7 @@ export default function MeetingsList() {
                       <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         {meeting.date
-                          ? new Date(meeting.date).toLocaleDateString("pt-BR", {
+                          ? new Date(meeting.date).toLocaleDateString(dateLocale, {
                               weekday: "long",
                               day: "2-digit",
                               month: "long",

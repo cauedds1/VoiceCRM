@@ -28,15 +28,8 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useState } from "react";
 import type { Task, Meeting, Contact } from "@shared/schema";
-
-function priorityLabel(p: string) {
-  switch (p) {
-    case "high": return "Alta";
-    case "medium": return "Média";
-    case "low": return "Baixa";
-    default: return p;
-  }
-}
+import { useTranslation } from "react-i18next";
+import i18n from "@/i18n";
 
 function priorityBadgeVariant(p: string): "destructive" | "secondary" | "outline" {
   switch (p) {
@@ -59,6 +52,7 @@ type StatusFilter = "all" | "pending" | "in_progress" | "completed";
 type PriorityFilter = "all" | "high" | "medium" | "low";
 
 export default function TasksList() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("all");
@@ -75,6 +69,17 @@ export default function TasksList() {
   const [newContactCompany, setNewContactCompany] = useState("");
   const [newContactPhone, setNewContactPhone] = useState("");
   const [newContactEmail, setNewContactEmail] = useState("");
+
+  const priorityLabel = (p: string) => {
+    switch (p) {
+      case "high": return t("priority.high");
+      case "medium": return t("priority.medium");
+      case "low": return t("priority.low");
+      default: return p;
+    }
+  };
+
+  const dateLocale = i18n.language === "en" ? "en-US" : "pt-BR";
 
   const { data: tasks = [], isLoading } = useQuery<Task[]>({
     queryKey: ["/api/tasks"],
@@ -93,7 +98,7 @@ export default function TasksList() {
       apiRequest("PATCH", `/api/tasks/${id}`, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-      toast({ title: "Tarefa atualizada" });
+      toast({ title: t("tasks.taskUpdated") });
     },
   });
 
@@ -102,11 +107,11 @@ export default function TasksList() {
       apiRequest("POST", "/api/tasks", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-      toast({ title: "Tarefa criada com sucesso!" });
+      toast({ title: t("tasks.taskCreated") });
       resetDialog();
     },
     onError: (error: Error) => {
-      toast({ title: "Erro ao criar tarefa", description: error.message, variant: "destructive" });
+      toast({ title: t("tasks.errorCreating"), description: error.message, variant: "destructive" });
     },
   });
 
@@ -124,10 +129,10 @@ export default function TasksList() {
       setNewContactCompany("");
       setNewContactPhone("");
       setNewContactEmail("");
-      toast({ title: "Contato criado e anexado!" });
+      toast({ title: t("tasks.contactCreated") });
     },
     onError: (error: Error) => {
-      toast({ title: "Erro ao criar contato", description: error.message, variant: "destructive" });
+      toast({ title: t("tasks.errorCreatingContact"), description: error.message, variant: "destructive" });
     },
   });
 
@@ -150,7 +155,7 @@ export default function TasksList() {
   const handleCreateTask = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim()) {
-      toast({ title: "Informe o título da tarefa", variant: "destructive" });
+      toast({ title: t("tasks.titleRequired"), variant: "destructive" });
       return;
     }
     createTask.mutate({
@@ -165,7 +170,7 @@ export default function TasksList() {
   const handleCreateContact = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newContactName.trim()) {
-      toast({ title: "Informe o nome do contato", variant: "destructive" });
+      toast({ title: t("tasks.contactNameRequired"), variant: "destructive" });
       return;
     }
     createContact.mutate({
@@ -202,60 +207,60 @@ export default function TasksList() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight" data-testid="text-tasks-title">
-            Tarefas
+            {t("tasks.title")}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Geradas pela IA ou adicionadas manualmente
+            {t("tasks.subtitle")}
           </p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) resetDialog(); else setDialogOpen(true); }}>
           <DialogTrigger asChild>
             <Button className="gap-2 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white" data-testid="button-add-task">
               <Plus className="h-4 w-4" />
-              Nova Tarefa
+              {t("tasks.newTask")}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Nova Tarefa</DialogTitle>
+              <DialogTitle>{t("tasks.newTaskTitle")}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleCreateTask} className="space-y-4 mt-2">
               <div>
-                <label className="text-xs text-muted-foreground mb-1.5 block">Título</label>
+                <label className="text-xs text-muted-foreground mb-1.5 block">{t("tasks.titleLabel")}</label>
                 <Input
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  placeholder="Ex: Enviar proposta para o cliente"
+                  placeholder={t("tasks.titlePlaceholder")}
                   required
                   data-testid="input-task-title"
                 />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground mb-1.5 block">Descrição (opcional)</label>
+                <label className="text-xs text-muted-foreground mb-1.5 block">{t("tasks.descriptionLabel")}</label>
                 <Textarea
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
-                  placeholder="Detalhes sobre a tarefa..."
+                  placeholder={t("tasks.descriptionPlaceholder")}
                   rows={3}
                   data-testid="input-task-description"
                 />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1.5 block">Prioridade</label>
+                  <label className="text-xs text-muted-foreground mb-1.5 block">{t("tasks.priorityLabel")}</label>
                   <Select value={newPriority} onValueChange={setNewPriority}>
                     <SelectTrigger data-testid="select-task-priority">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="low">Baixa</SelectItem>
-                      <SelectItem value="medium">Média</SelectItem>
-                      <SelectItem value="high">Alta</SelectItem>
+                      <SelectItem value="low">{t("priority.low")}</SelectItem>
+                      <SelectItem value="medium">{t("priority.medium")}</SelectItem>
+                      <SelectItem value="high">{t("priority.high")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1.5 block">Prazo (opcional)</label>
+                  <label className="text-xs text-muted-foreground mb-1.5 block">{t("tasks.dueDateLabel")}</label>
                   <Input
                     type="date"
                     value={newDueDate}
@@ -266,7 +271,7 @@ export default function TasksList() {
               </div>
 
               <div>
-                <label className="text-xs text-muted-foreground mb-1.5 block">Contato (opcional)</label>
+                <label className="text-xs text-muted-foreground mb-1.5 block">{t("tasks.contactLabel")}</label>
                 {selectedContact ? (
                   <div className="flex items-center gap-2 p-2.5 rounded-md bg-accent/50">
                     <User className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -293,7 +298,7 @@ export default function TasksList() {
                         <div className="relative">
                           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                           <Input
-                            placeholder="Buscar contato..."
+                            placeholder={t("tasks.searchContactPlaceholder")}
                             value={contactSearch}
                             onChange={(e) => setContactSearch(e.target.value)}
                             className="pl-8"
@@ -303,7 +308,7 @@ export default function TasksList() {
                         <div className="max-h-36 overflow-y-auto space-y-1 rounded-md border p-1">
                           {filteredContacts.length === 0 ? (
                             <p className="text-xs text-muted-foreground text-center py-3">
-                              Nenhum contato encontrado
+                              {t("tasks.noContactFound")}
                             </p>
                           ) : (
                             filteredContacts.map((c) => (
@@ -339,7 +344,7 @@ export default function TasksList() {
                             data-testid="button-new-contact-from-task"
                           >
                             <UserPlus className="h-3.5 w-3.5" />
-                            Novo Contato
+                            {t("tasks.newContactFromTask")}
                           </Button>
                           <Button
                             type="button"
@@ -351,34 +356,34 @@ export default function TasksList() {
                             }}
                             data-testid="button-cancel-contact-picker"
                           >
-                            Cancelar
+                            {t("common.cancel")}
                           </Button>
                         </div>
                       </>
                     ) : (
                       <div className="space-y-3 rounded-md border p-3">
-                        <p className="text-xs font-medium text-muted-foreground">Novo Contato</p>
+                        <p className="text-xs font-medium text-muted-foreground">{t("tasks.newContactTitle")}</p>
                         <Input
-                          placeholder="Nome do contato"
+                          placeholder={t("tasks.contactNamePlaceholder")}
                           value={newContactName}
                           onChange={(e) => setNewContactName(e.target.value)}
                           data-testid="input-new-contact-name"
                         />
                         <Input
-                          placeholder="Empresa (opcional)"
+                          placeholder={t("tasks.contactCompanyPlaceholder")}
                           value={newContactCompany}
                           onChange={(e) => setNewContactCompany(e.target.value)}
                           data-testid="input-new-contact-company"
                         />
                         <div className="grid grid-cols-2 gap-2">
                           <Input
-                            placeholder="Telefone"
+                            placeholder={t("tasks.contactPhonePlaceholder")}
                             value={newContactPhone}
                             onChange={(e) => setNewContactPhone(e.target.value)}
                             data-testid="input-new-contact-phone"
                           />
                           <Input
-                            placeholder="Email"
+                            placeholder={t("tasks.contactEmailPlaceholder")}
                             value={newContactEmail}
                             onChange={(e) => setNewContactEmail(e.target.value)}
                             data-testid="input-new-contact-email"
@@ -394,7 +399,7 @@ export default function TasksList() {
                             data-testid="button-save-new-contact"
                           >
                             <UserPlus className="h-3.5 w-3.5" />
-                            {createContact.isPending ? "Salvando..." : "Salvar Contato"}
+                            {createContact.isPending ? t("common.saving") : t("tasks.saveContact")}
                           </Button>
                           <Button
                             type="button"
@@ -409,7 +414,7 @@ export default function TasksList() {
                             }}
                             data-testid="button-cancel-new-contact"
                           >
-                            Voltar
+                            {t("common.back")}
                           </Button>
                         </div>
                       </div>
@@ -424,7 +429,7 @@ export default function TasksList() {
                     data-testid="button-attach-contact"
                   >
                     <User className="h-4 w-4" />
-                    Anexar Contato
+                    {t("tasks.attachContact")}
                   </Button>
                 )}
               </div>
@@ -435,7 +440,7 @@ export default function TasksList() {
                 disabled={createTask.isPending}
                 data-testid="button-save-task"
               >
-                {createTask.isPending ? "Criando..." : "Criar Tarefa"}
+                {createTask.isPending ? t("common.creating") : t("tasks.createTask")}
               </Button>
             </form>
           </DialogContent>
@@ -449,7 +454,7 @@ export default function TasksList() {
               <Clock className="h-4 w-4 text-white" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Pendentes</p>
+              <p className="text-xs text-muted-foreground">{t("tasks.pending")}</p>
               {isLoading ? (
                 <Skeleton className="h-6 w-8 mt-0.5" />
               ) : (
@@ -464,7 +469,7 @@ export default function TasksList() {
               <AlertCircle className="h-4 w-4 text-white" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Em progresso</p>
+              <p className="text-xs text-muted-foreground">{t("tasks.inProgress")}</p>
               {isLoading ? (
                 <Skeleton className="h-6 w-8 mt-0.5" />
               ) : (
@@ -479,7 +484,7 @@ export default function TasksList() {
               <CheckSquare className="h-4 w-4 text-white" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Concluídas</p>
+              <p className="text-xs text-muted-foreground">{t("tasks.completed")}</p>
               {isLoading ? (
                 <Skeleton className="h-6 w-8 mt-0.5" />
               ) : (
@@ -493,17 +498,17 @@ export default function TasksList() {
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
           <Filter className="h-3.5 w-3.5" />
-          Filtros:
+          {t("common.filters")}:
         </div>
         <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
           <SelectTrigger className="w-40" data-testid="select-status-filter">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos os status</SelectItem>
-            <SelectItem value="pending">Pendente</SelectItem>
-            <SelectItem value="in_progress">Em progresso</SelectItem>
-            <SelectItem value="completed">Concluída</SelectItem>
+            <SelectItem value="all">{t("tasks.allStatuses")}</SelectItem>
+            <SelectItem value="pending">{t("status.pending")}</SelectItem>
+            <SelectItem value="in_progress">{t("status.in_progress")}</SelectItem>
+            <SelectItem value="completed">{t("status.completed")}</SelectItem>
           </SelectContent>
         </Select>
         <Select value={priorityFilter} onValueChange={(v) => setPriorityFilter(v as PriorityFilter)}>
@@ -511,10 +516,10 @@ export default function TasksList() {
             <SelectValue placeholder="Prioridade" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todas prioridades</SelectItem>
-            <SelectItem value="high">Alta</SelectItem>
-            <SelectItem value="medium">Média</SelectItem>
-            <SelectItem value="low">Baixa</SelectItem>
+            <SelectItem value="all">{t("tasks.allPriorities")}</SelectItem>
+            <SelectItem value="high">{t("priority.high")}</SelectItem>
+            <SelectItem value="medium">{t("priority.medium")}</SelectItem>
+            <SelectItem value="low">{t("priority.low")}</SelectItem>
           </SelectContent>
         </Select>
         {(statusFilter !== "all" || priorityFilter !== "all") && (
@@ -527,7 +532,7 @@ export default function TasksList() {
             }}
             data-testid="button-clear-filters"
           >
-            Limpar filtros
+            {t("common.clearFilters")}
           </Button>
         )}
       </div>
@@ -544,12 +549,12 @@ export default function TasksList() {
             <CheckSquare className="h-10 w-10 text-amber-500/50" />
           </div>
           <h3 className="text-lg font-medium mb-2">
-            {tasks.length === 0 ? "Nenhuma tarefa ainda" : "Nenhuma tarefa encontrada"}
+            {tasks.length === 0 ? t("tasks.noTasksYet") : t("tasks.noTasksFound")}
           </h3>
           <p className="text-sm text-muted-foreground max-w-sm mx-auto">
             {tasks.length === 0
-              ? "Adicione tarefas manualmente ou grave uma reunião para a IA identificar automaticamente"
-              : "Tente alterar os filtros para encontrar suas tarefas"}
+              ? t("tasks.noTasksDesc")
+              : t("tasks.noTasksFilterDesc")}
           </p>
           {tasks.length === 0 && (
             <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
@@ -559,12 +564,12 @@ export default function TasksList() {
                 data-testid="button-add-task-empty"
               >
                 <Plus className="h-4 w-4" />
-                Nova Tarefa
+                {t("tasks.newTask")}
               </Button>
               <Link href="/meetings/new">
                 <Button variant="outline" className="gap-2" data-testid="button-new-meeting-from-tasks">
                   <Mic className="h-4 w-4" />
-                  Gravar Reunião
+                  {t("tasks.recordMeeting")}
                 </Button>
               </Link>
             </div>
@@ -610,8 +615,8 @@ export default function TasksList() {
                         {task.dueDate && (
                           <span className={`text-xs flex items-center gap-1 ${isOverdue ? "text-red-500 font-medium" : "text-muted-foreground"}`}>
                             <Calendar className="h-3 w-3" />
-                            {isOverdue && "Atrasada: "}
-                            {new Date(task.dueDate).toLocaleDateString("pt-BR", {
+                            {isOverdue && `${t("tasks.overdue")}: `}
+                            {new Date(task.dueDate).toLocaleDateString(dateLocale, {
                               day: "2-digit",
                               month: "short",
                               year: "numeric",
@@ -629,7 +634,7 @@ export default function TasksList() {
                         {!task.meetingId && !task.contactId && (
                           <span className="text-xs text-muted-foreground flex items-center gap-1" data-testid={`task-manual-label-${task.id}`}>
                             <Plus className="h-3 w-3" />
-                            Manual
+                            {t("common.manual")}
                           </span>
                         )}
                       </div>
@@ -644,9 +649,9 @@ export default function TasksList() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="pending">Pendente</SelectItem>
-                          <SelectItem value="in_progress">Em progresso</SelectItem>
-                          <SelectItem value="completed">Concluída</SelectItem>
+                          <SelectItem value="pending">{t("status.pending")}</SelectItem>
+                          <SelectItem value="in_progress">{t("status.in_progress")}</SelectItem>
+                          <SelectItem value="completed">{t("status.completed")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
