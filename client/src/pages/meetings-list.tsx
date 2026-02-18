@@ -327,7 +327,6 @@ export default function MeetingsList() {
         ) : (
           <div className="space-y-4">
             {folders
-              .filter(f => folderMap.has(f.id))
               .map(folder => renderFolderSection(folder, folderMap.get(folder.id) || []))}
             {ungrouped.length > 0 && (
               <div className="space-y-2">
