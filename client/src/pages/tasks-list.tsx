@@ -2,7 +2,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
 import {
   CheckSquare, Clock, Calendar, Filter, AlertCircle, Mic, Plus,
-  User, UserPlus, X, Search
+  User, UserPlus, X, Search, Edit2
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -70,6 +70,17 @@ export default function TasksList() {
   const [newContactPhone, setNewContactPhone] = useState("");
   const [newContactEmail, setNewContactEmail] = useState("");
 
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editPriority, setEditPriority] = useState("medium");
+  const [editStatus, setEditStatus] = useState("pending");
+  const [editDueDate, setEditDueDate] = useState("");
+  const [editContactId, setEditContactId] = useState<string | null>(null);
+  const [editContactSearch, setEditContactSearch] = useState("");
+  const [showEditContactPicker, setShowEditContactPicker] = useState(false);
+
   const priorityLabel = (p: string) => {
     switch (p) {
       case "high": return t("priority.high");
@@ -135,6 +146,75 @@ export default function TasksList() {
       toast({ title: t("tasks.errorCreatingContact"), description: error.message, variant: "destructive" });
     },
   });
+
+  const editTaskMutation = useMutation({
+    mutationFn: async (data: { id: string; title: string; description?: string | null; priority: string; status: string; dueDate?: string | null; contactId?: string | null }) =>
+      apiRequest("PATCH", `/api/tasks/${data.id}`, {
+        title: data.title,
+        description: data.description,
+        priority: data.priority,
+        status: data.status,
+        dueDate: data.dueDate,
+        contactId: data.contactId,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      toast({ title: t("tasks.taskEditSuccess") });
+      resetEditDialog();
+    },
+    onError: (error: Error) => {
+      toast({ title: t("tasks.errorCreating"), description: error.message, variant: "destructive" });
+    },
+  });
+
+  const openEditDialog = (task: Task) => {
+    setEditingTask(task);
+    setEditTitle(task.title);
+    setEditDescription(task.description || "");
+    setEditPriority(task.priority);
+    setEditStatus(task.status);
+    setEditDueDate(task.dueDate ? new Date(task.dueDate).toISOString().split("T")[0] : "");
+    setEditContactId(task.contactId || null);
+    setShowEditContactPicker(false);
+    setEditContactSearch("");
+    setEditDialogOpen(true);
+  };
+
+  const resetEditDialog = () => {
+    setEditDialogOpen(false);
+    setEditingTask(null);
+    setEditTitle("");
+    setEditDescription("");
+    setEditPriority("medium");
+    setEditStatus("pending");
+    setEditDueDate("");
+    setEditContactId(null);
+    setShowEditContactPicker(false);
+    setEditContactSearch("");
+  };
+
+  const handleEditTask = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTask || !editTitle.trim()) {
+      toast({ title: t("tasks.titleRequired"), variant: "destructive" });
+      return;
+    }
+    editTaskMutation.mutate({
+      id: editingTask.id,
+      title: editTitle.trim(),
+      description: editDescription.trim() || null,
+      priority: editPriority,
+      status: editStatus,
+      dueDate: editDueDate || null,
+      contactId: editContactId,
+    });
+  };
+
+  const filteredEditContacts = contacts.filter(
+    (c) =>
+      c.name.toLowerCase().includes(editContactSearch.toLowerCase()) ||
+      (c.companyName || "").toLowerCase().includes(editContactSearch.toLowerCase())
+  );
 
   const resetDialog = () => {
     setDialogOpen(false);
@@ -640,7 +720,7 @@ export default function TasksList() {
                       </div>
                     </div>
 
-                    <div className="shrink-0 self-end sm:self-start">
+                    <div className="shrink-0 self-end sm:self-start flex items-center gap-2">
                       <Select
                         value={task.status}
                         onValueChange={(value) => updateTask.mutate({ id: task.id, status: value })}
@@ -654,6 +734,14 @@ export default function TasksList() {
                           <SelectItem value="completed">{t("status.completed")}</SelectItem>
                         </SelectContent>
                       </Select>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => openEditDialog(task)}
+                        data-testid={`button-edit-task-${task.id}`}
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
@@ -662,6 +750,171 @@ export default function TasksList() {
           })}
         </div>
       )}
+
+      <Dialog open={editDialogOpen} onOpenChange={(open) => { if (!open) resetEditDialog(); }}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{t("tasks.editTaskTitle")}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleEditTask} className="space-y-4 mt-2">
+            <div>
+              <label className="text-xs text-muted-foreground mb-1.5 block">{t("tasks.titleLabel")}</label>
+              <Input
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                placeholder={t("tasks.titlePlaceholder")}
+                required
+                data-testid="input-edit-task-title"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1.5 block">{t("tasks.descriptionLabel")}</label>
+              <Textarea
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                placeholder={t("tasks.descriptionPlaceholder")}
+                rows={3}
+                data-testid="input-edit-task-description"
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs text-muted-foreground mb-1.5 block">{t("tasks.statusLabel")}</label>
+                <Select value={editStatus} onValueChange={setEditStatus}>
+                  <SelectTrigger data-testid="select-edit-task-status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">{t("status.pending")}</SelectItem>
+                    <SelectItem value="in_progress">{t("status.in_progress")}</SelectItem>
+                    <SelectItem value="completed">{t("status.completed")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1.5 block">{t("tasks.priorityLabel")}</label>
+                <Select value={editPriority} onValueChange={setEditPriority}>
+                  <SelectTrigger data-testid="select-edit-task-priority">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">{t("priority.low")}</SelectItem>
+                    <SelectItem value="medium">{t("priority.medium")}</SelectItem>
+                    <SelectItem value="high">{t("priority.high")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1.5 block">{t("tasks.dueDateLabel")}</label>
+              <Input
+                type="date"
+                value={editDueDate}
+                onChange={(e) => setEditDueDate(e.target.value)}
+                data-testid="input-edit-task-due-date"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs text-muted-foreground mb-1.5 block">{t("tasks.contactLabel")}</label>
+              {editContactId && contactsMap.get(editContactId) ? (
+                <div className="flex items-center gap-2 p-2.5 rounded-md bg-accent/50">
+                  <User className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{contactsMap.get(editContactId)!.name}</p>
+                    {contactsMap.get(editContactId)!.companyName && (
+                      <p className="text-xs text-muted-foreground truncate">{contactsMap.get(editContactId)!.companyName}</p>
+                    )}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setEditContactId(null)}
+                    data-testid="button-remove-edit-contact"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ) : showEditContactPicker ? (
+                <div className="space-y-2">
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                    <Input
+                      placeholder={t("tasks.searchContactPlaceholder")}
+                      value={editContactSearch}
+                      onChange={(e) => setEditContactSearch(e.target.value)}
+                      className="pl-8"
+                      data-testid="input-search-edit-task-contact"
+                    />
+                  </div>
+                  <div className="max-h-36 overflow-y-auto space-y-1 rounded-md border p-1">
+                    {filteredEditContacts.length === 0 ? (
+                      <p className="text-xs text-muted-foreground text-center py-3">
+                        {t("tasks.noContactFound")}
+                      </p>
+                    ) : (
+                      filteredEditContacts.map((c) => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => {
+                            setEditContactId(c.id);
+                            setShowEditContactPicker(false);
+                            setEditContactSearch("");
+                          }}
+                          className="w-full text-left p-2 rounded-md hover-elevate flex items-center gap-2"
+                          data-testid={`select-edit-contact-${c.id}`}
+                        >
+                          <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{c.name}</p>
+                            {c.companyName && (
+                              <p className="text-xs text-muted-foreground truncate">{c.companyName}</p>
+                            )}
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setShowEditContactPicker(false);
+                      setEditContactSearch("");
+                    }}
+                    data-testid="button-cancel-edit-contact-picker"
+                  >
+                    {t("common.cancel")}
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full gap-2 justify-start text-muted-foreground"
+                  onClick={() => setShowEditContactPicker(true)}
+                  data-testid="button-edit-attach-contact"
+                >
+                  <User className="h-4 w-4" />
+                  {t("tasks.attachContact")}
+                </Button>
+              )}
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white"
+              disabled={editTaskMutation.isPending}
+              data-testid="button-save-edit-task"
+            >
+              {editTaskMutation.isPending ? t("common.saving") : t("tasks.saveChanges")}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

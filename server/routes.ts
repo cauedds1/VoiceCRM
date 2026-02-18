@@ -406,9 +406,15 @@ export async function registerRoutes(
         title: z.string().min(1).optional(),
         description: z.string().optional().nullable(),
         priority: z.enum(["high", "medium", "low"]).optional(),
+        dueDate: z.string().optional().nullable(),
+        contactId: z.string().optional().nullable(),
       });
       const data = updateSchema.parse(req.body);
-      const task = await storage.updateTask(paramId(req), userId, data);
+      const updateData: any = { ...data };
+      if (data.dueDate !== undefined) {
+        updateData.dueDate = data.dueDate ? new Date(data.dueDate) : null;
+      }
+      const task = await storage.updateTask(paramId(req), userId, updateData);
       if (!task) return res.status(404).json({ message: "Tarefa não encontrada" });
       res.json(task);
     } catch (error: any) {

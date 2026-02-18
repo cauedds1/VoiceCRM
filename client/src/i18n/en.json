@@ -362,6 +362,11 @@
     "contactNameRequired": "Please provide the contact name",
     "contactCreated": "Contact created and attached!",
     "errorCreatingContact": "Error creating contact",
+    "editTask": "Edit Task",
+    "editTaskTitle": "Edit Task",
+    "saveChanges": "Save Changes",
+    "taskEditSuccess": "Task updated successfully!",
+    "statusLabel": "Status",
     "overdue": "Overdue",
     "recordMeeting": "Record Meeting"
   },

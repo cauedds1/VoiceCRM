@@ -363,7 +363,12 @@
     "contactCreated": "Contato criado e anexado!",
     "errorCreatingContact": "Erro ao criar contato",
     "overdue": "Atrasada",
-    "recordMeeting": "Gravar Reunião"
+    "recordMeeting": "Gravar Reunião",
+    "editTask": "Editar Tarefa",
+    "editTaskTitle": "Editar Tarefa",
+    "saveChanges": "Salvar Alterações",
+    "taskEditSuccess": "Tarefa atualizada com sucesso!",
+    "statusLabel": "Status"
   },
   "reports": {
     "title": "Relatórios",
