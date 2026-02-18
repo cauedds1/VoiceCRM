@@ -152,7 +152,7 @@ export default function MeetingsList() {
           </CardContent>
         </Card>
       </Link>
-      <DropdownMenu>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="shrink-0" data-testid={`button-meeting-actions-${meeting.id}`}>
             <MoreHorizontal className="h-4 w-4" />
@@ -160,12 +160,12 @@ export default function MeetingsList() {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           {meeting.folderId ? (
-            <DropdownMenuItem onClick={() => moveMeetingMutation.mutate({ meetingId: meeting.id, folderId: null })} data-testid={`button-remove-from-folder-${meeting.id}`}>
+            <DropdownMenuItem onSelect={() => moveMeetingMutation.mutate({ meetingId: meeting.id, folderId: null })} data-testid={`button-remove-from-folder-${meeting.id}`}>
               <FolderMinus className="h-4 w-4 mr-2" />
               {t("folders.removeFromFolder")}
             </DropdownMenuItem>
           ) : null}
-          <DropdownMenuItem onClick={() => setMovingMeeting(meeting)} data-testid={`button-move-to-folder-${meeting.id}`}>
+          <DropdownMenuItem onSelect={() => setMovingMeeting(meeting)} data-testid={`button-move-to-folder-${meeting.id}`}>
             <FolderPlus className="h-4 w-4 mr-2" />
             {t("folders.moveToFolder")}
           </DropdownMenuItem>
@@ -189,19 +189,19 @@ export default function MeetingsList() {
             <span className="text-sm font-medium truncate">{folder.name}</span>
             <Badge variant="secondary" className="text-[10px] ml-1 shrink-0">{folderMeetings.length}</Badge>
           </button>
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" data-testid={`button-folder-actions-${folder.id}`}>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => { setEditingFolder(folder); setEditFolderName(folder.name); }} data-testid={`button-rename-folder-${folder.id}`}>
+              <DropdownMenuItem onSelect={() => { setEditingFolder(folder); setEditFolderName(folder.name); }} data-testid={`button-rename-folder-${folder.id}`}>
                 <Pencil className="h-4 w-4 mr-2" />
                 {t("folders.rename")}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setDeletingFolder(folder)} className="text-destructive" data-testid={`button-delete-folder-${folder.id}`}>
+              <DropdownMenuItem onSelect={() => setDeletingFolder(folder)} className="text-destructive" data-testid={`button-delete-folder-${folder.id}`}>
                 <Trash2 className="h-4 w-4 mr-2" />
                 {t("folders.delete")}
               </DropdownMenuItem>
