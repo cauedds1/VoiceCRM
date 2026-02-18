@@ -31,7 +31,8 @@ Voice-powered CRM system for professionals. Record audio after meetings, AI tran
 - Contact detail with meeting history
 - Monthly meeting reports with bar chart (Recharts)
 - Dark mode only (no light theme)
-- Settings page: profile, email, password, interface language (pt-BR/en), transcription language (9 langs), task extraction level (aggressive/moderate/conservative), account deletion
+- Settings page: profile, email, password, interface language (pt-BR/en), transcription language (9 langs), task extraction level (aggressive/moderate/conservative), data export (JSON), account deletion
+- LGPD compliance: Privacy Policy page (bilingual, /privacy), mandatory terms acceptance on registration, recording consent notice, data export (portability), enhanced deletion with data purge guarantee
 - AI respects user settings: transcription language drives Whisper API language param + output language; task extraction level adjusts prompt aggressiveness
 - PWA "Add to Home Screen" popup: Android uses beforeinstallprompt API for one-tap install, iOS shows step-by-step guide. Popup appears every visit on mobile until app is installed (standalone mode).
 
@@ -67,6 +68,7 @@ shared/
 - `PATCH /api/account/profile` - Update user name (password required)
 - `PATCH /api/account/email` - Update user email (password required)
 - `PATCH /api/account/password` - Change password (current password required)
+- `GET /api/account/export` - Export all user data as JSON (LGPD portability)
 - `DELETE /api/account` - Delete account with cascade (password + confirmation required)
 
 ## Design Principles

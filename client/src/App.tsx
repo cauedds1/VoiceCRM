@@ -25,6 +25,7 @@ import TasksList from "@/pages/tasks-list";
 import Reports from "@/pages/reports";
 import SettingsPage from "@/pages/settings";
 import NotFound from "@/pages/not-found";
+import PrivacyPolicy from "@/pages/privacy-policy";
 import { MobileAppPopup } from "@/components/mobile-app-popup";
 import { Loader2 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -92,6 +93,7 @@ function AuthenticatedLayout() {
               <Route path="/tasks" component={TasksList} />
               <Route path="/reports" component={Reports} />
               <Route path="/settings" component={SettingsPage} />
+              <Route path="/privacy" component={PrivacyPolicy} />
               <Route component={NotFound} />
             </Switch>
           </main>
@@ -118,6 +120,7 @@ function AppRouter() {
         <MobileAppPopup />
         <Switch>
           <Route path="/auth" component={AuthPage} />
+          <Route path="/privacy" component={PrivacyPolicy} />
           <Route component={Landing} />
         </Switch>
       </>

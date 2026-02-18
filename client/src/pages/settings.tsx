@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, User, Mail, Lock, Globe, Brain, Trash2, Loader2, AlertTriangle, Info } from "lucide-react";
+import { Settings, User, Mail, Lock, Globe, Brain, Trash2, Loader2, AlertTriangle, Info, Download, Shield } from "lucide-react";
 import type { UserSettings } from "@shared/schema";
 import { useTranslation } from "react-i18next";
 import i18n from "@/i18n";
@@ -63,6 +63,7 @@ export default function SettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [exporting, setExporting] = useState(false);
 
   const profileMutation = useMutation({
     mutationFn: async (data: { firstName: string; lastName: string }) => {
@@ -163,6 +164,28 @@ export default function SettingsPage() {
       return;
     }
     passwordMutation.mutate({ currentPassword, newPassword });
+  };
+
+  const handleExportData = async () => {
+    setExporting(true);
+    try {
+      const res = await fetch("/api/account/export", { credentials: "include" });
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `voicecrm-export-${new Date().toISOString().split("T")[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast({ title: t("settings.exportSuccess") });
+    } catch {
+      toast({ title: t("settings.exportError"), variant: "destructive" });
+    } finally {
+      setExporting(false);
+    }
   };
 
   const handleDeleteAccount = () => {
@@ -450,6 +473,33 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="perigo" className="space-y-4 mt-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <Download className="h-4 w-4 text-emerald-500" />
+                <h2 className="text-base font-semibold">{t("settings.exportData")}</h2>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-start gap-2 p-3 rounded-md bg-emerald-500/5 border border-emerald-500/10">
+                <Shield className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {t("settings.exportDescription")}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={handleExportData}
+                disabled={exporting}
+                className="gap-2"
+                data-testid="button-export-data"
+              >
+                {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                {exporting ? t("settings.exporting") : t("settings.exportButton")}
+              </Button>
+            </CardContent>
+          </Card>
+
           <Card className="border-destructive/30">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
@@ -458,6 +508,12 @@ export default function SettingsPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
+              <div className="flex items-start gap-2 p-3 rounded-md bg-muted/50 border border-border">
+                <Shield className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {t("settings.deleteDataNotice")}
+                </p>
+              </div>
               <div className="flex items-start gap-2 p-3 rounded-md bg-destructive/10">
                 <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
                 <p className="text-xs text-destructive">

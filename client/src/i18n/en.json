@@ -54,7 +54,10 @@
     "heroDescription": "Record an audio after the meeting and AI transcribes, identifies contacts and companies, and organizes everything automatically in your CRM.",
     "heroBullet1": "Register meetings in seconds",
     "heroBullet2": "Contacts created automatically",
-    "heroBullet3": "Tasks extracted from conversations"
+    "heroBullet3": "Tasks extracted from conversations",
+    "acceptTermsPrefix": "I have read and accept the",
+    "privacyPolicyLink": "Privacy Policy and Terms of Use",
+    "acceptTermsRequired": "You must accept the Privacy Policy to create your account"
   },
   "landing": {
     "login": "Sign in",
@@ -195,7 +198,9 @@
     "pauseRecording": "Pause recording",
     "stopRecording": "Stop recording",
     "startRecording": "Start recording",
-    "discardRecording": "Discard recording"
+    "discardRecording": "Discard recording",
+    "consentNotice": "By recording, your audio will be processed by artificial intelligence for transcription and information extraction. Your data is protected according to our",
+    "consentPrivacyLink": "Privacy Policy"
   },
   "newMeetingManual": {
     "title": "New Manual Meeting",
@@ -442,7 +447,14 @@
     "deleteButton": "Delete my account permanently",
     "deleteError": "Error deleting account",
     "typeDeleteRequired": "Type DELETE to confirm",
-    "passwordRequired": "Please enter your password to confirm"
+    "passwordRequired": "Please enter your password to confirm",
+    "exportData": "Export My Data",
+    "exportDescription": "In compliance with data protection regulations, you have the right to data portability. Export all your meetings, contacts, companies, tasks, and decisions in JSON format.",
+    "exportButton": "Download my data",
+    "exporting": "Exporting...",
+    "exportSuccess": "Data exported successfully!",
+    "exportError": "Error exporting data",
+    "deleteDataNotice": "In compliance with data protection laws, deleting your account will permanently remove all your personal data from our servers, including processed recordings, transcriptions, contacts, companies, and tasks. This action is irreversible."
   },
   "mobilePopup": {
     "title": "Add to Home Screen",
@@ -462,5 +474,26 @@
   "notFound": {
     "title": "404 Page Not Found",
     "description": "The page you're looking for doesn't exist."
+  },
+  "privacy": {
+    "title": "Privacy Policy and Terms of Use",
+    "lastUpdated": "Last updated: February 2026",
+    "backButton": "Go back",
+    "dataCollectionTitle": "Data Collection",
+    "dataCollectionText": "VoiceCRM collects the following data to provide the service:\n\n- Audio recordings of your meetings\n- Transcriptions generated from audio\n- Contact information (name, email, phone, role, company)\n- Meeting data (title, summary, date, participants)\n- Tasks and decisions extracted from meetings\n- Account information (name, email, encrypted password)",
+    "dataProcessingTitle": "Data Processing",
+    "dataProcessingText": "Your data is processed as follows:\n\n- Recorded audio is sent to the OpenAI API (Whisper) for automatic transcription\n- The transcription is processed by artificial intelligence (GPT) to extract entities such as contacts, companies, tasks, and decisions\n- Extracted data is organized and stored in your personal CRM\n- AI processing occurs in real time after each recording",
+    "dataStorageTitle": "Data Storage",
+    "dataStorageText": "Your data is stored as follows:\n\n- All data is stored in a secure PostgreSQL database\n- Data remains stored as long as your account is active\n- When you delete your account, all associated data is permanently removed\n- Database backups are maintained for recovery in case of technical failures",
+    "userRightsTitle": "Your Rights",
+    "userRightsText": "You have the following rights over your data:\n\n- Access: You can view all your data at any time through the VoiceCRM dashboard\n- Correction: You can edit and correct any contact, company, meeting, and task information\n- Deletion: You can delete individual meetings or delete your entire account and data permanently\n- Portability: Your data can be exported through the system's reporting features",
+    "dataSecurityTitle": "Data Security",
+    "dataSecurityText": "We implement the following security measures:\n\n- Passwords are encrypted using secure hashing algorithms (scrypt)\n- Session-based authentication with secure tokens\n- Per-user data isolation: each user can only access their own data\n- Encrypted communication via HTTPS\n- Validation and sanitization of all data inputs",
+    "contactTitle": "Contact",
+    "contactText": "To exercise your rights or clarify questions about your data, please contact us:\n\nEmail: privacy@voicecrm.app\n\nWe will respond to your request within 15 business days.",
+    "termsTitle": "Terms of Use",
+    "termsText": "By using VoiceCRM, you agree to the following terms:\n\n- The service is provided for personal and professional use of customer relationship management\n- You are responsible for the content of recordings and the accuracy of information entered\n- Using the service for illegal or harmful activities is strictly prohibited\n- We reserve the right to suspend accounts that violate these terms\n- The service may undergo scheduled updates and maintenance\n- We do not guarantee uninterrupted service availability",
+    "consentTitle": "Consent",
+    "consentText": "By creating an account and using VoiceCRM, you declare that:\n\n- You have read and understood this privacy policy and terms of use\n- You consent to the collection and processing of your data as described above\n- You have the right to record the meetings and conversations you register in the system\n- You may withdraw your consent at any time by deleting your account"
   }
 }

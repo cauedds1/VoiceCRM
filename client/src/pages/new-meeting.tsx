@@ -2,9 +2,10 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
-import { Mic, Square, Loader2, CheckCircle, AlertCircle, Pause, Play, Trash2 } from "lucide-react";
+import { Mic, Square, Loader2, CheckCircle, AlertCircle, Pause, Play, Trash2, Shield } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/auth-utils";
@@ -432,9 +433,20 @@ export default function NewMeeting() {
                   )}
 
                   {!showDiscardConfirm && state === "idle" && !audioBlob && (
-                    <p className="text-sm text-muted-foreground text-center max-w-xs">
-                      {t("newMeeting.tapToRecord")}
-                    </p>
+                    <div className="space-y-3 max-w-xs text-center">
+                      <p className="text-sm text-muted-foreground">
+                        {t("newMeeting.tapToRecord")}
+                      </p>
+                      <div className="flex items-start gap-2 p-3 rounded-md bg-emerald-500/5 border border-emerald-500/10">
+                        <Shield className="h-3.5 w-3.5 text-emerald-500 mt-0.5 shrink-0" />
+                        <p className="text-xs text-muted-foreground text-left leading-relaxed">
+                          {t("newMeeting.consentNotice")}{" "}
+                          <Link href="/privacy" className="text-primary underline" data-testid="link-recording-privacy">
+                            {t("newMeeting.consentPrivacyLink")}
+                          </Link>
+                        </p>
+                      </div>
+                    </div>
                   )}
 
                   {!showDiscardConfirm && isActive && (

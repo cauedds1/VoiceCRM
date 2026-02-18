@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { Mic, ArrowRight, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { useTranslation } from "react-i18next";
@@ -16,6 +17,7 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const { login, register, isLoggingIn, isRegistering } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -28,6 +30,10 @@ export default function AuthPage() {
       if (mode === "login") {
         await login({ email, password });
       } else {
+        if (!acceptedTerms) {
+          toast({ title: t("auth.acceptTermsRequired"), variant: "destructive" });
+          return;
+        }
         await register({ email, password, firstName, lastName });
       }
       navigate("/");
@@ -116,7 +122,24 @@ export default function AuthPage() {
                     data-testid="input-password"
                   />
                 </div>
-                <Button type="submit" className="w-full gap-2 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white" disabled={isPending} data-testid="button-submit-auth">
+                {mode === "register" && (
+                  <div className="flex items-start gap-2">
+                    <Checkbox
+                      id="terms"
+                      checked={acceptedTerms}
+                      onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                      data-testid="checkbox-accept-terms"
+                      className="mt-0.5"
+                    />
+                    <label htmlFor="terms" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
+                      {t("auth.acceptTermsPrefix")}{" "}
+                      <Link href="/privacy" className="text-primary underline" data-testid="link-privacy-policy">
+                        {t("auth.privacyPolicyLink")}
+                      </Link>
+                    </label>
+                  </div>
+                )}
+                <Button type="submit" className="w-full gap-2 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white" disabled={isPending || (mode === "register" && !acceptedTerms)} data-testid="button-submit-auth">
                   {isPending ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (

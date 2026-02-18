@@ -54,7 +54,10 @@
     "heroDescription": "Grave um áudio após a reunião e a inteligência artificial transcreve, identifica contatos e empresas, e organiza tudo automaticamente no seu CRM.",
     "heroBullet1": "Registre reuniões em segundos",
     "heroBullet2": "Contatos criados automaticamente",
-    "heroBullet3": "Tarefas extraídas da conversa"
+    "heroBullet3": "Tarefas extraídas da conversa",
+    "acceptTermsPrefix": "Li e aceito a",
+    "privacyPolicyLink": "Politica de Privacidade e Termos de Uso",
+    "acceptTermsRequired": "Voce precisa aceitar a Politica de Privacidade para criar sua conta"
   },
   "landing": {
     "login": "Entrar",
@@ -195,7 +198,9 @@
     "pauseRecording": "Pausar gravação",
     "stopRecording": "Parar gravação",
     "startRecording": "Iniciar gravação",
-    "discardRecording": "Descartar gravação"
+    "discardRecording": "Descartar gravação",
+    "consentNotice": "Ao gravar, seu audio sera processado por inteligencia artificial para transcricao e extracao de informacoes. Seus dados sao protegidos conforme nossa",
+    "consentPrivacyLink": "Politica de Privacidade"
   },
   "newMeetingManual": {
     "title": "Nova Reunião Manual",
@@ -442,7 +447,14 @@
     "deleteButton": "Excluir minha conta permanentemente",
     "deleteError": "Erro ao excluir conta",
     "typeDeleteRequired": "Digite EXCLUIR para confirmar",
-    "passwordRequired": "Informe sua senha para confirmar"
+    "passwordRequired": "Informe sua senha para confirmar",
+    "exportData": "Exportar Meus Dados",
+    "exportDescription": "Conforme a LGPD (Lei Geral de Protecao de Dados), voce tem direito a portabilidade dos seus dados. Exporte todas as suas reunioes, contatos, empresas, tarefas e decisoes em formato JSON.",
+    "exportButton": "Baixar meus dados",
+    "exporting": "Exportando...",
+    "exportSuccess": "Dados exportados com sucesso!",
+    "exportError": "Erro ao exportar dados",
+    "deleteDataNotice": "Conforme a LGPD, ao excluir sua conta, todos os seus dados pessoais serao permanentemente removidos dos nossos servidores, incluindo gravacoes processadas, transcricoes, contatos, empresas e tarefas. Esta acao e irreversivel."
   },
   "mobilePopup": {
     "title": "Adicionar à Tela Inicial",
@@ -462,5 +474,26 @@
   "notFound": {
     "title": "404 Página Não Encontrada",
     "description": "A página que você está procurando não existe."
+  },
+  "privacy": {
+    "title": "Politica de Privacidade e Termos de Uso",
+    "lastUpdated": "Ultima atualizacao: Fevereiro de 2026",
+    "backButton": "Voltar",
+    "dataCollectionTitle": "Coleta de Dados",
+    "dataCollectionText": "O VoiceCRM coleta os seguintes dados para fornecer o servico:\n\n- Gravacoes de audio das suas reunioes\n- Transcricoes geradas a partir do audio\n- Informacoes de contatos (nome, email, telefone, cargo, empresa)\n- Dados de reunioes (titulo, resumo, data, participantes)\n- Tarefas e decisoes extraidas das reunioes\n- Informacoes da conta (nome, email, senha criptografada)",
+    "dataProcessingTitle": "Processamento de Dados",
+    "dataProcessingText": "Seus dados sao processados da seguinte forma:\n\n- O audio gravado e enviado para a API da OpenAI (Whisper) para transcricao automatica\n- A transcricao e processada por inteligencia artificial (GPT) para extrair entidades como contatos, empresas, tarefas e decisoes\n- Os dados extraidos sao organizados e armazenados no seu CRM pessoal\n- O processamento de IA ocorre em tempo real apos cada gravacao",
+    "dataStorageTitle": "Armazenamento de Dados",
+    "dataStorageText": "Seus dados sao armazenados da seguinte forma:\n\n- Todos os dados sao armazenados em um banco de dados PostgreSQL seguro\n- Os dados permanecem armazenados enquanto sua conta estiver ativa\n- Ao excluir sua conta, todos os dados associados sao removidos permanentemente\n- Backups do banco de dados sao mantidos para recuperacao em caso de falhas tecnicas",
+    "userRightsTitle": "Seus Direitos",
+    "userRightsText": "Voce tem os seguintes direitos sobre seus dados:\n\n- Acesso: Voce pode visualizar todos os seus dados a qualquer momento pelo painel do VoiceCRM\n- Correcao: Voce pode editar e corrigir qualquer informacao de contatos, empresas, reunioes e tarefas\n- Exclusao: Voce pode excluir reunioes individualmente ou excluir toda sua conta e dados permanentemente\n- Portabilidade: Seus dados podem ser exportados atraves das funcionalidades de relatorio do sistema",
+    "dataSecurityTitle": "Seguranca dos Dados",
+    "dataSecurityText": "Implementamos as seguintes medidas de seguranca:\n\n- Senhas sao criptografadas usando algoritmos de hash seguros (scrypt)\n- Autenticacao baseada em sessoes com tokens seguros\n- Isolamento de dados por usuario: cada usuario so tem acesso aos seus proprios dados\n- Comunicacao criptografada via HTTPS\n- Validacao e sanitizacao de todas as entradas de dados",
+    "contactTitle": "Contato",
+    "contactText": "Para exercer seus direitos ou esclarecer duvidas sobre seus dados, entre em contato:\n\nEmail: privacidade@voicecrm.app\n\nResponderemos sua solicitacao em ate 15 dias uteis.",
+    "termsTitle": "Termos de Uso",
+    "termsText": "Ao utilizar o VoiceCRM, voce concorda com os seguintes termos:\n\n- O servico e fornecido para uso pessoal e profissional de gerenciamento de relacionamento com clientes\n- Voce e responsavel pelo conteudo das gravacoes e pela precisao das informacoes inseridas\n- O uso do servico para atividades ilegais ou prejudiciais e estritamente proibido\n- Nos reservamos o direito de suspender contas que violem estes termos\n- O servico pode sofrer atualizacoes e manutencoes programadas\n- Nao garantimos disponibilidade ininterrupta do servico",
+    "consentTitle": "Consentimento",
+    "consentText": "Ao criar uma conta e utilizar o VoiceCRM, voce declara que:\n\n- Leu e compreendeu esta politica de privacidade e os termos de uso\n- Consente com a coleta e processamento dos seus dados conforme descrito acima\n- Tem o direito de gravar as reunioes e conversas que registra no sistema\n- Pode retirar seu consentimento a qualquer momento excluindo sua conta"
   }
 }

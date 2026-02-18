@@ -597,6 +597,45 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/account/export", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const user = await authStorage.getUser(userId);
+      const allMeetings = await storage.getMeetings(userId);
+      const allContacts = await storage.getContacts(userId);
+      const allCompanies = await storage.getCompanies(userId);
+      const allTasks = await storage.getTasks(userId);
+
+      const allDecisions: any[] = [];
+      for (const meeting of allMeetings) {
+        const decisions = await storage.getDecisionsByMeeting(meeting.id);
+        allDecisions.push(...decisions);
+      }
+
+      const exportData = {
+        exportDate: new Date().toISOString(),
+        user: {
+          id: user?.id,
+          email: user?.email,
+          firstName: user?.firstName,
+          lastName: user?.lastName,
+          createdAt: user?.createdAt,
+        },
+        meetings: allMeetings.map(({ userId: _, ...m }) => m),
+        contacts: allContacts.map(({ userId: _, ...c }) => c),
+        companies: allCompanies.map(({ userId: _, ...c }) => c),
+        tasks: allTasks.map(({ userId: _, ...t }) => t),
+        decisions: allDecisions,
+      };
+
+      res.setHeader("Content-Type", "application/json");
+      res.setHeader("Content-Disposition", `attachment; filename="voicecrm-export-${new Date().toISOString().split("T")[0]}.json"`);
+      res.json(exportData);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   app.delete("/api/account", isAuthenticated, async (req, res) => {
     try {
       const userId = getUserId(req);
