@@ -2,7 +2,8 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
 import {
   ArrowLeft, Clock, Users, Building2, CheckSquare, FileText,
-  Lightbulb, Edit2, Save, X, Trash2
+  Lightbulb, Edit2, Save, X, Trash2, Briefcase, UtensilsCrossed,
+  Coffee, PhoneCall, MapPin, CalendarDays, MessageCircle
 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,17 @@ export default function MeetingDetail() {
 
   const dateLocale = i18n.language === "en" ? "en-US" : "pt-BR";
 
+  const categoryIcons: Record<string, any> = {
+    meeting: Briefcase,
+    lunch: UtensilsCrossed,
+    coffee: Coffee,
+    call: PhoneCall,
+    visit: MapPin,
+    event: CalendarDays,
+    casual: MessageCircle,
+  };
+  const categoryKeys = ["meeting", "lunch", "coffee", "call", "visit", "event", "casual"];
+
   const { data: meeting, isLoading } = useQuery<Meeting>({
     queryKey: ["/api/meetings", params.id],
   });
@@ -71,6 +83,16 @@ export default function MeetingDetail() {
       queryClient.invalidateQueries({ queryKey: ["/api/meetings", params.id] });
       queryClient.invalidateQueries({ queryKey: ["/api/meetings"] });
       setEditing(false);
+      toast({ title: t("meetingDetail.updated") });
+    },
+  });
+
+  const updateCategory = useMutation({
+    mutationFn: async (category: string) =>
+      apiRequest("PATCH", `/api/meetings/${params.id}`, { category }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/meetings", params.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/meetings"] });
       toast({ title: t("meetingDetail.updated") });
     },
   });
@@ -157,6 +179,30 @@ export default function MeetingDetail() {
                 })
               : "—"}
           </p>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-xs text-muted-foreground">{t("categoryLabel")}:</span>
+            <Select
+              value={meeting.category || "meeting"}
+              onValueChange={(value) => updateCategory.mutate(value)}
+            >
+              <SelectTrigger className="h-7 w-[160px] text-xs" data-testid="select-meeting-category">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {categoryKeys.map(cat => {
+                  const Icon = categoryIcons[cat];
+                  return (
+                    <SelectItem key={cat} value={cat}>
+                      <span className="flex items-center gap-2">
+                        <Icon className="h-3.5 w-3.5" />
+                        {t(`categories.${cat}`)}
+                      </span>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         {editing ? (
           <div className="flex items-center gap-2">

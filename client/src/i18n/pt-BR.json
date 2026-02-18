@@ -471,6 +471,18 @@
     "exportError": "Erro ao exportar dados",
     "deleteDataNotice": "Conforme a LGPD, ao excluir sua conta, todos os seus dados pessoais serao permanentemente removidos dos nossos servidores, incluindo gravacoes processadas, transcricoes, contatos, empresas e tarefas. Esta acao e irreversivel."
   },
+  "categories": {
+    "all": "Todas as categorias",
+    "meeting": "Reunião",
+    "lunch": "Almoço",
+    "coffee": "Café",
+    "call": "Ligação",
+    "visit": "Visita",
+    "event": "Evento",
+    "casual": "Encontro casual"
+  },
+  "categoryLabel": "Categoria",
+  "categoryFilter": "Filtrar por categoria",
   "folders": {
     "allTopics": "Todos os assuntos",
     "ungrouped": "Sem pasta",

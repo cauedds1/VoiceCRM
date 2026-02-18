@@ -1,6 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { Mic, Clock, Search, Plus, PenLine, FolderOpen, FolderClosed, ChevronDown, ChevronRight, MoreHorizontal, Pencil, Trash2, FolderMinus, FolderPlus, List, LayoutGrid } from "lucide-react";
+import { Mic, Clock, Search, Plus, PenLine, FolderOpen, FolderClosed, ChevronDown, ChevronRight, MoreHorizontal, Pencil, Trash2, FolderMinus, FolderPlus, List, LayoutGrid, Briefcase, UtensilsCrossed, Coffee, PhoneCall, MapPin, CalendarDays, MessageCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,7 @@ export default function MeetingsList() {
   const { data: folders = [] } = useQuery<MeetingFolder[]>({ queryKey: ["/api/meeting-folders"] });
   const [search, setSearch] = useState("");
   const [topicFilter, setTopicFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"list" | "folders">("folders");
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(["ungrouped"]));
   const [editingFolder, setEditingFolder] = useState<MeetingFolder | null>(null);
@@ -35,6 +36,18 @@ export default function MeetingsList() {
 
   const dateLocale = i18n.language === "en" ? "en-US" : "pt-BR";
 
+  const categoryIcons: Record<string, any> = {
+    meeting: Briefcase,
+    lunch: UtensilsCrossed,
+    coffee: Coffee,
+    call: PhoneCall,
+    visit: MapPin,
+    event: CalendarDays,
+    casual: MessageCircle,
+  };
+
+  const categoryKeys = ["meeting", "lunch", "coffee", "call", "visit", "event", "casual"];
+
   const uniqueTopics = Array.from(new Set(
     meetings.map(m => m.topic).filter(Boolean) as string[]
   )).sort();
@@ -45,7 +58,8 @@ export default function MeetingsList() {
         (m.summary || "").toLowerCase().includes(search.toLowerCase()) ||
         (m.topic || "").toLowerCase().includes(search.toLowerCase());
       const matchTopic = topicFilter === "all" || m.topic === topicFilter;
-      return matchSearch && matchTopic;
+      const matchCategory = categoryFilter === "all" || m.category === categoryFilter;
+      return matchSearch && matchTopic && matchCategory;
     })
     .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
 
@@ -128,6 +142,16 @@ export default function MeetingsList() {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="text-sm font-medium">{meeting.title}</h3>
+                  {(() => {
+                    const cat = meeting.category || "meeting";
+                    const CatIcon = categoryIcons[cat] || Briefcase;
+                    return (
+                      <Badge variant="outline" className="text-[10px] gap-1" data-testid={`badge-category-${meeting.id}`}>
+                        <CatIcon className="h-3 w-3" />
+                        {t(`categories.${cat}`)}
+                      </Badge>
+                    );
+                  })()}
                   {showFolder && meeting.topic && (
                     <Badge variant="secondary" className="text-[10px]">{meeting.topic}</Badge>
                   )}
@@ -251,6 +275,25 @@ export default function MeetingsList() {
             data-testid="input-search-meetings"
           />
         </div>
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="w-[200px]" data-testid="select-category-filter">
+            <SelectValue placeholder={t("categoryFilter")} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t("categories.all")}</SelectItem>
+            {categoryKeys.map(cat => {
+              const Icon = categoryIcons[cat];
+              return (
+                <SelectItem key={cat} value={cat}>
+                  <span className="flex items-center gap-2">
+                    <Icon className="h-3.5 w-3.5" />
+                    {t(`categories.${cat}`)}
+                  </span>
+                </SelectItem>
+              );
+            })}
+          </SelectContent>
+        </Select>
         {uniqueTopics.length > 0 && (
           <Select value={topicFilter} onValueChange={setTopicFilter}>
             <SelectTrigger className="w-[200px]" data-testid="select-topic-filter">
@@ -308,12 +351,12 @@ export default function MeetingsList() {
           <div className="text-center py-16">
             <Mic className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
             <h3 className="text-lg font-medium mb-2">
-              {search || topicFilter !== "all" ? t("meetingsList.noMeetingsFound") : t("meetingsList.noMeetingsYet")}
+              {search || topicFilter !== "all" || categoryFilter !== "all" ? t("meetingsList.noMeetingsFound") : t("meetingsList.noMeetingsYet")}
             </h3>
             <p className="text-muted-foreground mb-4">
-              {search || topicFilter !== "all" ? t("meetingsList.tryOtherSearch") : t("meetingsList.recordFirstMeeting")}
+              {search || topicFilter !== "all" || categoryFilter !== "all" ? t("meetingsList.tryOtherSearch") : t("meetingsList.recordFirstMeeting")}
             </p>
-            {!search && topicFilter === "all" && (
+            {!search && topicFilter === "all" && categoryFilter === "all" && (
               <Link href="/meetings/new">
                 <Button className="gap-2 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white">
                   <Plus className="h-4 w-4" />

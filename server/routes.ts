@@ -55,6 +55,7 @@ export async function registerRoutes(
         title: z.string().min(1).optional(),
         summary: z.string().optional(),
         status: z.string().optional(),
+        category: z.string().optional(),
       });
       const data = updateSchema.parse(req.body);
       const meeting = await storage.updateMeeting(paramId(req), userId, data);

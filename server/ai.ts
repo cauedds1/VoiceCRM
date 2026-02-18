@@ -16,6 +16,7 @@ interface ExtractedData {
   contacts: Array<{ name: string; company?: string; role?: string }>;
   tasks: Array<{ title: string; description?: string; priority: string; dueDate?: string; contactName?: string }>;
   decisions: string[];
+  category: string;
 }
 
 const LANG_MAP: Record<string, { whisper: string; name: string; outputInstruction: string }> = {
@@ -270,6 +271,20 @@ Capture TODAS as decisões tomadas ou acordos fechados:
 - Decisões podem ser implícitas: "Então tá, vamos com o plano B" → decisão: "Seguir com o plano B"
 
 ═══════════════════════════════════════
+8. CATEGORIA DA INTERAÇÃO
+═══════════════════════════════════════
+Classifique o TIPO de interação baseado no contexto do áudio:
+- "meeting" → Reunião formal ou semi-formal (sala de reunião, videoconferência, etc.)
+- "lunch" → Almoço de negócios ("almocei com", "durante o almoço", "no restaurante")
+- "coffee" → Café/encontro informal ("tomei um café com", "cafezinho", "bate-papo")
+- "call" → Ligação telefônica ("liguei para", "recebi uma ligação", "falei por telefone")
+- "visit" → Visita a cliente/local ("visitei", "fui até", "passei na empresa", "estive no escritório")
+- "event" → Evento, feira, conferência ("no evento", "na feira", "no congresso")
+- "casual" → Encontro casual/social ("encontrei por acaso", "cruzei com", "esbarrei")
+
+Se o contexto não for claro, use "meeting" como padrão.
+
+═══════════════════════════════════════
 FORMATO DE RESPOSTA (JSON OBRIGATÓRIO)
 ═══════════════════════════════════════
 {
@@ -292,7 +307,8 @@ FORMATO DE RESPOSTA (JSON OBRIGATÓRIO)
       "contactName": "Nome exato da pessoa envolvida ou null"
     }
   ],
-  "decisions": ["Descrição completa da decisão tomada"]
+  "decisions": ["Descrição completa da decisão tomada"],
+  "category": "meeting|lunch|coffee|call|visit|event|casual"
 }
 
 REGRAS FINAIS:
@@ -323,6 +339,7 @@ REGRAS FINAIS:
       contacts: [],
       tasks: [],
       decisions: [],
+      category: "meeting",
     };
   }
 
@@ -350,6 +367,7 @@ REGRAS FINAIS:
     topic: meetingTopic,
     folderId,
     status: "completed",
+    category: extracted.category || "meeting",
     userId,
   });
 

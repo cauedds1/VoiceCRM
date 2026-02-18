@@ -471,6 +471,18 @@
     "exportError": "Error exporting data",
     "deleteDataNotice": "In compliance with data protection laws, deleting your account will permanently remove all your personal data from our servers, including processed recordings, transcriptions, contacts, companies, and tasks. This action is irreversible."
   },
+  "categories": {
+    "all": "All categories",
+    "meeting": "Meeting",
+    "lunch": "Lunch",
+    "coffee": "Coffee",
+    "call": "Call",
+    "visit": "Visit",
+    "event": "Event",
+    "casual": "Casual"
+  },
+  "categoryLabel": "Category",
+  "categoryFilter": "Filter by category",
   "folders": {
     "allTopics": "All topics",
     "ungrouped": "No folder",
