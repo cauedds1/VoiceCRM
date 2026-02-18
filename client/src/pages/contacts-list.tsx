@@ -61,7 +61,7 @@ export default function ContactsList() {
   });
 
   return (
-    <div className="p-4 sm:p-6 w-full max-w-6xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 w-full max-w-7xl mx-auto space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{t("contactsList.title")}</h1>

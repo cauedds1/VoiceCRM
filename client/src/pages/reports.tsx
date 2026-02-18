@@ -61,7 +61,7 @@ export default function Reports() {
   const isLoading = loadingMeetings || loadingSummary;
 
   return (
-    <div className="p-4 sm:p-6 w-full max-w-6xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 w-full max-w-7xl mx-auto space-y-6">
       <div>
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight" data-testid="text-reports-title">{t("reports.title")}</h1>
         <p className="text-muted-foreground mt-1">{t("reports.subtitle")}</p>

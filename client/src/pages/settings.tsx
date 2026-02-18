@@ -186,7 +186,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 w-full max-w-4xl mx-auto space-y-6" data-testid="settings-page">
+    <div className="p-4 sm:p-6 w-full max-w-7xl mx-auto space-y-6" data-testid="settings-page">
       <div>
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2" data-testid="text-settings-title">
           <div className="p-1.5 rounded-md bg-gradient-to-br from-emerald-500 to-cyan-500">
