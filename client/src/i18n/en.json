@@ -57,7 +57,10 @@
     "heroBullet3": "Tasks extracted from conversations",
     "acceptTermsPrefix": "I have read and accept the",
     "privacyPolicyLink": "Privacy Policy and Terms of Use",
-    "acceptTermsRequired": "You must accept the Privacy Policy to create your account"
+    "acceptTermsRequired": "You must accept the Privacy Policy to create your account",
+    "readPolicyBelow": "Read the privacy policy below before creating your account. Scroll to the end to enable the confirmation.",
+    "scrollToRead": "Scroll down to read the full policy",
+    "acceptTermsCheckbox": "I have read the entire Privacy Policy and Terms of Use above and agree to all the terms described"
   },
   "landing": {
     "login": "Sign in",

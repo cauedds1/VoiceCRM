@@ -57,7 +57,10 @@
     "heroBullet3": "Tarefas extraídas da conversa",
     "acceptTermsPrefix": "Li e aceito a",
     "privacyPolicyLink": "Politica de Privacidade e Termos de Uso",
-    "acceptTermsRequired": "Voce precisa aceitar a Politica de Privacidade para criar sua conta"
+    "acceptTermsRequired": "Voce precisa aceitar a Politica de Privacidade para criar sua conta",
+    "readPolicyBelow": "Leia a politica de privacidade abaixo antes de criar sua conta. Role ate o final para habilitar a confirmacao.",
+    "scrollToRead": "Role para baixo para ler toda a politica",
+    "acceptTermsCheckbox": "Li toda a Politica de Privacidade e Termos de Uso acima e concordo com todos os termos descritos"
   },
   "landing": {
     "login": "Entrar",

@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation, Link } from "wouter";
-import { Mic, ArrowRight, Loader2 } from "lucide-react";
+import { Mic, ArrowRight, Loader2, Shield, Database, Brain, HardDrive, UserCheck, Mail, FileText, CheckCircle } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,11 +18,39 @@ export default function AuthPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [scrolledToBottom, setScrolledToBottom] = useState(false);
+  const policyScrollRef = useRef<HTMLDivElement>(null);
   const { login, register, isLoggingIn, isRegistering } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
 
   const isPending = isLoggingIn || isRegistering;
+
+  const handlePolicyScroll = () => {
+    const el = policyScrollRef.current;
+    if (!el) return;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 20) {
+      setScrolledToBottom(true);
+    }
+  };
+
+  useEffect(() => {
+    if (mode === "register") {
+      setScrolledToBottom(false);
+      setAcceptedTerms(false);
+    }
+  }, [mode]);
+
+  const policySections = [
+    { icon: Database, titleKey: "privacy.dataCollectionTitle", textKey: "privacy.dataCollectionText" },
+    { icon: Brain, titleKey: "privacy.dataProcessingTitle", textKey: "privacy.dataProcessingText" },
+    { icon: HardDrive, titleKey: "privacy.dataStorageTitle", textKey: "privacy.dataStorageText" },
+    { icon: UserCheck, titleKey: "privacy.userRightsTitle", textKey: "privacy.userRightsText" },
+    { icon: Shield, titleKey: "privacy.dataSecurityTitle", textKey: "privacy.dataSecurityText" },
+    { icon: Mail, titleKey: "privacy.contactTitle", textKey: "privacy.contactText" },
+    { icon: FileText, titleKey: "privacy.termsTitle", textKey: "privacy.termsText" },
+    { icon: CheckCircle, titleKey: "privacy.consentTitle", textKey: "privacy.consentText" },
+  ];
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -50,8 +78,8 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen bg-background flex">
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-md">
+      <div className={`flex-1 flex items-center justify-center p-6 ${mode === "register" ? "overflow-y-auto" : ""}`}>
+        <div className={`w-full ${mode === "register" ? "max-w-2xl my-6" : "max-w-md"}`}>
           <div className="flex items-center justify-between gap-4 mb-8">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-9 h-9 rounded-md bg-gradient-to-br from-emerald-500 to-cyan-500">
@@ -122,23 +150,59 @@ export default function AuthPage() {
                     data-testid="input-password"
                   />
                 </div>
+
                 {mode === "register" && (
-                  <div className="flex items-start gap-2">
-                    <Checkbox
-                      id="terms"
-                      checked={acceptedTerms}
-                      onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
-                      data-testid="checkbox-accept-terms"
-                      className="mt-0.5"
-                    />
-                    <label htmlFor="terms" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
-                      {t("auth.acceptTermsPrefix")}{" "}
-                      <Link href="/privacy" className="text-primary underline" data-testid="link-privacy-policy">
-                        {t("auth.privacyPolicyLink")}
-                      </Link>
-                    </label>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-emerald-500 shrink-0" />
+                      <h3 className="text-sm font-semibold">{t("privacy.title")}</h3>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{t("auth.readPolicyBelow")}</p>
+                    <div
+                      ref={policyScrollRef}
+                      onScroll={handlePolicyScroll}
+                      className="max-h-64 overflow-y-auto rounded-md border border-border p-4 space-y-4 bg-muted/30"
+                      data-testid="container-privacy-policy-scroll"
+                    >
+                      {policySections.map((section) => {
+                        const Icon = section.icon;
+                        return (
+                          <div key={section.titleKey} className="space-y-1.5">
+                            <div className="flex items-center gap-2">
+                              <Icon className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                              <h4 className="text-xs font-semibold">{t(section.titleKey)}</h4>
+                            </div>
+                            <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-line pl-5.5">
+                              {t(section.textKey)}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {!scrolledToBottom && (
+                      <p className="text-xs text-muted-foreground text-center animate-pulse">
+                        {t("auth.scrollToRead")}
+                      </p>
+                    )}
+                    <div className={`flex items-start gap-2 p-3 rounded-md border ${acceptedTerms ? "border-emerald-500/30 bg-emerald-500/5" : "border-border"} transition-colors`}>
+                      <Checkbox
+                        id="terms"
+                        checked={acceptedTerms}
+                        onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                        disabled={!scrolledToBottom}
+                        data-testid="checkbox-accept-terms"
+                        className="mt-0.5"
+                      />
+                      <label
+                        htmlFor="terms"
+                        className={`text-xs leading-relaxed cursor-pointer ${scrolledToBottom ? "text-foreground" : "text-muted-foreground"}`}
+                      >
+                        {t("auth.acceptTermsCheckbox")}
+                      </label>
+                    </div>
                   </div>
                 )}
+
                 <Button type="submit" className="w-full gap-2 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white" disabled={isPending || (mode === "register" && !acceptedTerms)} data-testid="button-submit-auth">
                   {isPending ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -167,28 +231,30 @@ export default function AuthPage() {
         </div>
       </div>
 
-      <div className="hidden lg:flex flex-1 items-center justify-center bg-gradient-to-br from-emerald-950 via-teal-950 to-cyan-950 p-12">
-        <div className="max-w-md">
-          <h2 className="text-2xl font-bold tracking-tight mb-4 text-white">
-            {t("auth.heroTitle")} <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">{t("auth.heroHighlight")}</span> {t("auth.heroTitleEnd")}
-          </h2>
-          <p className="text-emerald-100/70 leading-relaxed mb-6">
-            {t("auth.heroDescription")}
-          </p>
-          <div className="space-y-3">
-            {[
-              t("auth.heroBullet1"),
-              t("auth.heroBullet2"),
-              t("auth.heroBullet3"),
-            ].map((item) => (
-              <div key={item} className="flex items-center gap-2 text-sm text-emerald-100/80">
-                <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 shrink-0" />
-                {item}
-              </div>
-            ))}
+      {mode === "login" && (
+        <div className="hidden lg:flex flex-1 items-center justify-center bg-gradient-to-br from-emerald-950 via-teal-950 to-cyan-950 p-12">
+          <div className="max-w-md">
+            <h2 className="text-2xl font-bold tracking-tight mb-4 text-white">
+              {t("auth.heroTitle")} <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">{t("auth.heroHighlight")}</span> {t("auth.heroTitleEnd")}
+            </h2>
+            <p className="text-emerald-100/70 leading-relaxed mb-6">
+              {t("auth.heroDescription")}
+            </p>
+            <div className="space-y-3">
+              {[
+                t("auth.heroBullet1"),
+                t("auth.heroBullet2"),
+                t("auth.heroBullet3"),
+              ].map((item) => (
+                <div key={item} className="flex items-center gap-2 text-sm text-emerald-100/80">
+                  <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 shrink-0" />
+                  {item}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
