@@ -84,13 +84,91 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateCompany(id: string, userId: string, data: Partial<Company>): Promise<Company | undefined> {
+    let oldName: string | undefined;
+    if (data.name) {
+      const existing = await this.getCompany(id, userId);
+      if (existing) oldName = existing.name;
+    }
+
     const [company] = await db.update(companies).set(data)
       .where(and(eq(companies.id, id), eq(companies.userId, userId))).returning();
-    if (company && data.name) {
+
+    if (company && data.name && oldName && oldName !== data.name) {
       await db.update(contacts).set({ companyName: data.name })
         .where(and(eq(contacts.companyId, id), eq(contacts.userId, userId)));
+
+      await this.syncFolderCompanyName(oldName, data.name, userId);
     }
     return company;
+  }
+
+  private async syncFolderCompanyName(oldName: string, newName: string, userId: string): Promise<void> {
+    const allFolders = await db.select().from(meetingFolders)
+      .where(eq(meetingFolders.userId, userId));
+
+    const normalize = (s: string) => s.toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+    const oldNorm = normalize(oldName);
+
+    for (const folder of allFolders) {
+      if (!folder.topic) continue;
+      const topicNorm = normalize(folder.topic);
+      if (!topicNorm.includes(oldNorm)) continue;
+
+      const newTopic = folder.topic.replace(new RegExp(oldName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), newName);
+      if (newTopic === folder.topic) continue;
+
+      await db.update(meetingFolders).set({ name: newTopic, topic: newTopic })
+        .where(eq(meetingFolders.id, folder.id));
+
+      await db.update(meetings).set({ topic: newTopic })
+        .where(and(eq(meetings.folderId, folder.id), eq(meetings.userId, userId)));
+    }
+
+    await this.mergeDuplicateFolders(userId);
+  }
+
+  private async mergeDuplicateFolders(userId: string): Promise<void> {
+    const allFolders = await db.select().from(meetingFolders)
+      .where(eq(meetingFolders.userId, userId));
+
+    const normalize = (s: string) => s.toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+
+    const stopWords = new Set(["de","da","do","das","dos","com","para","por","em","no","na","nos","nas","um","uma","o","a","os","as","e","ou","sobre","the","of","for","and","in","on","with","to","at","by","an"]);
+    const getKeywords = (s: string) => normalize(s).split(/\s+/).filter(w => w.length > 1 && !stopWords.has(w));
+
+    const merged = new Set<string>();
+
+    for (let i = 0; i < allFolders.length; i++) {
+      if (merged.has(allFolders[i].id)) continue;
+      if (!allFolders[i].topic) continue;
+      const kw1 = getKeywords(allFolders[i].topic!);
+      if (kw1.length === 0) continue;
+
+      for (let j = i + 1; j < allFolders.length; j++) {
+        if (merged.has(allFolders[j].id)) continue;
+        if (!allFolders[j].topic) continue;
+        const kw2 = getKeywords(allFolders[j].topic!);
+        if (kw2.length === 0) continue;
+
+        const set1 = new Set(kw1);
+        let matchCount = 0;
+        const allWords = new Set<string>();
+        for (const w of kw1) { allWords.add(w); }
+        for (const w of kw2) { allWords.add(w); if (set1.has(w)) matchCount++; }
+        const jaccard = matchCount / allWords.size;
+
+        if (jaccard >= 0.5) {
+          await db.update(meetings).set({ folderId: allFolders[i].id })
+            .where(and(eq(meetings.folderId, allFolders[j].id), eq(meetings.userId, userId)));
+          await db.delete(meetingFolders).where(eq(meetingFolders.id, allFolders[j].id));
+          merged.add(allFolders[j].id);
+        }
+      }
+    }
   }
 
   async getContacts(userId: string): Promise<Contact[]> {
