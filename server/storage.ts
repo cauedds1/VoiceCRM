@@ -86,6 +86,10 @@ export class DatabaseStorage implements IStorage {
   async updateCompany(id: string, userId: string, data: Partial<Company>): Promise<Company | undefined> {
     const [company] = await db.update(companies).set(data)
       .where(and(eq(companies.id, id), eq(companies.userId, userId))).returning();
+    if (company && data.name) {
+      await db.update(contacts).set({ companyName: data.name })
+        .where(and(eq(contacts.companyId, id), eq(contacts.userId, userId)));
+    }
     return company;
   }
 
