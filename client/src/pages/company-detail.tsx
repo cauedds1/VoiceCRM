@@ -107,7 +107,8 @@ export default function CompanyDetail() {
       if (!res.ok) throw new Error("Upload failed");
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data: Company) => {
+      setEditData(prev => ({ ...prev, logoUrl: data.logoUrl }));
       queryClient.invalidateQueries({ queryKey: ["/api/companies", params.id] });
       queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
       toast({ title: t("companyDetail.logoUploaded") });
