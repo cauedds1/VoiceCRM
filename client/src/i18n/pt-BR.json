@@ -223,7 +223,13 @@
     "tasks": "Tarefas",
     "decisions": "Decisões",
     "participants": "Participantes",
-    "noParticipants": "Nenhum participante identificado"
+    "noParticipants": "Nenhum participante identificado",
+    "delete": "Excluir",
+    "deleteTitle": "Excluir reunião",
+    "deleteDescription": "Tem certeza que deseja excluir esta reunião? Todas as tarefas, decisões e dados associados serão removidos permanentemente.",
+    "deleteConfirm": "Sim, excluir",
+    "deleteCancel": "Cancelar",
+    "deleted": "Reunião excluída com sucesso"
   },
   "contactsList": {
     "title": "Contatos",

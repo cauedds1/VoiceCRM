@@ -223,7 +223,13 @@
     "tasks": "Tasks",
     "decisions": "Decisions",
     "participants": "Participants",
-    "noParticipants": "No participants identified"
+    "noParticipants": "No participants identified",
+    "delete": "Delete",
+    "deleteTitle": "Delete meeting",
+    "deleteDescription": "Are you sure you want to delete this meeting? All associated tasks, decisions, and data will be permanently removed.",
+    "deleteConfirm": "Yes, delete",
+    "deleteCancel": "Cancel",
+    "deleted": "Meeting deleted successfully"
   },
   "contactsList": {
     "title": "Contacts",

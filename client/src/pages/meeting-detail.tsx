@@ -11,9 +11,21 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import i18n from "@/i18n";
 import type { Meeting, Task, Decision, Contact } from "@shared/schema";
@@ -22,6 +34,7 @@ export default function MeetingDetail() {
   const params = useParams<{ id: string }>();
   const { toast } = useToast();
   const { t } = useTranslation();
+  const [, navigate] = useLocation();
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editSummary, setEditSummary] = useState("");
@@ -68,6 +81,15 @@ export default function MeetingDetail() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/meetings", params.id, "tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    },
+  });
+
+  const deleteMeeting = useMutation({
+    mutationFn: async () => apiRequest("DELETE", `/api/meetings/${params.id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/meetings"] });
+      toast({ title: t("meetingDetail.deleted") });
+      navigate("/meetings");
     },
   });
 
@@ -153,20 +175,56 @@ export default function MeetingDetail() {
             </Button>
           </div>
         ) : (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setEditTitle(meeting.title);
-              setEditSummary(meeting.summary || "");
-              setEditing(true);
-            }}
-            className="gap-1"
-            data-testid="button-edit-meeting"
-          >
-            <Edit2 className="h-3.5 w-3.5" />
-            {t("common.edit")}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setEditTitle(meeting.title);
+                setEditSummary(meeting.summary || "");
+                setEditing(true);
+              }}
+              className="gap-1"
+              data-testid="button-edit-meeting"
+            >
+              <Edit2 className="h-3.5 w-3.5" />
+              {t("common.edit")}
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1 text-destructive"
+                  data-testid="button-delete-meeting"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  {t("meetingDetail.delete")}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{t("meetingDetail.deleteTitle")}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {t("meetingDetail.deleteDescription")}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel data-testid="button-cancel-delete">
+                    {t("meetingDetail.deleteCancel")}
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => deleteMeeting.mutate()}
+                    disabled={deleteMeeting.isPending}
+                    className="bg-destructive text-destructive-foreground"
+                    data-testid="button-confirm-delete"
+                  >
+                    {t("meetingDetail.deleteConfirm")}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         )}
       </div>
 
