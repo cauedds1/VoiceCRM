@@ -27,6 +27,8 @@ Voice-powered CRM system for professionals. Record audio after meetings, AI tran
 - Full CRUD for contacts, companies, meetings, tasks
 - Contacts grouped by company with city/state location
 - Companies with city/state location fields
+- Company merge/unification: when renaming a company to match an existing one, system auto-merges contacts (deduplicates by name), reassigns all meetings, and deletes the duplicate
+- Company logo file upload (max 2MB, stored as base64)
 - Intelligent meeting folders: AI auto-detects topic and groups meetings with same subject into folders
 - Topic/subject filter on meetings page
 - Folder view toggle (list vs grouped by folder)
@@ -64,6 +66,9 @@ shared/
 - `GET/POST/PATCH /api/contacts` - Contact CRUD
 - `GET /api/contacts/:id/meetings` - Contact meeting history
 - `GET/POST/PATCH /api/companies` - Company CRUD
+- `GET /api/companies/check-name` - Check if company name exists (for merge detection)
+- `POST /api/companies/:id/merge` - Merge source company into target (unify contacts, transfer meetings)
+- `POST /api/companies/:id/logo` - Upload company logo (max 2MB, stored as base64)
 - `GET/PATCH /api/tasks` - Task management
 - `GET/POST /api/meeting-folders` - Folder CRUD
 - `PATCH/DELETE /api/meeting-folders/:id` - Update/delete folder

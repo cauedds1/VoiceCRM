@@ -54,6 +54,9 @@ export interface IStorage {
   getMeetingsByFolder(folderId: string, userId: string): Promise<Meeting[]>;
   findFolderByTopic(topic: string, userId: string): Promise<MeetingFolder | undefined>;
 
+  mergeCompanies(sourceId: string, targetId: string, userId: string): Promise<{ mergedContacts: number; movedContacts: number; movedMeetings: number }>;
+  deleteCompany(id: string, userId: string): Promise<void>;
+
   getUserSettings(userId: string): Promise<UserSettings | undefined>;
   upsertUserSettings(userId: string, data: Partial<UserSettings>): Promise<UserSettings>;
   deleteUserAccount(userId: string): Promise<void>;
@@ -223,6 +226,67 @@ export class DatabaseStorage implements IStorage {
       }
     }
     return result.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+  }
+
+  async mergeCompanies(sourceId: string, targetId: string, userId: string): Promise<{ mergedContacts: number; movedContacts: number; movedMeetings: number }> {
+    const sourceContacts = await this.getCompanyContacts(sourceId, userId);
+    const targetContacts = await this.getCompanyContacts(targetId, userId);
+
+    let mergedContacts = 0;
+    let movedContacts = 0;
+    const movedMeetingIds = new Set<string>();
+
+    for (const sourceContact of sourceContacts) {
+      const duplicate = targetContacts.find(
+        tc => tc.name.toLowerCase().trim() === sourceContact.name.toLowerCase().trim()
+      );
+
+      if (duplicate) {
+        const sourceLinks = await db.select().from(meetingContacts)
+          .where(eq(meetingContacts.contactId, sourceContact.id));
+        for (const link of sourceLinks) {
+          await db.insert(meetingContacts)
+            .values({ meetingId: link.meetingId, contactId: duplicate.id })
+            .onConflictDoNothing();
+          movedMeetingIds.add(link.meetingId);
+        }
+
+        await db.update(tasks).set({ contactId: duplicate.id })
+          .where(eq(tasks.contactId, sourceContact.id));
+
+        if (!duplicate.phone && sourceContact.phone) {
+          await db.update(contacts).set({ phone: sourceContact.phone }).where(eq(contacts.id, duplicate.id));
+        }
+        if (!duplicate.email && sourceContact.email) {
+          await db.update(contacts).set({ email: sourceContact.email }).where(eq(contacts.id, duplicate.id));
+        }
+        if (!duplicate.role && sourceContact.role) {
+          await db.update(contacts).set({ role: sourceContact.role }).where(eq(contacts.id, duplicate.id));
+        }
+
+        await db.delete(meetingContacts).where(eq(meetingContacts.contactId, sourceContact.id));
+        await db.delete(contacts).where(eq(contacts.id, sourceContact.id));
+        mergedContacts++;
+      } else {
+        await db.update(contacts).set({ companyId: targetId, companyName: (await this.getCompany(targetId, userId))?.name || null })
+          .where(eq(contacts.id, sourceContact.id));
+
+        const sourceLinks = await db.select().from(meetingContacts)
+          .where(eq(meetingContacts.contactId, sourceContact.id));
+        for (const link of sourceLinks) {
+          movedMeetingIds.add(link.meetingId);
+        }
+        movedContacts++;
+      }
+    }
+
+    await this.deleteCompany(sourceId, userId);
+
+    return { mergedContacts, movedContacts, movedMeetings: movedMeetingIds.size };
+  }
+
+  async deleteCompany(id: string, userId: string): Promise<void> {
+    await db.delete(companies).where(and(eq(companies.id, id), eq(companies.userId, userId)));
   }
 
   async getMeetingFolders(userId: string): Promise<MeetingFolder[]> {

@@ -1,8 +1,8 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useParams, Link } from "wouter";
+import { useParams, Link, useLocation } from "wouter";
 import {
   ArrowLeft, Building2, Phone, Mail, MapPin, Clock, Edit2, Save, X,
-  Users, CalendarDays, Globe, FileText, Image as ImageIcon,
+  Users, CalendarDays, Globe, FileText, Image as ImageIcon, Merge, AlertTriangle,
 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useState, useRef } from "react";
@@ -26,6 +30,9 @@ export default function CompanyDetail() {
   const [activeTab, setActiveTab] = useState<Tab>("info");
   const [editing, setEditing] = useState(false);
   const [editData, setEditData] = useState<Partial<Company>>({});
+  const [mergeTarget, setMergeTarget] = useState<Company | null>(null);
+  const [showMergeDialog, setShowMergeDialog] = useState(false);
+  const [, navigate] = useLocation();
 
   const { data: company, isLoading } = useQuery<Company>({
     queryKey: ["/api/companies", params.id],
@@ -49,6 +56,44 @@ export default function CompanyDetail() {
       toast({ title: t("companyDetail.updated") });
     },
   });
+
+  const mergeCompany = useMutation({
+    mutationFn: async (targetId: string) =>
+      apiRequest("POST", `/api/companies/${params.id}/merge`, { targetId }),
+    onSuccess: async (res: any) => {
+      const data = await res.json();
+      queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/companies", data.targetCompany.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/meetings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      setShowMergeDialog(false);
+      toast({ title: t("companyDetail.mergeSuccess") });
+      navigate(`/companies/${data.targetCompany.id}`);
+    },
+    onError: () => {
+      toast({ title: t("companyDetail.mergeError"), variant: "destructive" });
+    },
+  });
+
+  const handleSave = async () => {
+    if (editData.name && editData.name.trim() !== company?.name) {
+      try {
+        const res = await fetch(`/api/companies/check-name?name=${encodeURIComponent(editData.name.trim())}&excludeId=${params.id}`, { credentials: "include" });
+        if (!res.ok) throw new Error("Check failed");
+        const data = await res.json();
+        if (data.exists && data.company) {
+          setMergeTarget(data.company);
+          setShowMergeDialog(true);
+          return;
+        }
+      } catch {
+        toast({ title: t("companyDetail.mergeError"), variant: "destructive" });
+        return;
+      }
+    }
+    updateCompany.mutate(editData);
+  };
 
   const uploadLogo = useMutation({
     mutationFn: async (file: File) => {
@@ -149,8 +194,8 @@ export default function CompanyDetail() {
           <div className="flex items-center gap-2">
             <Button
               size="sm"
-              onClick={() => updateCompany.mutate(editData)}
-              disabled={updateCompany.isPending}
+              onClick={handleSave}
+              disabled={updateCompany.isPending || mergeCompany.isPending}
               className="gap-1"
               data-testid="button-save-company"
             >
@@ -398,6 +443,47 @@ export default function CompanyDetail() {
           )}
         </div>
       )}
+
+      <AlertDialog open={showMergeDialog} onOpenChange={setShowMergeDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Merge className="h-5 w-5 text-primary" />
+              {t("companyDetail.mergeTitle")}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p>{t("companyDetail.mergeDescription", { source: company?.name, target: mergeTarget?.name })}</p>
+                <div className="rounded-md bg-muted p-3 space-y-1.5 text-sm">
+                  <p className="flex items-center gap-2">
+                    <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                    {t("companyDetail.mergeContactsInfo")}
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
+                    {t("companyDetail.mergeMeetingsInfo")}
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <AlertTriangle className="h-3.5 w-3.5 text-muted-foreground" />
+                    {t("companyDetail.mergeDeleteInfo", { source: company?.name })}
+                  </p>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-merge">{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => mergeTarget && mergeCompany.mutate(mergeTarget.id)}
+              disabled={mergeCompany.isPending}
+              data-testid="button-confirm-merge"
+            >
+              <Merge className="h-4 w-4 mr-2" />
+              {mergeCompany.isPending ? t("common.loading") : t("companyDetail.mergeConfirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

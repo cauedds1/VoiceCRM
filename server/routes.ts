@@ -396,6 +396,22 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/companies/check-name", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const name = req.query.name as string;
+      const excludeId = req.query.excludeId as string | undefined;
+      if (!name) return res.json({ exists: false });
+      const existing = await storage.getCompanyByName(name.trim(), userId);
+      if (existing && existing.id !== excludeId) {
+        return res.json({ exists: true, company: existing });
+      }
+      res.json({ exists: false });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   app.patch("/api/companies/:id", isAuthenticated, async (req, res) => {
     try {
       const userId = getUserId(req);
@@ -416,6 +432,26 @@ export async function registerRoutes(
       res.json(company);
     } catch (error: any) {
       if (error instanceof z.ZodError) return res.status(400).json({ message: error.errors });
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/companies/:id/merge", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const sourceId = paramId(req);
+      const { targetId } = req.body;
+      if (!targetId) return res.status(400).json({ message: "targetId is required" });
+      if (sourceId === targetId) return res.status(400).json({ message: "Cannot merge a company with itself" });
+
+      const source = await storage.getCompany(sourceId, userId);
+      const target = await storage.getCompany(targetId, userId);
+      if (!source) return res.status(404).json({ message: "Source company not found" });
+      if (!target) return res.status(404).json({ message: "Target company not found" });
+
+      const result = await storage.mergeCompanies(sourceId, targetId, userId);
+      res.json({ ...result, targetCompany: await storage.getCompany(targetId, userId) });
+    } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
   });
