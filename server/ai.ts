@@ -40,7 +40,7 @@ async function buildUserPrompt(transcribedText: string, userId: string): Promise
       .map(f => `- "${f.topic}"`)
       .join("\n");
     if (folderTopics) {
-      folderContext = `\n\nPASTAS EXISTENTES (use o MESMO nome de topic se o assunto for similar):\n${folderTopics}\n`;
+      folderContext = `\n\nPASTAS EXISTENTES (use EXATAMENTE o mesmo nome se o assunto E a empresa forem os mesmos — NÃO agrupe reuniões de empresas diferentes na mesma pasta):\n${folderTopics}\n`;
     }
   }
   return `${folderContext}Transcrição da reunião:\n\n${transcribedText}`;
@@ -305,7 +305,7 @@ FORMATO DE RESPOSTA (JSON OBRIGATÓRIO)
 {
   "title": "Título conciso e descritivo (máx 10 palavras)",
   "summary": "Resumo completo e organizado do áudio, com todos os pontos relevantes",
-  "topic": "Assunto principal em 2-5 palavras — SE existir uma pasta com tema similar nas PASTAS EXISTENTES abaixo, use EXATAMENTE o mesmo nome para agrupar. Caso contrário, crie um nome novo e conciso.",
+  "topic": "Assunto principal + empresa envolvida (ex: 'IA e-commerce - Giassi', 'Projeto Voice CRM - Evehx', 'Contrato TechCorp'). SEMPRE inclua o nome da empresa principal quando houver uma. SE existir uma pasta com tema E empresa similar nas PASTAS EXISTENTES abaixo, use EXATAMENTE o mesmo nome para agrupar. Caso contrário, crie um nome novo.",
   "contacts": [
     {
       "name": "Nome completo ou como foi mencionado",
