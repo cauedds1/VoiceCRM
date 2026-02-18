@@ -1,11 +1,12 @@
 import {
-  companies, contacts, meetings, meetingContacts, tasks, decisions, userSettings,
+  companies, contacts, meetings, meetingContacts, tasks, decisions, userSettings, meetingFolders,
   type Company, type InsertCompany,
   type Contact, type InsertContact,
   type Meeting, type InsertMeeting,
   type Task, type InsertTask,
   type Decision, type InsertDecision,
   type UserSettings,
+  type MeetingFolder, type InsertMeetingFolder,
 } from "@shared/schema";
 import { users, sessions } from "@shared/models/auth";
 import { db } from "./db";
@@ -44,6 +45,14 @@ export interface IStorage {
   getContactMeetings(contactId: string): Promise<Meeting[]>;
   getCompanyContacts(companyId: string, userId: string): Promise<Contact[]>;
   getCompanyMeetings(companyId: string, userId: string): Promise<Meeting[]>;
+
+  getMeetingFolders(userId: string): Promise<MeetingFolder[]>;
+  getMeetingFolder(id: string, userId: string): Promise<MeetingFolder | undefined>;
+  createMeetingFolder(data: InsertMeetingFolder): Promise<MeetingFolder>;
+  updateMeetingFolder(id: string, userId: string, data: Partial<MeetingFolder>): Promise<MeetingFolder | undefined>;
+  deleteMeetingFolder(id: string, userId: string): Promise<void>;
+  getMeetingsByFolder(folderId: string, userId: string): Promise<Meeting[]>;
+  findFolderByTopic(topic: string, userId: string): Promise<MeetingFolder | undefined>;
 
   getUserSettings(userId: string): Promise<UserSettings | undefined>;
   upsertUserSettings(userId: string, data: Partial<UserSettings>): Promise<UserSettings>;
@@ -216,6 +225,44 @@ export class DatabaseStorage implements IStorage {
     return result.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
   }
 
+  async getMeetingFolders(userId: string): Promise<MeetingFolder[]> {
+    return db.select().from(meetingFolders).where(eq(meetingFolders.userId, userId)).orderBy(desc(meetingFolders.createdAt));
+  }
+
+  async getMeetingFolder(id: string, userId: string): Promise<MeetingFolder | undefined> {
+    const [folder] = await db.select().from(meetingFolders).where(and(eq(meetingFolders.id, id), eq(meetingFolders.userId, userId)));
+    return folder;
+  }
+
+  async createMeetingFolder(data: InsertMeetingFolder): Promise<MeetingFolder> {
+    const [folder] = await db.insert(meetingFolders).values(data).returning();
+    return folder;
+  }
+
+  async updateMeetingFolder(id: string, userId: string, data: Partial<MeetingFolder>): Promise<MeetingFolder | undefined> {
+    const [folder] = await db.update(meetingFolders).set(data)
+      .where(and(eq(meetingFolders.id, id), eq(meetingFolders.userId, userId))).returning();
+    return folder;
+  }
+
+  async deleteMeetingFolder(id: string, userId: string): Promise<void> {
+    await db.update(meetings).set({ folderId: null })
+      .where(and(eq(meetings.folderId, id), eq(meetings.userId, userId)));
+    await db.delete(meetingFolders).where(and(eq(meetingFolders.id, id), eq(meetingFolders.userId, userId)));
+  }
+
+  async getMeetingsByFolder(folderId: string, userId: string): Promise<Meeting[]> {
+    return db.select().from(meetings)
+      .where(and(eq(meetings.folderId, folderId), eq(meetings.userId, userId)))
+      .orderBy(desc(meetings.createdAt));
+  }
+
+  async findFolderByTopic(topic: string, userId: string): Promise<MeetingFolder | undefined> {
+    const [folder] = await db.select().from(meetingFolders)
+      .where(and(eq(meetingFolders.userId, userId), ilike(meetingFolders.topic, topic)));
+    return folder;
+  }
+
   async getUserSettings(userId: string): Promise<UserSettings | undefined> {
     const [settings] = await db.select().from(userSettings).where(eq(userSettings.userId, userId));
     return settings;
@@ -240,6 +287,7 @@ export class DatabaseStorage implements IStorage {
       await db.delete(decisions).where(eq(decisions.meetingId, meeting.id));
     }
     await db.delete(meetings).where(eq(meetings.userId, userId));
+    await db.delete(meetingFolders).where(eq(meetingFolders.userId, userId));
     await db.delete(tasks).where(eq(tasks.userId, userId));
     await db.delete(contacts).where(eq(contacts.userId, userId));
     await db.delete(companies).where(eq(companies.userId, userId));

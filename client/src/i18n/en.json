@@ -459,6 +459,22 @@
     "exportError": "Error exporting data",
     "deleteDataNotice": "In compliance with data protection laws, deleting your account will permanently remove all your personal data from our servers, including processed recordings, transcriptions, contacts, companies, and tasks. This action is irreversible."
   },
+  "folders": {
+    "allTopics": "All topics",
+    "ungrouped": "No folder",
+    "rename": "Rename",
+    "delete": "Delete",
+    "renameFolder": "Rename folder",
+    "deleteFolder": "Delete folder",
+    "deleteFolderDescription": "The folder will be deleted but the meetings will not be erased. They will be ungrouped.",
+    "folderName": "Folder name",
+    "renamed": "Folder renamed",
+    "deleted": "Folder deleted",
+    "moveToFolder": "Move to folder",
+    "removeFromFolder": "Remove from folder",
+    "meetingMoved": "Meeting moved",
+    "noFolders": "No folders created yet"
+  },
   "mobilePopup": {
     "title": "Add to Home Screen",
     "description": "Add VoiceCRM to your home screen for quick access. Works like a native app on your phone.",

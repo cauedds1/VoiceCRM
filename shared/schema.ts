@@ -36,12 +36,22 @@ export const contacts = pgTable("contacts", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const meetingFolders = pgTable("meeting_folders", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  topic: text("topic"),
+  userId: varchar("user_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const meetings = pgTable("meetings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   title: text("title").notNull(),
   summary: text("summary"),
   transcription: text("transcription"),
   audioUrl: text("audio_url"),
+  topic: text("topic"),
+  folderId: varchar("folder_id"),
   date: timestamp("date").defaultNow(),
   status: text("status").notNull().default("completed"),
   userId: varchar("user_id").notNull(),
@@ -96,7 +106,12 @@ export const contactsRelations = relations(contacts, ({ one, many }) => ({
   meetingContacts: many(meetingContacts),
 }));
 
-export const meetingsRelations = relations(meetings, ({ many }) => ({
+export const meetingFoldersRelations = relations(meetingFolders, ({ many }) => ({
+  meetings: many(meetings),
+}));
+
+export const meetingsRelations = relations(meetings, ({ one, many }) => ({
+  folder: one(meetingFolders, { fields: [meetings.folderId], references: [meetingFolders.id] }),
   meetingContacts: many(meetingContacts),
   tasks: many(tasks),
   decisions: many(decisions),
@@ -115,6 +130,10 @@ export const tasksRelations = relations(tasks, ({ one }) => ({
 export const decisionsRelations = relations(decisions, ({ one }) => ({
   meeting: one(meetings, { fields: [decisions.meetingId], references: [meetings.id] }),
 }));
+
+export const insertMeetingFolderSchema = createInsertSchema(meetingFolders).omit({ id: true, createdAt: true });
+export type InsertMeetingFolder = z.infer<typeof insertMeetingFolderSchema>;
+export type MeetingFolder = typeof meetingFolders.$inferSelect;
 
 export const insertCompanySchema = createInsertSchema(companies).omit({ id: true, createdAt: true });
 export const insertContactSchema = createInsertSchema(contacts).omit({ id: true, createdAt: true });

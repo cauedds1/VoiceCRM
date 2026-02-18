@@ -12,6 +12,7 @@ function getOpenAIClient(): OpenAI {
 interface ExtractedData {
   title: string;
   summary: string;
+  topic: string;
   contacts: Array<{ name: string; company?: string; role?: string }>;
   tasks: Array<{ title: string; description?: string; priority: string; dueDate?: string; contactName?: string }>;
   decisions: string[];
@@ -240,7 +241,25 @@ CONTATO VINCULADO À TAREFA (contactName):
 - Se a tarefa é genérica sem pessoa específica → contactName: null
 
 ═══════════════════════════════════════
-6. DECISÕES
+6. TÓPICO/ASSUNTO PRINCIPAL
+═══════════════════════════════════════
+Identifique o ASSUNTO CENTRAL da reunião em 2-5 palavras genéricas e reutilizáveis.
+O tópico deve ser GENÉRICO o suficiente para agrupar reuniões futuras sobre o MESMO ASSUNTO.
+
+Exemplos:
+- "Negociação contrato TechCorp" (se o assunto é um contrato específico com a TechCorp)
+- "Projeto Voice CRM" (se estão discutindo o produto Voice CRM)
+- "Parceria comercial Acme" (se estão negociando parceria com a Acme)
+- "Planejamento semanal equipe" (se é planejamento recorrente da equipe)
+
+REGRAS:
+- O tópico deve capturar O QUE está sendo discutido, não apenas com QUEM
+- Se duas reuniões são sobre o mesmo projeto/negócio com as mesmas pessoas, devem ter o MESMO tópico
+- Use palavras-chave do negócio/projeto, não termos genéricos como "reunião" ou "conversa"
+- Mantenha consistência: se um assunto já foi discutido antes, use exatamente o mesmo tópico
+
+═══════════════════════════════════════
+7. DECISÕES
 ═══════════════════════════════════════
 Capture TODAS as decisões tomadas ou acordos fechados:
 - "Decidimos que X" / "Ficou definido X" / "Combinamos X"
@@ -256,6 +275,7 @@ FORMATO DE RESPOSTA (JSON OBRIGATÓRIO)
 {
   "title": "Título conciso e descritivo (máx 10 palavras)",
   "summary": "Resumo completo e organizado do áudio, com todos os pontos relevantes",
+  "topic": "Assunto principal em 2-5 palavras (ex: 'Projeto Voice CRM', 'Contrato TechCorp')",
   "contacts": [
     {
       "name": "Nome completo ou como foi mencionado",
@@ -299,16 +319,36 @@ REGRAS FINAIS:
     extracted = {
       title: "Reunião sem título",
       summary: transcribedText,
+      topic: "",
       contacts: [],
       tasks: [],
       decisions: [],
     };
   }
 
+  const meetingTopic = extracted.topic || null;
+
+  let folderId: string | null = null;
+  if (meetingTopic) {
+    const existingFolder = await storage.findFolderByTopic(meetingTopic, userId);
+    if (existingFolder) {
+      folderId = existingFolder.id;
+    } else {
+      const newFolder = await storage.createMeetingFolder({
+        name: meetingTopic,
+        topic: meetingTopic,
+        userId,
+      });
+      folderId = newFolder.id;
+    }
+  }
+
   const meeting = await storage.createMeeting({
     title: extracted.title || "Reunião sem título",
     summary: extracted.summary || "",
     transcription: transcribedText,
+    topic: meetingTopic,
+    folderId,
     status: "completed",
     userId,
   });

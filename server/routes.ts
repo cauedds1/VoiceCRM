@@ -154,6 +154,68 @@ export async function registerRoutes(
     }
   });
 
+  // === MEETING FOLDERS ===
+  app.get("/api/meeting-folders", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const folders = await storage.getMeetingFolders(userId);
+      res.json(folders);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/meeting-folders", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const schema = z.object({ name: z.string().min(1), topic: z.string().optional() });
+      const data = schema.parse(req.body);
+      const folder = await storage.createMeetingFolder({ name: data.name, topic: data.topic || null, userId });
+      res.json(folder);
+    } catch (error: any) {
+      if (error instanceof z.ZodError) return res.status(400).json({ message: error.errors[0].message });
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.patch("/api/meeting-folders/:id", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const schema = z.object({ name: z.string().min(1).optional(), topic: z.string().optional() });
+      const data = schema.parse(req.body);
+      const folder = await storage.updateMeetingFolder(paramId(req), userId, data);
+      if (!folder) return res.status(404).json({ message: "Folder not found" });
+      res.json(folder);
+    } catch (error: any) {
+      if (error instanceof z.ZodError) return res.status(400).json({ message: error.errors[0].message });
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/meeting-folders/:id", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      await storage.deleteMeetingFolder(paramId(req), userId);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.patch("/api/meetings/:id/folder", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const schema = z.object({ folderId: z.string().nullable() });
+      const data = schema.parse(req.body);
+      const meeting = await storage.updateMeeting(paramId(req), userId, { folderId: data.folderId });
+      if (!meeting) return res.status(404).json({ message: "Meeting not found" });
+      res.json(meeting);
+    } catch (error: any) {
+      if (error instanceof z.ZodError) return res.status(400).json({ message: error.errors[0].message });
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // === CONTACTS ===
   app.get("/api/contacts", isAuthenticated, async (req, res) => {
     try {
@@ -605,6 +667,7 @@ export async function registerRoutes(
       const allContacts = await storage.getContacts(userId);
       const allCompanies = await storage.getCompanies(userId);
       const allTasks = await storage.getTasks(userId);
+      const allFolders = await storage.getMeetingFolders(userId);
 
       const allDecisions: any[] = [];
       for (const meeting of allMeetings) {
@@ -625,6 +688,7 @@ export async function registerRoutes(
         contacts: allContacts.map(({ userId: _, ...c }) => c),
         companies: allCompanies.map(({ userId: _, ...c }) => c),
         tasks: allTasks.map(({ userId: _, ...t }) => t),
+        meetingFolders: allFolders.map(({ userId: _, ...f }) => f),
         decisions: allDecisions,
       };
 

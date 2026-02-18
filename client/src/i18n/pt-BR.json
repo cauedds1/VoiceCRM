@@ -459,6 +459,22 @@
     "exportError": "Erro ao exportar dados",
     "deleteDataNotice": "Conforme a LGPD, ao excluir sua conta, todos os seus dados pessoais serao permanentemente removidos dos nossos servidores, incluindo gravacoes processadas, transcricoes, contatos, empresas e tarefas. Esta acao e irreversivel."
   },
+  "folders": {
+    "allTopics": "Todos os assuntos",
+    "ungrouped": "Sem pasta",
+    "rename": "Renomear",
+    "delete": "Excluir",
+    "renameFolder": "Renomear pasta",
+    "deleteFolder": "Excluir pasta",
+    "deleteFolderDescription": "A pasta será excluída, mas as reuniões não serão apagadas. Elas ficarão sem pasta.",
+    "folderName": "Nome da pasta",
+    "renamed": "Pasta renomeada",
+    "deleted": "Pasta excluída",
+    "moveToFolder": "Mover para pasta",
+    "removeFromFolder": "Remover da pasta",
+    "meetingMoved": "Reunião movida",
+    "noFolders": "Nenhuma pasta criada ainda"
+  },
   "mobilePopup": {
     "title": "Adicionar à Tela Inicial",
     "description": "Adicione o VoiceCRM à sua tela inicial para acesso rápido. Funciona como um app nativo no seu celular.",

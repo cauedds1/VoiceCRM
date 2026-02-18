@@ -27,6 +27,10 @@ Voice-powered CRM system for professionals. Record audio after meetings, AI tran
 - Full CRUD for contacts, companies, meetings, tasks
 - Contacts grouped by company with city/state location
 - Companies with city/state location fields
+- Intelligent meeting folders: AI auto-detects topic and groups meetings with same subject into folders
+- Topic/subject filter on meetings page
+- Folder view toggle (list vs grouped by folder)
+- Manual folder management: rename, delete, move meetings between folders
 - Meeting detail with participants, tasks, decisions, transcription
 - Contact detail with meeting history
 - Monthly meeting reports with bar chart (Recharts)
@@ -61,6 +65,9 @@ shared/
 - `GET /api/contacts/:id/meetings` - Contact meeting history
 - `GET/POST/PATCH /api/companies` - Company CRUD
 - `GET/PATCH /api/tasks` - Task management
+- `GET/POST /api/meeting-folders` - Folder CRUD
+- `PATCH/DELETE /api/meeting-folders/:id` - Update/delete folder
+- `PATCH /api/meetings/:id/folder` - Move meeting to/from folder
 - `GET /api/reports/meetings-by-month` - Monthly meeting aggregation (last 12 months)
 - `GET /api/reports/summary` - Overall CRM summary stats
 - `GET /api/settings` - Get user settings (language, extraction level)
