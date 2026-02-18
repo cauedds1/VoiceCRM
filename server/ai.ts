@@ -31,6 +31,21 @@ const LANG_MAP: Record<string, { whisper: string; name: string; outputInstructio
   "ko": { whisper: "ko", name: "한국어", outputInstruction: "모든 내용을 한국어로 응답하세요." },
 };
 
+async function buildUserPrompt(transcribedText: string, userId: string): Promise<string> {
+  const folders = await storage.getMeetingFolders(userId);
+  let folderContext = "";
+  if (folders.length > 0) {
+    const folderTopics = folders
+      .filter(f => f.topic)
+      .map(f => `- "${f.topic}"`)
+      .join("\n");
+    if (folderTopics) {
+      folderContext = `\n\nPASTAS EXISTENTES (use o MESMO nome de topic se o assunto for similar):\n${folderTopics}\n`;
+    }
+  }
+  return `${folderContext}Transcrição da reunião:\n\n${transcribedText}`;
+}
+
 function getTaskExtractionInstruction(level: string): string {
   switch (level) {
     case "conservative":
@@ -290,7 +305,7 @@ FORMATO DE RESPOSTA (JSON OBRIGATÓRIO)
 {
   "title": "Título conciso e descritivo (máx 10 palavras)",
   "summary": "Resumo completo e organizado do áudio, com todos os pontos relevantes",
-  "topic": "Assunto principal em 2-5 palavras (ex: 'Projeto Voice CRM', 'Contrato TechCorp')",
+  "topic": "Assunto principal em 2-5 palavras — SE existir uma pasta com tema similar nas PASTAS EXISTENTES abaixo, use EXATAMENTE o mesmo nome para agrupar. Caso contrário, crie um nome novo e conciso.",
   "contacts": [
     {
       "name": "Nome completo ou como foi mencionado",
@@ -322,7 +337,7 @@ REGRAS FINAIS:
       },
       {
         role: "user",
-        content: `Transcrição da reunião:\n\n${transcribedText}`
+        content: await buildUserPrompt(transcribedText, userId)
       }
     ],
   });

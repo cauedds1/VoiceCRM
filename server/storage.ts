@@ -326,9 +326,50 @@ export class DatabaseStorage implements IStorage {
   }
 
   async findFolderByTopic(topic: string, userId: string): Promise<MeetingFolder | undefined> {
-    const [folder] = await db.select().from(meetingFolders)
+    const [exactFolder] = await db.select().from(meetingFolders)
       .where(and(eq(meetingFolders.userId, userId), ilike(meetingFolders.topic, topic)));
-    return folder;
+    if (exactFolder) return exactFolder;
+
+    const allFolders = await db.select().from(meetingFolders)
+      .where(eq(meetingFolders.userId, userId));
+    if (allFolders.length === 0) return undefined;
+
+    const normalize = (s: string) => s.toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9\s]/g, " ").trim();
+
+    const stopWords = new Set(["de","da","do","das","dos","com","para","por","em","no","na","nos","nas","um","uma","o","a","os","as","e","ou","sobre","the","of","for","and","in","on","with","to","at","by","an"]);
+
+    const getKeywords = (s: string) => {
+      return normalize(s).split(/\s+/).filter(w => w.length > 1 && !stopWords.has(w));
+    };
+
+    const topicKeywords = getKeywords(topic);
+    if (topicKeywords.length === 0) return undefined;
+
+    let bestFolder: MeetingFolder | undefined;
+    let bestScore = 0;
+
+    for (const folder of allFolders) {
+      if (!folder.topic) continue;
+      const folderKeywords = getKeywords(folder.topic);
+      if (folderKeywords.length === 0) continue;
+
+      const folderSet = new Set(folderKeywords);
+      let matchCount = 0;
+      const allWords = new Set<string>();
+      for (const w of topicKeywords) { allWords.add(w); if (folderSet.has(w)) matchCount++; }
+      for (const w of folderKeywords) { allWords.add(w); }
+      const jaccard = matchCount / allWords.size;
+
+      if (jaccard > bestScore) {
+        bestScore = jaccard;
+        bestFolder = folder;
+      }
+    }
+
+    if (bestScore >= 0.3 && bestFolder) return bestFolder;
+    return undefined;
   }
 
   async getUserSettings(userId: string): Promise<UserSettings | undefined> {
