@@ -339,7 +339,9 @@
     "noMeetings": "Nenhuma reunião",
     "noMeetingsDesc": "Reuniões com participantes desta empresa aparecerão aqui",
     "noContacts": "Nenhuma pessoa vinculada",
-    "noContactsDesc": "Contatos ligados a esta empresa aparecerão aqui"
+    "noContactsDesc": "Contatos ligados a esta empresa aparecerão aqui",
+    "searchMeetings": "Buscar reuniões...",
+    "searchContacts": "Buscar pessoas..."
   },
   "tasks": {
     "title": "Tarefas",

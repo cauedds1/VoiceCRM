@@ -339,7 +339,9 @@
     "noMeetings": "No meetings",
     "noMeetingsDesc": "Meetings with participants from this company will appear here",
     "noContacts": "No people linked",
-    "noContactsDesc": "Contacts linked to this company will appear here"
+    "noContactsDesc": "Contacts linked to this company will appear here",
+    "searchMeetings": "Search meetings...",
+    "searchContacts": "Search people..."
   },
   "tasks": {
     "title": "Tasks",

@@ -1,7 +1,7 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, Link, useLocation } from "wouter";
 import {
-  ArrowLeft, Building2, Phone, Mail, MapPin, Clock, Edit2, Save, X,
+  ArrowLeft, Building2, Phone, Mail, MapPin, Clock, Edit2, Save, X, Search,
   Users, CalendarDays, Globe, FileText, Image as ImageIcon, Merge, AlertTriangle,
 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -32,6 +32,8 @@ export default function CompanyDetail() {
   const [editData, setEditData] = useState<Partial<Company>>({});
   const [mergeTarget, setMergeTarget] = useState<Company | null>(null);
   const [showMergeDialog, setShowMergeDialog] = useState(false);
+  const [meetingSearch, setMeetingSearch] = useState("");
+  const [contactSearch, setContactSearch] = useState("");
   const [, navigate] = useLocation();
 
   const { data: company, isLoading } = useQuery<Company>({
@@ -357,93 +359,131 @@ export default function CompanyDetail() {
         </Card>
       )}
 
-      {activeTab === "meetings" && (
-        <div className="space-y-3">
-          {companyMeetings.length === 0 ? (
-            <div className="text-center py-16">
-              <CalendarDays className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">{t("companyDetail.noMeetings")}</h3>
-              <p className="text-sm text-muted-foreground">{t("companyDetail.noMeetingsDesc")}</p>
-            </div>
-          ) : (
-            companyMeetings.map((meeting) => (
-              <Link key={meeting.id} href={`/meetings/${meeting.id}`}>
-                <Card className="hover-elevate cursor-pointer" data-testid={`meeting-link-${meeting.id}`}>
-                  <CardContent className="p-5">
-                    <h3 className="text-base font-medium">{meeting.title}</h3>
-                    <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {meeting.date
-                        ? new Date(meeting.date).toLocaleDateString(dateLocale, {
-                            weekday: "long",
-                            day: "2-digit",
-                            month: "long",
-                            year: "numeric",
-                          })
-                        : "—"}
-                    </p>
-                    {meeting.summary && (
-                      <p className="text-sm text-muted-foreground mt-3 line-clamp-2 leading-relaxed">{meeting.summary}</p>
-                    )}
-                  </CardContent>
-                </Card>
-              </Link>
-            ))
-          )}
-        </div>
-      )}
+      {activeTab === "meetings" && (() => {
+        const filtered = companyMeetings.filter(m => {
+          if (!meetingSearch.trim()) return true;
+          const q = meetingSearch.toLowerCase();
+          return (m.title?.toLowerCase().includes(q)) || (m.summary?.toLowerCase().includes(q));
+        });
+        return (
+          <div className="space-y-3">
+            {companyMeetings.length > 0 && (
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder={t("companyDetail.searchMeetings")}
+                  value={meetingSearch}
+                  onChange={(e) => setMeetingSearch(e.target.value)}
+                  className="pl-9"
+                  data-testid="input-search-meetings"
+                />
+              </div>
+            )}
+            {filtered.length === 0 ? (
+              <div className="text-center py-16">
+                <CalendarDays className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">{t("companyDetail.noMeetings")}</h3>
+                <p className="text-sm text-muted-foreground">{t("companyDetail.noMeetingsDesc")}</p>
+              </div>
+            ) : (
+              filtered.map((meeting) => (
+                <Link key={meeting.id} href={`/meetings/${meeting.id}`}>
+                  <Card className="hover-elevate cursor-pointer" data-testid={`meeting-link-${meeting.id}`}>
+                    <CardContent className="p-5">
+                      <h3 className="text-base font-medium">{meeting.title}</h3>
+                      <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {meeting.date
+                          ? new Date(meeting.date).toLocaleDateString(dateLocale, {
+                              weekday: "long",
+                              day: "2-digit",
+                              month: "long",
+                              year: "numeric",
+                            })
+                          : "—"}
+                      </p>
+                      {meeting.summary && (
+                        <p className="text-sm text-muted-foreground mt-3 line-clamp-2 leading-relaxed">{meeting.summary}</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))
+            )}
+          </div>
+        );
+      })()}
 
-      {activeTab === "contacts" && (
-        <div className="space-y-3">
-          {companyContacts.length === 0 ? (
-            <div className="text-center py-16">
-              <Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">{t("companyDetail.noContacts")}</h3>
-              <p className="text-sm text-muted-foreground">{t("companyDetail.noContactsDesc")}</p>
-            </div>
-          ) : (
-            companyContacts.map((contact) => (
-              <Link key={contact.id} href={`/contacts/${contact.id}`}>
-                <Card className="hover-elevate cursor-pointer" data-testid={`contact-link-${contact.id}`}>
-                  <CardContent className="p-4 flex items-center gap-4">
-                    <Avatar className="h-10 w-10">
-                      <AvatarFallback className="bg-muted text-sm font-medium">
-                        {contact.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium">{contact.name}</p>
-                      <div className="flex flex-wrap items-center gap-3 mt-0.5">
-                        {contact.role && (
-                          <span className="text-xs text-muted-foreground">{contact.role}</span>
-                        )}
-                        {contact.email && (
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Mail className="h-3 w-3" />
-                            {contact.email}
-                          </span>
-                        )}
-                        {contact.phone && (
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Phone className="h-3 w-3" />
-                            {contact.phone}
-                          </span>
-                        )}
-                        {(contact.city || contact.state) && (
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <MapPin className="h-3 w-3" />
-                            {[contact.city, contact.state].filter(Boolean).join(" - ")}
-                          </span>
-                        )}
+      {activeTab === "contacts" && (() => {
+        const filtered = companyContacts.filter(c => {
+          if (!contactSearch.trim()) return true;
+          const q = contactSearch.toLowerCase();
+          return c.name.toLowerCase().includes(q) || (c.role?.toLowerCase().includes(q)) || (c.email?.toLowerCase().includes(q));
+        });
+        return (
+          <div className="space-y-3">
+            {companyContacts.length > 0 && (
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder={t("companyDetail.searchContacts")}
+                  value={contactSearch}
+                  onChange={(e) => setContactSearch(e.target.value)}
+                  className="pl-9"
+                  data-testid="input-search-contacts"
+                />
+              </div>
+            )}
+            {filtered.length === 0 ? (
+              <div className="text-center py-16">
+                <Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">{t("companyDetail.noContacts")}</h3>
+                <p className="text-sm text-muted-foreground">{t("companyDetail.noContactsDesc")}</p>
+              </div>
+            ) : (
+              filtered.map((contact) => (
+                <Link key={contact.id} href={`/contacts/${contact.id}`}>
+                  <Card className="hover-elevate cursor-pointer" data-testid={`contact-link-${contact.id}`}>
+                    <CardContent className="p-4 flex items-center gap-4">
+                      <Avatar className="h-10 w-10">
+                        <AvatarFallback className="bg-muted text-sm font-medium">
+                          {contact.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium">{contact.name}</p>
+                        <div className="flex flex-wrap items-center gap-3 mt-0.5">
+                          {contact.role && (
+                            <span className="text-xs text-muted-foreground">{contact.role}</span>
+                          )}
+                          {contact.email && (
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Mail className="h-3 w-3" />
+                              {contact.email}
+                            </span>
+                          )}
+                          {contact.phone && (
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Phone className="h-3 w-3" />
+                              {contact.phone}
+                            </span>
+                          )}
+                          {(contact.city || contact.state) && (
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              <MapPin className="h-3 w-3" />
+                              {[contact.city, contact.state].filter(Boolean).join(" - ")}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))
-          )}
-        </div>
-      )}
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))
+            )}
+          </div>
+        );
+      })()}
 
       <AlertDialog open={showMergeDialog} onOpenChange={setShowMergeDialog}>
         <AlertDialogContent>
