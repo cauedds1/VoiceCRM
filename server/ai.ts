@@ -288,15 +288,17 @@ Capture TODAS as decisões tomadas ou acordos fechados:
 ═══════════════════════════════════════
 8. CATEGORIA DA INTERAÇÃO
 ═══════════════════════════════════════
-Classifique o TIPO de interação baseado no contexto do áudio:
-- "meeting" → Reunião formal ou semi-formal (sala de reunião, videoconferência, etc.)
-- "lunch" → Almoço de negócios ("almocei com", "durante o almoço", "no restaurante")
-- "coffee" → Café/encontro informal ("tomei um café com", "cafezinho", "bate-papo")
-- "call" → Ligação telefônica ("liguei para", "recebi uma ligação", "falei por telefone")
-- "visit" → Visita a cliente/local ("visitei", "fui até", "passei na empresa", "estive no escritório")
-- "event" → Evento, feira, conferência ("no evento", "na feira", "no congresso")
-- "casual" → Encontro casual/social ("encontrei por acaso", "cruzei com", "esbarrei")
+Classifique o TIPO de interação baseado no contexto EXPLÍCITO do áudio. Use APENAS pistas claras:
+- "meeting" → Reunião formal ou semi-formal. Palavras-chave: "reunião", "reunir", "meeting", "a gente se reuniu", "tive uma reunião", "sala de reunião", "videoconferência", "call de alinhamento"
+- "lunch" → Almoço de negócios. Palavras-chave: "almocei com", "durante o almoço", "no restaurante", "almoço"
+- "coffee" → Café/encontro informal. Palavras-chave: "tomei um café com", "cafezinho", "bate-papo no café"
+- "call" → Ligação telefônica. Palavras-chave: "liguei para", "recebi uma ligação", "falei por telefone", "telefonema"
+- "visit" → Visita a cliente/local. Palavras-chave: "visitei", "fui até lá", "passei na empresa dele", "estive no escritório dele", "fui conhecer a empresa"
+- "event" → Evento, feira, conferência. Palavras-chave: "no evento", "na feira", "no congresso"
+- "casual" → Encontro casual/social. Palavras-chave: "encontrei por acaso", "cruzei com", "esbarrei"
 
+REGRA IMPORTANTE: Se o título ou a transcrição usam a palavra "reunião" ou "reunir", a categoria DEVE ser "meeting".
+"visit" só deve ser usado se há menção EXPLÍCITA a deslocamento físico até o local do outro ("fui até", "visitei", "passei lá").
 Se o contexto não for claro, use "meeting" como padrão.
 
 ═══════════════════════════════════════
