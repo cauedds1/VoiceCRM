@@ -339,6 +339,22 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/companies/check-name", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const name = req.query.name as string;
+      const excludeId = req.query.excludeId as string | undefined;
+      if (!name) return res.json({ exists: false });
+      const existing = await storage.getCompanyByName(name.trim(), userId);
+      if (existing && existing.id !== excludeId) {
+        return res.json({ exists: true, company: existing });
+      }
+      res.json({ exists: false });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   app.get("/api/companies/:id", isAuthenticated, async (req, res) => {
     try {
       const userId = getUserId(req);
@@ -392,22 +408,6 @@ export async function registerRoutes(
       res.json(company);
     } catch (error: any) {
       if (error instanceof z.ZodError) return res.status(400).json({ message: error.errors });
-      res.status(500).json({ message: error.message });
-    }
-  });
-
-  app.get("/api/companies/check-name", isAuthenticated, async (req, res) => {
-    try {
-      const userId = getUserId(req);
-      const name = req.query.name as string;
-      const excludeId = req.query.excludeId as string | undefined;
-      if (!name) return res.json({ exists: false });
-      const existing = await storage.getCompanyByName(name.trim(), userId);
-      if (existing && existing.id !== excludeId) {
-        return res.json({ exists: true, company: existing });
-      }
-      res.json({ exists: false });
-    } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
   });
