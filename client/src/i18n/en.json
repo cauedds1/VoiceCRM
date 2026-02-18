@@ -403,7 +403,22 @@
     "thisMonth": "This month",
     "noMeetingsYet": "No meetings recorded yet",
     "recordFirstAudio": "Record your first audio to start generating reports",
-    "chartLabel": "Meetings"
+    "chartLabel": "Meetings",
+    "overdueTasks": "Overdue Tasks",
+    "overdueTasksDesc": "Tasks that are past their due date",
+    "daysOverdue": "{{count}} days overdue",
+    "daysOverdueShort": "{{count}}d overdue",
+    "noOverdueTasks": "No overdue tasks",
+    "meetingsByCategory": "Meetings by Category",
+    "meetingsByCategoryDesc": "Distribution of interaction types",
+    "topContacts": "Most Frequent Contacts",
+    "topContactsDesc": "People you interact with the most",
+    "topCompanies": "Most Active Companies",
+    "topCompaniesDesc": "Companies with most interactions",
+    "meetingsCount": "{{count}} meetings",
+    "taskCompletion": "Completion Rate",
+    "noDataYet": "Not enough data",
+    "overdue": "overdue"
   },
   "settings": {
     "title": "Settings",

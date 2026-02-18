@@ -38,6 +38,7 @@ Voice-powered CRM system for professionals. Record audio after meetings, AI tran
 - Meeting detail with participants, tasks, decisions, transcription
 - Contact detail with meeting history
 - Monthly meeting reports with bar chart (Recharts)
+- Interactive reports: overdue tasks alert with direct links, meetings by category pie chart, top 5 contacts/companies by meeting frequency, task completion rate progress bar
 - Dark mode only (no light theme)
 - Settings page: profile, email, password, interface language (pt-BR/en), transcription language (9 langs), task extraction level (aggressive/moderate/conservative), data export (JSON), account deletion
 - LGPD compliance: Privacy Policy page (bilingual, /privacy), mandatory terms acceptance on registration, recording consent notice, data export (portability), enhanced deletion with data purge guarantee

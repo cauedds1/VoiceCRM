@@ -403,7 +403,22 @@
     "thisMonth": "Este mês",
     "noMeetingsYet": "Nenhuma reunião registrada ainda",
     "recordFirstAudio": "Grave seu primeiro áudio para começar a gerar relatórios",
-    "chartLabel": "Reuniões"
+    "chartLabel": "Reuniões",
+    "overdueTasks": "Tarefas Atrasadas",
+    "overdueTasksDesc": "Tarefas que passaram do prazo",
+    "daysOverdue": "{{count}} dias atrasada",
+    "daysOverdueShort": "{{count}}d atrasada",
+    "noOverdueTasks": "Nenhuma tarefa atrasada",
+    "meetingsByCategory": "Reuniões por Categoria",
+    "meetingsByCategoryDesc": "Distribuição dos tipos de interação",
+    "topContacts": "Contatos Mais Frequentes",
+    "topContactsDesc": "Pessoas com quem você mais interage",
+    "topCompanies": "Empresas Mais Ativas",
+    "topCompaniesDesc": "Empresas com mais interações",
+    "meetingsCount": "{{count}} reuniões",
+    "taskCompletion": "Taxa de Conclusão",
+    "noDataYet": "Dados insuficientes",
+    "overdue": "atrasadas"
   },
   "settings": {
     "title": "Configurações",

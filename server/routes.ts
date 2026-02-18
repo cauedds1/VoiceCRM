@@ -3,11 +3,13 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 import { authStorage } from "./replit_integrations/auth/storage";
-import { insertContactSchema, insertCompanySchema, insertMeetingSchema } from "@shared/schema";
+import { insertContactSchema, insertCompanySchema, insertMeetingSchema, meetingContacts, contacts, meetings, companies, tasks } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import bcrypt from "bcryptjs";
 import { processAudioMeeting } from "./ai";
+import { db } from "./db";
+import { eq, and, sql } from "drizzle-orm";
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
 
@@ -587,6 +589,111 @@ export async function registerRoutes(
         totalTasks: allTasks.length,
         pendingTasks,
         completedTasks,
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/reports/detailed", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const [allMeetings, allContacts, allCompanies, allTasks] = await Promise.all([
+        storage.getMeetings(userId),
+        storage.getContacts(userId),
+        storage.getCompanies(userId),
+        storage.getTasks(userId),
+      ]);
+
+      const now = new Date();
+      const overdueTasks = allTasks
+        .filter((t) => t.status === "pending" && t.dueDate && new Date(t.dueDate) < now)
+        .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())
+        .slice(0, 10)
+        .map((t) => {
+          const contact = t.contactId ? allContacts.find((c) => c.id === t.contactId) : undefined;
+          const meeting = t.meetingId ? allMeetings.find((m) => m.id === t.meetingId) : undefined;
+          return {
+            id: t.id,
+            title: t.title,
+            description: t.description,
+            priority: t.priority,
+            dueDate: t.dueDate,
+            meetingId: t.meetingId,
+            contactId: t.contactId,
+            contactName: contact?.name || null,
+            meetingTitle: meeting?.title || null,
+          };
+        });
+
+      const categoryMap: Record<string, number> = {};
+      for (const m of allMeetings) {
+        const cat = m.category || "meeting";
+        categoryMap[cat] = (categoryMap[cat] || 0) + 1;
+      }
+      const categoryBreakdown = Object.entries(categoryMap).map(([category, count]) => ({ category, count }));
+
+      const topContactsData = await db
+        .select({
+          contactId: meetingContacts.contactId,
+          meetingCount: sql<number>`count(*)::int`,
+        })
+        .from(meetingContacts)
+        .innerJoin(contacts, eq(meetingContacts.contactId, contacts.id))
+        .innerJoin(meetings, eq(meetingContacts.meetingId, meetings.id))
+        .where(eq(meetings.userId, userId))
+        .groupBy(meetingContacts.contactId)
+        .orderBy(sql`count(*) desc`)
+        .limit(5);
+
+      const topContacts = topContactsData.map((tc) => {
+        const contact = allContacts.find((c) => c.id === tc.contactId);
+        return {
+          id: tc.contactId,
+          name: contact?.name || "",
+          companyName: contact?.companyName || null,
+          meetingCount: tc.meetingCount,
+        };
+      });
+
+      const topCompaniesData = await db
+        .select({
+          companyId: contacts.companyId,
+          meetingCount: sql<number>`count(distinct ${meetingContacts.meetingId})::int`,
+        })
+        .from(meetingContacts)
+        .innerJoin(contacts, eq(meetingContacts.contactId, contacts.id))
+        .innerJoin(meetings, eq(meetingContacts.meetingId, meetings.id))
+        .where(and(eq(meetings.userId, userId), sql`${contacts.companyId} is not null`))
+        .groupBy(contacts.companyId)
+        .orderBy(sql`count(distinct ${meetingContacts.meetingId}) desc`)
+        .limit(5);
+
+      const topCompaniesResult = topCompaniesData.map((tc) => {
+        const company = allCompanies.find((c) => c.id === tc.companyId);
+        return {
+          id: tc.companyId,
+          name: company?.name || "",
+          logoUrl: company?.logoUrl || null,
+          meetingCount: tc.meetingCount,
+        };
+      });
+
+      const completedTasksCount = allTasks.filter((t) => t.status === "completed").length;
+      const pendingTasksCount = allTasks.filter((t) => t.status === "pending").length;
+      const totalTasksCount = allTasks.length;
+      const taskCompletionRate = totalTasksCount > 0 ? Math.round((completedTasksCount / totalTasksCount) * 100) : 0;
+
+      res.json({
+        overdueTasks,
+        categoryBreakdown,
+        topContacts,
+        topCompanies: topCompaniesResult,
+        taskCompletionRate,
+        totalTasksCount,
+        completedTasksCount,
+        pendingTasksCount,
+        overdueTasksCount: overdueTasks.length,
       });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
