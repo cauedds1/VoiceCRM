@@ -7,6 +7,7 @@ import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -206,6 +207,7 @@ export default function Landing() {
             </span>
           </div>
           <div className="flex items-center gap-2">
+            <LanguageSwitcher />
             <Link href="/auth">
               <Button data-testid="button-login">{t("landing.login")}</Button>
             </Link>

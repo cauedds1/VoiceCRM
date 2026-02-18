@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { useTranslation } from "react-i18next";
 
 export default function AuthPage() {
@@ -52,6 +53,7 @@ export default function AuthPage() {
               </div>
               <span className="text-lg font-semibold tracking-tight">VoiceCRM</span>
             </div>
+            <LanguageSwitcher />
           </div>
 
           <Card>
