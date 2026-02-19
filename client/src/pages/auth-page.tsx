@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation, Link } from "wouter";
@@ -109,116 +109,126 @@ export default function AuthPage() {
               </p>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {mode === "register" && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1.5 block">{t("auth.firstName")}</label>
-                      <Input
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        placeholder={t("auth.firstName")}
-                        required
-                        data-testid="input-first-name"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1.5 block">{t("auth.lastName")}</label>
-                      <Input
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        placeholder={t("auth.lastName")}
-                        required
-                        data-testid="input-last-name"
-                      />
-                    </div>
-                  </div>
-                )}
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1.5 block">{t("auth.email")}</label>
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="seu@email.com"
-                    required
-                    data-testid="input-email"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1.5 block">{t("auth.password")}</label>
-                  <Input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder={mode === "register" ? t("auth.passwordMinChars") : t("auth.passwordPlaceholder")}
-                    required
-                    minLength={mode === "register" ? 6 : undefined}
-                    data-testid="input-password"
-                  />
-                </div>
-
-                {mode === "register" && (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Shield className="h-4 w-4 text-emerald-500 shrink-0" />
-                      <h3 className="text-sm font-semibold">{t("privacy.title")}</h3>
-                    </div>
-                    <p className="text-xs text-muted-foreground">{t("auth.readPolicyBelow")}</p>
-                    <div
-                      ref={policyScrollRef}
-                      onScroll={handlePolicyScroll}
-                      className="max-h-64 overflow-y-auto rounded-md border border-border p-4 space-y-4 bg-muted/30"
-                      data-testid="container-privacy-policy-scroll"
-                    >
-                      {policySections.map((section) => {
-                        const Icon = section.icon;
-                        return (
-                          <div key={section.titleKey} className="space-y-1.5">
-                            <div className="flex items-center gap-2">
-                              <Icon className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-                              <h4 className="text-xs font-semibold">{t(section.titleKey)}</h4>
-                            </div>
-                            <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-line pl-5.5">
-                              {t(section.textKey)}
-                            </p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    {!scrolledToBottom && (
-                      <p className="text-xs text-muted-foreground text-center animate-pulse">
-                        {t("auth.scrollToRead")}
-                      </p>
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={mode}
+                  initial={{ opacity: 0, x: mode === "login" ? -10 : 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: mode === "login" ? 10 : -10 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                >
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    {mode === "register" && (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-xs text-muted-foreground mb-1.5 block">{t("auth.firstName")}</label>
+                          <Input
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            placeholder={t("auth.firstName")}
+                            required
+                            data-testid="input-first-name"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-muted-foreground mb-1.5 block">{t("auth.lastName")}</label>
+                          <Input
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            placeholder={t("auth.lastName")}
+                            required
+                            data-testid="input-last-name"
+                          />
+                        </div>
+                      </div>
                     )}
-                    <div className={`flex items-start gap-2 p-3 rounded-md border ${acceptedTerms ? "border-emerald-500/30 bg-emerald-500/5" : "border-border"} transition-colors`}>
-                      <Checkbox
-                        id="terms"
-                        checked={acceptedTerms}
-                        onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
-                        disabled={!scrolledToBottom}
-                        data-testid="checkbox-accept-terms"
-                        className="mt-0.5"
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1.5 block">{t("auth.email")}</label>
+                      <Input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="seu@email.com"
+                        required
+                        data-testid="input-email"
                       />
-                      <label
-                        htmlFor="terms"
-                        className={`text-xs leading-relaxed cursor-pointer ${scrolledToBottom ? "text-foreground" : "text-muted-foreground"}`}
-                      >
-                        {t("auth.acceptTermsCheckbox")}
-                      </label>
                     </div>
-                  </div>
-                )}
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1.5 block">{t("auth.password")}</label>
+                      <Input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder={mode === "register" ? t("auth.passwordMinChars") : t("auth.passwordPlaceholder")}
+                        required
+                        minLength={mode === "register" ? 6 : undefined}
+                        data-testid="input-password"
+                      />
+                    </div>
 
-                <Button type="submit" className="w-full gap-2 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white" disabled={isPending || (mode === "register" && !acceptedTerms)} data-testid="button-submit-auth">
-                  {isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <ArrowRight className="h-4 w-4" />
-                  )}
-                  {mode === "login" ? t("auth.login") : t("auth.register")}
-                </Button>
-              </form>
+                    {mode === "register" && (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Shield className="h-4 w-4 text-emerald-500 shrink-0" />
+                          <h3 className="text-sm font-semibold">{t("privacy.title")}</h3>
+                        </div>
+                        <p className="text-xs text-muted-foreground">{t("auth.readPolicyBelow")}</p>
+                        <div
+                          ref={policyScrollRef}
+                          onScroll={handlePolicyScroll}
+                          className="max-h-64 overflow-y-auto rounded-md border border-border p-4 space-y-4 bg-muted/30"
+                          data-testid="container-privacy-policy-scroll"
+                        >
+                          {policySections.map((section) => {
+                            const Icon = section.icon;
+                            return (
+                              <div key={section.titleKey} className="space-y-1.5">
+                                <div className="flex items-center gap-2">
+                                  <Icon className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                                  <h4 className="text-xs font-semibold">{t(section.titleKey)}</h4>
+                                </div>
+                                <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-line pl-5.5">
+                                  {t(section.textKey)}
+                                </p>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        {!scrolledToBottom && (
+                          <p className="text-xs text-muted-foreground text-center animate-pulse">
+                            {t("auth.scrollToRead")}
+                          </p>
+                        )}
+                        <div className={`flex items-start gap-2 p-3 rounded-md border ${acceptedTerms ? "border-emerald-500/30 bg-emerald-500/5" : "border-border"} transition-colors`}>
+                          <Checkbox
+                            id="terms"
+                            checked={acceptedTerms}
+                            onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                            disabled={!scrolledToBottom}
+                            data-testid="checkbox-accept-terms"
+                            className="mt-0.5"
+                          />
+                          <label
+                            htmlFor="terms"
+                            className={`text-xs leading-relaxed cursor-pointer ${scrolledToBottom ? "text-foreground" : "text-muted-foreground"}`}
+                          >
+                            {t("auth.acceptTermsCheckbox")}
+                          </label>
+                        </div>
+                      </div>
+                    )}
+
+                    <Button type="submit" className="w-full gap-2 bg-gradient-to-r from-emerald-500 to-cyan-500 border-0 text-white" disabled={isPending || (mode === "register" && !acceptedTerms)} data-testid="button-submit-auth">
+                      {isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <ArrowRight className="h-4 w-4" />
+                      )}
+                      {mode === "login" ? t("auth.login") : t("auth.register")}
+                    </Button>
+                  </form>
+                </motion.div>
+              </AnimatePresence>
 
               <div className="mt-6 text-center">
                 <p className="text-sm text-muted-foreground">
