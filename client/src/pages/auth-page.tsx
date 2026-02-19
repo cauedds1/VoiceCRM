@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation, Link } from "wouter";
@@ -77,7 +78,13 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <motion.div
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 1.02 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="min-h-screen bg-background flex"
+    >
       <div className={`flex-1 flex items-center justify-center p-6 ${mode === "register" ? "overflow-y-auto" : ""}`}>
         <div className={`w-full ${mode === "register" ? "max-w-2xl my-6" : "max-w-md"}`}>
           <div className="flex items-center justify-between gap-4 mb-8">
@@ -255,6 +262,6 @@ export default function AuthPage() {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

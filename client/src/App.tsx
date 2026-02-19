@@ -10,6 +10,7 @@ import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sid
 import { AppSidebar } from "@/components/app-sidebar";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import Landing from "@/pages/landing";
 import AuthPage from "@/pages/auth-page";
 import Dashboard from "@/pages/dashboard";
@@ -118,11 +119,35 @@ function AppRouter() {
     return (
       <>
         <MobileAppPopup />
-        <Switch>
-          <Route path="/auth" component={AuthPage} />
-          <Route path="/privacy" component={PrivacyPolicy} />
-          <Route component={Landing} />
-        </Switch>
+        <AnimatePresence mode="wait">
+          <Switch>
+            <Route path="/auth">
+              {() => (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                >
+                  <AuthPage />
+                </motion.div>
+              )}
+            </Route>
+            <Route path="/privacy" component={PrivacyPolicy} />
+            <Route path="/">
+              {() => (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Landing />
+                </motion.div>
+              )}
+            </Route>
+          </Switch>
+        </AnimatePresence>
       </>
     );
   }

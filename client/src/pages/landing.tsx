@@ -196,7 +196,12 @@ export default function Landing() {
   ];
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="min-h-screen bg-background overflow-x-hidden"
+    >
       <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-background/70 border-b">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -679,6 +684,6 @@ export default function Landing() {
           </div>
         </div>
       </footer>
-    </div>
+    </motion.div>
   );
 }
