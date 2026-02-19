@@ -181,10 +181,10 @@ export default function AgendaPage() {
                       {dayMeetings.length > 0 && (
                         <div className="flex items-center gap-0.5 mt-0.5">
                           {hasRecorded && (
-                            <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? "bg-primary-foreground" : "bg-emerald-500"}`} />
+                            <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? "bg-primary-foreground" : "bg-indigo-500"}`} />
                           )}
                           {hasScheduled && (
-                            <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? "bg-primary-foreground/70" : "bg-cyan-400"}`} />
+                            <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? "bg-primary-foreground/70" : "bg-amber-500"}`} />
                           )}
                         </div>
                       )}
@@ -195,11 +195,11 @@ export default function AgendaPage() {
 
               <div className="flex items-center gap-4 mt-4 pt-4 border-t text-xs text-muted-foreground">
                 <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <div className="w-2 h-2 rounded-full bg-indigo-500" />
                   <span>{t("agenda.recorded")}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-cyan-400" />
+                  <div className="w-2 h-2 rounded-full bg-amber-500" />
                   <span>{t("agenda.scheduled")}</span>
                 </div>
               </div>
