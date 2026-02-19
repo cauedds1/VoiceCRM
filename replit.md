@@ -35,6 +35,8 @@ Voice-powered CRM system for professionals. Record audio after meetings, AI tran
 - Topic/subject filter on meetings page
 - Folder view toggle (list vs grouped by folder)
 - Manual folder management: rename, delete, move meetings between folders
+- Voice-based meeting scheduling: AI detects future-tense language to create scheduled (future) meetings vs recorded (past) meetings
+- Agenda/Calendar page: monthly calendar view with visual indicators (green=recorded, cyan=scheduled), clickable day cells, day detail panel with meeting cards, prev/next month navigation
 - Meeting detail with participants, tasks, decisions, transcription
 - Contact detail with meeting history
 - Monthly meeting reports with bar chart (Recharts)
