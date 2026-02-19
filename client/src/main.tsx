@@ -23,7 +23,12 @@ function hideSplash() {
   }
 }
 
+const splashStart = Date.now();
+const MIN_SPLASH_MS = 2200;
+
 createRoot(document.getElementById("root")!).render(<App />);
 requestAnimationFrame(() => {
-  setTimeout(hideSplash, 300);
+  const elapsed = Date.now() - splashStart;
+  const remaining = Math.max(0, MIN_SPLASH_MS - elapsed);
+  setTimeout(hideSplash, remaining);
 });
