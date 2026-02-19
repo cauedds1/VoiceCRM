@@ -1,5 +1,5 @@
 import { useLocation, Link } from "wouter";
-import { LayoutDashboard, Mic, Users, Building2, CheckSquare, BarChart3, LogOut, ListTodo, Settings } from "lucide-react";
+import { LayoutDashboard, Mic, Users, Building2, CheckSquare, BarChart3, LogOut, ListTodo, Settings, CalendarDays } from "lucide-react";
 import logoImg from "@/assets/images/logo.png";
 import logoFullImg from "@/assets/images/logo-full.png";
 import {
@@ -29,6 +29,7 @@ export function AppSidebar() {
     { title: t("nav.dashboard"), url: "/dashboard", icon: LayoutDashboard },
     { title: t("nav.meetings"), url: "/meetings", icon: CheckSquare },
     { title: t("nav.tasks"), url: "/tasks", icon: ListTodo },
+    { title: t("nav.agenda"), url: "/agenda", icon: CalendarDays },
     { title: t("nav.contacts"), url: "/contacts", icon: Users },
     { title: t("nav.companies"), url: "/companies", icon: Building2 },
     { title: t("nav.reports"), url: "/reports", icon: BarChart3 },

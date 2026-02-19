@@ -58,9 +58,15 @@ export async function registerRoutes(
         summary: z.string().optional(),
         status: z.string().optional(),
         category: z.string().optional(),
+        scheduledDate: z.string().nullable().optional(),
+        meetingType: z.string().optional(),
       });
       const data = updateSchema.parse(req.body);
-      const meeting = await storage.updateMeeting(paramId(req), userId, data);
+      const updateData: any = { ...data };
+      if (data.scheduledDate !== undefined) {
+        updateData.scheduledDate = data.scheduledDate ? new Date(data.scheduledDate) : null;
+      }
+      const meeting = await storage.updateMeeting(paramId(req), userId, updateData);
       if (!meeting) return res.status(404).json({ message: "Reunião não encontrada" });
       res.json(meeting);
     } catch (error: any) {
@@ -535,6 +541,25 @@ export async function registerRoutes(
       res.json(task);
     } catch (error: any) {
       if (error instanceof z.ZodError) return res.status(400).json({ message: error.errors });
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // === CALENDAR ===
+  app.get("/api/calendar/meetings", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const { start, end } = req.query;
+      if (!start || !end) {
+        return res.status(400).json({ message: "start and end query params required" });
+      }
+      const result = await storage.getMeetingsByDateRange(
+        userId,
+        new Date(start as string),
+        new Date(end as string)
+      );
+      res.json(result);
+    } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
   });

@@ -10,7 +10,7 @@ import {
 } from "@shared/schema";
 import { users, sessions } from "@shared/models/auth";
 import { db } from "./db";
-import { eq, and, desc, ilike, sql } from "drizzle-orm";
+import { eq, and, desc, ilike, sql, gte, lte, or } from "drizzle-orm";
 
 export interface IStorage {
   getCompanies(userId: string): Promise<Company[]>;
@@ -53,6 +53,8 @@ export interface IStorage {
   deleteMeetingFolder(id: string, userId: string): Promise<void>;
   getMeetingsByFolder(folderId: string, userId: string): Promise<Meeting[]>;
   findFolderByTopic(topic: string, userId: string): Promise<MeetingFolder | undefined>;
+
+  getMeetingsByDateRange(userId: string, start: Date, end: Date): Promise<Meeting[]>;
 
   mergeCompanies(sourceId: string, targetId: string, userId: string): Promise<{ mergedContacts: number; movedContacts: number; movedMeetings: number }>;
   deleteCompany(id: string, userId: string): Promise<void>;
@@ -220,6 +222,18 @@ export class DatabaseStorage implements IStorage {
     const [meeting] = await db.update(meetings).set(data)
       .where(and(eq(meetings.id, id), eq(meetings.userId, userId))).returning();
     return meeting;
+  }
+
+  async getMeetingsByDateRange(userId: string, start: Date, end: Date): Promise<Meeting[]> {
+    return db.select().from(meetings)
+      .where(and(
+        eq(meetings.userId, userId),
+        or(
+          and(gte(meetings.date, start), lte(meetings.date, end)),
+          and(gte(meetings.scheduledDate, start), lte(meetings.scheduledDate, end))
+        )
+      ))
+      .orderBy(meetings.date);
   }
 
   async deleteMeeting(id: string, userId: string): Promise<void> {

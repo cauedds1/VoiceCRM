@@ -29,6 +29,7 @@
     "contacts": "Contacts",
     "companies": "Companies",
     "reports": "Reports",
+    "agenda": "Agenda",
     "settings": "Settings",
     "menu": "Menu",
     "smartMeetings": "Smart\nmeetings"
@@ -584,5 +585,16 @@
     "termsText": "By using VoiceCRM, you agree to the following terms:\n\n- The service is provided for personal and professional use of customer relationship management\n- You are responsible for the content of recordings and the accuracy of information entered\n- Using the service for illegal or harmful activities is strictly prohibited\n- We reserve the right to suspend accounts that violate these terms\n- The service may undergo scheduled updates and maintenance\n- We do not guarantee uninterrupted service availability",
     "consentTitle": "Consent",
     "consentText": "By creating an account and using VoiceCRM, you declare that:\n\n- You have read and understood this privacy policy and terms of use\n- You consent to the collection and processing of your data as described above\n- You have the right to record the meetings and conversations you register in the system\n- You may withdraw your consent at any time by deleting your account"
+  },
+  "agenda": {
+    "title": "Agenda",
+    "subtitle": "View your meetings and scheduled events on the calendar",
+    "today": "Today",
+    "selectDay": "Select a day",
+    "noMeetings": "No meetings on this day",
+    "recordNow": "Record meeting",
+    "recorded": "Recorded",
+    "scheduled": "Scheduled",
+    "scheduledBadge": "Scheduled"
   }
 }

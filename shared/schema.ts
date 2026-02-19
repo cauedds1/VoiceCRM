@@ -53,6 +53,8 @@ export const meetings = pgTable("meetings", {
   topic: text("topic"),
   folderId: varchar("folder_id"),
   date: timestamp("date").defaultNow(),
+  scheduledDate: timestamp("scheduled_date"),
+  meetingType: text("meeting_type").notNull().default("record"),
   status: text("status").notNull().default("completed"),
   category: text("category").notNull().default("meeting"),
   userId: varchar("user_id").notNull(),

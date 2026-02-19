@@ -17,6 +17,8 @@ interface ExtractedData {
   tasks: Array<{ title: string; description?: string; priority: string; dueDate?: string; contactName?: string }>;
   decisions: string[];
   category: string;
+  meetingType: "record" | "schedule";
+  scheduledDate?: string;
 }
 
 const LANG_MAP: Record<string, { whisper: string; name: string; outputInstruction: string }> = {
@@ -121,6 +123,7 @@ O áudio pode ser gravado em QUALQUER contexto — o profissional pode estar:
 - Gravando lembretes pessoais de trabalho
 - Fazendo anotações sobre um evento/feira
 - Relatando uma negociação em andamento
+- AGENDANDO uma reunião/encontro/call FUTURO(A)
 - Qualquer outro contexto profissional
 
 Você DEVE entender o contexto e organizar as informações mesmo quando o áudio for informal, confuso, com gírias, interrupções, ou pensamentos desordenados. Profissionais falam naturalmente — seu trabalho é transformar isso em dados organizados.
@@ -286,7 +289,27 @@ Capture TODAS as decisões tomadas ou acordos fechados:
 - Decisões podem ser implícitas: "Então tá, vamos com o plano B" → decisão: "Seguir com o plano B"
 
 ═══════════════════════════════════════
-8. CATEGORIA DA INTERAÇÃO
+8. TIPO DE ÁUDIO: REGISTRO vs AGENDAMENTO
+═══════════════════════════════════════
+Determine se o áudio é um REGISTRO de algo que já aconteceu ou um AGENDAMENTO de algo futuro.
+
+meetingType: "record" → O profissional está RELATANDO algo que já aconteceu (reunião, ligação, visita, etc.)
+  - Palavras-chave: "tive uma reunião", "falei com", "acabei de sair", "hoje eu", "ontem", "conversei com"
+  - Nesse caso, scheduledDate deve ser null
+
+meetingType: "schedule" → O profissional está AGENDANDO/PLANEJANDO algo para o futuro
+  - Palavras-chave: "agendar reunião", "marcar reunião", "tenho reunião dia X", "vou me reunir com", "preciso agendar", "colocar na agenda"
+  - Nesse caso, scheduledDate DEVE ser preenchida com a data mencionada (formato YYYY-MM-DD)
+  - O status deve ser "scheduled" em vez de "completed"
+
+REGRA: Mesmo em agendamentos, SEMPRE extraia contatos, empresas e tarefas normalmente.
+Se o profissional disser "Agendar reunião com o João da TechCorp na sexta", você DEVE:
+- Criar o contato "João" vinculado à empresa "TechCorp"
+- Definir meetingType: "schedule" e scheduledDate com a data da sexta-feira
+- Ainda pode ter tarefas implícitas como "Preparar pauta para reunião com João"
+
+═══════════════════════════════════════
+9. CATEGORIA DA INTERAÇÃO
 ═══════════════════════════════════════
 Classifique o TIPO de interação baseado no contexto EXPLÍCITO do áudio. Use APENAS pistas claras:
 - "meeting" → Reunião formal ou semi-formal. Palavras-chave: "reunião", "reunir", "meeting", "a gente se reuniu", "tive uma reunião", "sala de reunião", "videoconferência", "call de alinhamento"
@@ -325,7 +348,9 @@ FORMATO DE RESPOSTA (JSON OBRIGATÓRIO)
     }
   ],
   "decisions": ["Descrição completa da decisão tomada"],
-  "category": "meeting|lunch|coffee|call|visit|event|casual"
+  "category": "meeting|lunch|coffee|call|visit|event|casual",
+  "meetingType": "record|schedule",
+  "scheduledDate": "YYYY-MM-DD ou null"
 }
 
 REGRAS FINAIS:
@@ -357,6 +382,7 @@ REGRAS FINAIS:
       tasks: [],
       decisions: [],
       category: "meeting",
+      meetingType: "record",
     };
   }
 
@@ -377,13 +403,18 @@ REGRAS FINAIS:
     }
   }
 
+  const isSchedule = extracted.meetingType === "schedule";
+  const scheduledDate = extracted.scheduledDate ? new Date(extracted.scheduledDate) : null;
+
   const meeting = await storage.createMeeting({
     title: extracted.title || "Reunião sem título",
     summary: extracted.summary || "",
     transcription: transcribedText,
     topic: meetingTopic,
     folderId,
-    status: "completed",
+    scheduledDate,
+    meetingType: isSchedule ? "schedule" : "record",
+    status: isSchedule ? "scheduled" : "completed",
     category: extracted.category || "meeting",
     userId,
   });

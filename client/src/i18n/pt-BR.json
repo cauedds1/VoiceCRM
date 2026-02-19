@@ -29,6 +29,7 @@
     "contacts": "Contatos",
     "companies": "Empresas",
     "reports": "Relatórios",
+    "agenda": "Agenda",
     "settings": "Configurações",
     "menu": "Menu",
     "smartMeetings": "Reuniões\ninteligentes"
@@ -584,5 +585,16 @@
     "termsText": "Ao utilizar o VoiceCRM, voce concorda com os seguintes termos:\n\n- O servico e fornecido para uso pessoal e profissional de gerenciamento de relacionamento com clientes\n- Voce e responsavel pelo conteudo das gravacoes e pela precisao das informacoes inseridas\n- O uso do servico para atividades ilegais ou prejudiciais e estritamente proibido\n- Nos reservamos o direito de suspender contas que violem estes termos\n- O servico pode sofrer atualizacoes e manutencoes programadas\n- Nao garantimos disponibilidade ininterrupta do servico",
     "consentTitle": "Consentimento",
     "consentText": "Ao criar uma conta e utilizar o VoiceCRM, voce declara que:\n\n- Leu e compreendeu esta politica de privacidade e os termos de uso\n- Consente com a coleta e processamento dos seus dados conforme descrito acima\n- Tem o direito de gravar as reunioes e conversas que registra no sistema\n- Pode retirar seu consentimento a qualquer momento excluindo sua conta"
+  },
+  "agenda": {
+    "title": "Agenda",
+    "subtitle": "Visualize suas reuniões e eventos agendados no calendário",
+    "today": "Hoje",
+    "selectDay": "Selecione um dia",
+    "noMeetings": "Nenhuma reunião neste dia",
+    "recordNow": "Gravar reunião",
+    "recorded": "Registrada",
+    "scheduled": "Agendada",
+    "scheduledBadge": "Agendada"
   }
 }

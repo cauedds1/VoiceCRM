@@ -23,6 +23,7 @@ import CompaniesList from "@/pages/companies-list";
 import CompanyDetail from "@/pages/company-detail";
 import NewMeetingManual from "@/pages/new-meeting-manual";
 import TasksList from "@/pages/tasks-list";
+import AgendaPage from "@/pages/agenda";
 import Reports from "@/pages/reports";
 import SettingsPage from "@/pages/settings";
 import NotFound from "@/pages/not-found";
@@ -92,6 +93,7 @@ function AuthenticatedLayout() {
               <Route path="/companies/:id" component={CompanyDetail} />
               <Route path="/companies" component={CompaniesList} />
               <Route path="/tasks" component={TasksList} />
+              <Route path="/agenda" component={AgendaPage} />
               <Route path="/reports" component={Reports} />
               <Route path="/settings" component={SettingsPage} />
               <Route path="/privacy" component={PrivacyPolicy} />
