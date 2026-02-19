@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation, Trans } from "react-i18next";
 import { LanguageSwitcher } from "@/components/language-switcher";
 
 const fadeUp = {
@@ -292,7 +292,7 @@ export default function Landing() {
 
                 <div className="p-4 rounded-md bg-muted/40 mb-6">
                   <p className="text-sm text-muted-foreground italic leading-relaxed">
-                    "Conversei com o <span className="text-foreground font-medium">Marcos da Silva</span> da <span className="text-foreground font-medium">TechBrasil</span>. Ele quer fechar o contrato até sexta-feira. Preciso enviar a <span className="text-foreground font-medium">proposta atualizada</span> com os novos valores e agendar uma <span className="text-foreground font-medium">call de alinhamento</span> com a equipe técnica dele..."
+                    <Trans i18nKey="landing.demoTranscriptPlain" components={{ 1: <span className="text-foreground font-medium" />, 3: <span className="text-foreground font-medium" />, 5: <span className="text-foreground font-medium" />, 7: <span className="text-foreground font-medium" /> }} />
                   </p>
                 </div>
 
@@ -316,14 +316,14 @@ export default function Landing() {
                       <ListTodo className="h-3 w-3 text-amber-600 dark:text-amber-400" />
                       <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium">{t("landing.demoTask")}</p>
                     </div>
-                    <p className="text-sm font-semibold">Enviar proposta</p>
+                    <p className="text-sm font-semibold">{t("landing.demoTaskName")}</p>
                   </div>
                   <div className="p-3 rounded-md bg-violet-500/10 dark:bg-violet-500/5">
                     <div className="flex items-center gap-1.5 mb-1">
                       <Clock className="h-3 w-3 text-violet-600 dark:text-violet-400" />
                       <p className="text-[11px] text-violet-700 dark:text-violet-400 font-medium">{t("landing.demoDeadline")}</p>
                     </div>
-                    <p className="text-sm font-semibold">Sexta-feira</p>
+                    <p className="text-sm font-semibold">{t("landing.demoDeadlineValue")}</p>
                   </div>
                 </div>
               </CardContent>
@@ -499,18 +499,18 @@ export default function Landing() {
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center text-white font-bold text-sm">MS</div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold">Marcos da Silva</p>
-                        <p className="text-xs text-muted-foreground">TechBrasil · Diretor Comercial</p>
+                        <p className="text-xs text-muted-foreground">{t("landing.demoCompany1")} · {t("landing.demoRole1")}</p>
                       </div>
-                      <Badge variant="secondary" className="text-xs">3 reuniões</Badge>
+                      <Badge variant="secondary" className="text-xs">{t("landing.demoMeetingCount1")}</Badge>
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between gap-4 text-sm">
-                        <span className="text-muted-foreground">Última reunião</span>
-                        <span className="font-medium">Hoje, 14:30</span>
+                        <span className="text-muted-foreground">{t("landing.demoLastMeeting")}</span>
+                        <span className="font-medium">{t("landing.demoToday1")}</span>
                       </div>
                       <div className="flex items-center justify-between gap-4 text-sm">
-                        <span className="text-muted-foreground">Tarefas pendentes</span>
-                        <span className="font-medium text-amber-500">2 tarefas</span>
+                        <span className="text-muted-foreground">{t("landing.demoPendingTasks")}</span>
+                        <span className="font-medium text-amber-500">{t("landing.demoTaskCount")}</span>
                       </div>
                     </div>
                   </CardContent>
@@ -522,18 +522,18 @@ export default function Landing() {
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm">AC</div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold">Ana Costa</p>
-                        <p className="text-xs text-muted-foreground">InovaSoft · Product Manager</p>
+                        <p className="text-xs text-muted-foreground">{t("landing.demoCompany2")} · {t("landing.demoRole2")}</p>
                       </div>
-                      <Badge variant="secondary" className="text-xs">5 reuniões</Badge>
+                      <Badge variant="secondary" className="text-xs">{t("landing.demoMeetingCount2")}</Badge>
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between gap-4 text-sm">
-                        <span className="text-muted-foreground">Última reunião</span>
-                        <span className="font-medium">Ontem, 10:00</span>
+                        <span className="text-muted-foreground">{t("landing.demoLastMeeting")}</span>
+                        <span className="font-medium">{t("landing.demoYesterday")}</span>
                       </div>
                       <div className="flex items-center justify-between gap-4 text-sm">
-                        <span className="text-muted-foreground">Decisões registradas</span>
-                        <span className="font-medium text-emerald-500">4 decisões</span>
+                        <span className="text-muted-foreground">{t("landing.demoDecisionsRegistered")}</span>
+                        <span className="font-medium text-emerald-500">{t("landing.demoDecisionCount")}</span>
                       </div>
                     </div>
                   </CardContent>
@@ -545,18 +545,18 @@ export default function Landing() {
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white font-bold text-sm">RP</div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold">Ricardo Pereira</p>
-                        <p className="text-xs text-muted-foreground">Construtora Alfa · Engenheiro</p>
+                        <p className="text-xs text-muted-foreground">{t("landing.demoCompany3")} · {t("landing.demoRole3")}</p>
                       </div>
-                      <Badge variant="secondary" className="text-xs">1 reunião</Badge>
+                      <Badge variant="secondary" className="text-xs">{t("landing.demoMeetingCount3")}</Badge>
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between gap-4 text-sm">
-                        <span className="text-muted-foreground">Última reunião</span>
-                        <span className="font-medium">Seg, 16:00</span>
+                        <span className="text-muted-foreground">{t("landing.demoLastMeeting")}</span>
+                        <span className="font-medium">{t("landing.demoMonday")}</span>
                       </div>
                       <div className="flex items-center justify-between gap-4 text-sm">
-                        <span className="text-muted-foreground">Status</span>
-                        <span className="font-medium text-emerald-500">Ativo</span>
+                        <span className="text-muted-foreground">{t("landing.demoStatus")}</span>
+                        <span className="font-medium text-emerald-500">{t("landing.demoActive")}</span>
                       </div>
                     </div>
                   </CardContent>
@@ -578,7 +578,7 @@ export default function Landing() {
             variants={fadeUp}
           >
             <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4">
-              Feito para quem não tem tempo a perder
+              {t("landing.trustTitle")}
             </h2>
           </motion.div>
 
@@ -586,23 +586,23 @@ export default function Landing() {
             {[
               {
                 icon: Shield,
-                title: "Segurança Total",
-                description: "Seus dados são criptografados e protegidos. Cada usuário tem acesso apenas às suas próprias informações. Privacidade é prioridade.",
+                title: t("landing.trust1Title"),
+                description: t("landing.trust1Desc"),
               },
               {
                 icon: Smartphone,
-                title: "Mobile-First",
-                description: "Projetado para o celular primeiro. Abra o app e comece a gravar instantaneamente. Adicione à tela inicial e use como app nativo.",
+                title: t("landing.trust2Title"),
+                description: t("landing.trust2Desc"),
               },
               {
                 icon: Clock,
-                title: "Economize Horas",
-                description: "Pare de escrever atas de reunião. Pare de preencher planilhas. Fale por 30 segundos e economize 30 minutos de trabalho manual.",
+                title: t("landing.trust3Title"),
+                description: t("landing.trust3Desc"),
               },
               {
                 icon: Sparkles,
-                title: "IA de Ponta",
-                description: "Utiliza os modelos mais avançados de inteligência artificial para transcrição e análise. Precisão impressionante em português brasileiro.",
+                title: t("landing.trust4Title"),
+                description: t("landing.trust4Desc"),
               },
             ].map((item, i) => (
               <motion.div
@@ -657,7 +657,7 @@ export default function Landing() {
               </Link>
             </div>
             <p className="text-sm text-muted-foreground mt-6">
-              Sem cartão de crédito. Sem compromisso. Cancele quando quiser.
+              {t("landing.ctaDisclaimer")}
             </p>
           </motion.div>
         </div>
