@@ -30,6 +30,7 @@ export default function NewMeeting() {
   const streamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const stateRef = useRef<RecordingState>("idle");
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   useEffect(() => {
     stateRef.current = state;
@@ -94,6 +95,24 @@ export default function NewMeeting() {
     animFrameRef.current = requestAnimationFrame(updateBars);
   }, []);
 
+  const acquireWakeLock = useCallback(async () => {
+    try {
+      if ('wakeLock' in navigator) {
+        wakeLockRef.current = await navigator.wakeLock.request('screen');
+        wakeLockRef.current.addEventListener('release', () => {
+          wakeLockRef.current = null;
+        });
+      }
+    } catch {}
+  }, []);
+
+  const releaseWakeLock = useCallback(() => {
+    if (wakeLockRef.current) {
+      wakeLockRef.current.release();
+      wakeLockRef.current = null;
+    }
+  }, []);
+
   const startVisualization = useCallback(() => {
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     updateBars();
@@ -141,6 +160,7 @@ export default function NewMeeting() {
       setDuration(0);
       startTimer();
       startVisualization();
+      acquireWakeLock();
     } catch {
       toast({ title: t("newMeeting.micError"), description: t("newMeeting.micErrorDesc"), variant: "destructive" });
     }
@@ -173,8 +193,9 @@ export default function NewMeeting() {
     }
     stopTimer();
     stopVisualization();
+    releaseWakeLock();
     setState("processing");
-  }, [stopTimer, stopVisualization]);
+  }, [stopTimer, stopVisualization, releaseWakeLock]);
 
   const askDiscard = useCallback(() => {
     wasRecordingBeforeDiscard.current = state === "recording";
@@ -215,8 +236,9 @@ export default function NewMeeting() {
     setAudioBlob(null);
     setDuration(0);
     setState("idle");
+    releaseWakeLock();
     toast({ title: t("newMeeting.discardDismissed") });
-  }, [stopTimer, stopVisualization, toast, t]);
+  }, [stopTimer, stopVisualization, releaseWakeLock, toast, t]);
 
   useEffect(() => {
     if (audioBlob && state === "processing") {
@@ -229,6 +251,10 @@ export default function NewMeeting() {
       if (document.hidden) {
         if (stateRef.current === "recording") {
           pauseRecording();
+        }
+      } else {
+        if (stateRef.current === "recording" || stateRef.current === "paused") {
+          acquireWakeLock();
         }
       }
     };
@@ -261,10 +287,11 @@ export default function NewMeeting() {
   useEffect(() => {
     return () => {
       stopTimer();
+      releaseWakeLock();
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
       if (streamRef.current) streamRef.current.getTracks().forEach((t) => t.stop());
     };
-  }, [stopTimer]);
+  }, [stopTimer, releaseWakeLock]);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
