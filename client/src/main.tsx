@@ -3,6 +3,17 @@ import App from "./App";
 import "./index.css";
 import "./i18n";
 
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    registrations.forEach((reg) => reg.update());
+  });
+  caches.keys().then((names) => {
+    names.forEach((name) => {
+      if (name !== 'voicecrm-v3') caches.delete(name);
+    });
+  });
+}
+
 function hideSplash() {
   const splash = document.getElementById("splash-screen");
   if (splash) {
