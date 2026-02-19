@@ -42,9 +42,9 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="px-4 pt-3 pb-2">
+      <SidebarHeader className="px-4 py-2">
         <div className="flex items-center gap-2">
-          <img src={logoFullImg} alt="VoiceCRM" className="w-28 h-auto" />
+          <img src={logoFullImg} alt="VoiceCRM" className="w-10 h-10" />
           <span className="text-[10px] text-sidebar-foreground/50 leading-tight">{t("nav.smartMeetings")}</span>
         </div>
       </SidebarHeader>
