@@ -319,8 +319,10 @@ Classifique o TIPO de interação baseado no contexto EXPLÍCITO do áudio. Use 
 - "visit" → Visita a cliente/local. Palavras-chave: "visitei", "fui até lá", "passei na empresa dele", "estive no escritório dele", "fui conhecer a empresa"
 - "event" → Evento, feira, conferência. Palavras-chave: "no evento", "na feira", "no congresso"
 - "casual" → Encontro casual/social. Palavras-chave: "encontrei por acaso", "cruzei com", "esbarrei"
+- "whatsapp" → Conversa via WhatsApp. Palavras-chave: "whatsapp", "zap", "zapzap", "pelo zap", "mensagem no whatsapp", "conversa no whatsapp", "mandei mensagem", "me mandou mensagem", "troquei mensagem", "no whats", "pelo whats", "print do whatsapp", "conversa por mensagem"
 
 REGRA IMPORTANTE: Se o título ou a transcrição usam a palavra "reunião" ou "reunir", a categoria DEVE ser "meeting".
+Se mencionou "whatsapp", "zap", "mensagem" ou similar, a categoria DEVE ser "whatsapp".
 "visit" só deve ser usado se há menção EXPLÍCITA a deslocamento físico até o local do outro ("fui até", "visitei", "passei lá").
 Se o contexto não for claro, use "meeting" como padrão.
 
@@ -348,7 +350,7 @@ FORMATO DE RESPOSTA (JSON OBRIGATÓRIO)
     }
   ],
   "decisions": ["Descrição completa da decisão tomada"],
-  "category": "meeting|lunch|coffee|call|visit|event|casual",
+  "category": "meeting|lunch|coffee|call|visit|event|casual|whatsapp",
   "meetingType": "record|schedule",
   "scheduledDate": "YYYY-MM-DD ou null"
 }
@@ -509,4 +511,180 @@ REGRAS FINAIS:
   }
 
   return meeting;
+}
+
+interface ImageAnalysisResult {
+  summary: string;
+  contacts: Array<{ name: string; company?: string; role?: string }>;
+  tasks: Array<{ title: string; description?: string; priority: string; dueDate?: string; contactName?: string }>;
+  decisions: string[];
+}
+
+export async function analyzeImages(
+  imageDataUrls: string[],
+  meetingId: string,
+  userId: string
+): Promise<ImageAnalysisResult> {
+  const userSettings = await storage.getUserSettings(userId);
+  const transcriptionLang = userSettings?.transcriptionLanguage || "pt-BR";
+  const extractionLevel = userSettings?.taskExtractionLevel || "aggressive";
+  const langConfig = LANG_MAP[transcriptionLang] || LANG_MAP["pt-BR"];
+
+  const meeting = await storage.getMeeting(meetingId, userId);
+  if (!meeting) throw new Error("Meeting not found");
+
+  const todayDate = new Date().toISOString().split("T")[0];
+
+  const imageContent: Array<{ type: "image_url"; image_url: { url: string } }> = imageDataUrls.map(url => ({
+    type: "image_url" as const,
+    image_url: { url },
+  }));
+
+  const openai = getOpenAIClient();
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o",
+    response_format: { type: "json_object" },
+    messages: [
+      {
+        role: "system",
+        content: `${langConfig.outputInstruction}
+
+Você é o cérebro de um CRM inteligente. O usuário está anexando imagens (prints de conversas de WhatsApp, documentos, fotos de anotações, etc.) a uma reunião já existente no sistema.
+
+CONTEXTO DA REUNIÃO EXISTENTE:
+- Título: ${meeting.title}
+- Resumo atual: ${meeting.summary || "Sem resumo"}
+
+Seu trabalho é ANALISAR as imagens e extrair informações COMPLEMENTARES que não estão no resumo atual.
+
+DATA DE HOJE: ${todayDate}
+
+${getTaskExtractionInstruction(extractionLevel)}
+
+INSTRUÇÕES:
+1. Leia e interprete TODAS as imagens enviadas
+2. Se forem prints de WhatsApp, leia as mensagens e identifique:
+   - Pessoas envolvidas na conversa
+   - Compromissos, prazos, tarefas combinadas
+   - Decisões tomadas
+   - Informações relevantes de negócio
+3. Se forem fotos de documentos, anotações ou outros materiais, extraia as informações relevantes
+4. Gere um RESUMO COMPLEMENTAR (não repita o que já está no resumo da reunião)
+5. Extraia NOVOS contatos, tarefas e decisões que aparecem nas imagens
+
+FORMATO DE RESPOSTA (JSON OBRIGATÓRIO):
+{
+  "summary": "Resumo complementar das informações extraídas das imagens (não repita o que já está no resumo da reunião)",
+  "contacts": [
+    { "name": "Nome da pessoa", "company": "Empresa (se identificável)", "role": "Cargo (se identificável)" }
+  ],
+  "tasks": [
+    { "title": "Título da tarefa", "description": "Detalhes", "priority": "high|medium|low", "dueDate": "YYYY-MM-DD ou null", "contactName": "Nome da pessoa relacionada ou null" }
+  ],
+  "decisions": ["Decisão identificada nas imagens"]
+}
+
+REGRAS:
+- NÃO invente informações que não estão nas imagens
+- Se as imagens forem ilegíveis ou não tiverem conteúdo relevante, retorne summary vazio e arrays vazios
+- Mantenha consistência com os dados já existentes na reunião`
+      },
+      {
+        role: "user",
+        content: [
+          { type: "text", text: "Analise as seguintes imagens anexadas à reunião e extraia informações complementares:" },
+          ...imageContent,
+        ],
+      }
+    ],
+  });
+
+  const resultText = response.choices[0]?.message?.content || "{}";
+  let result: ImageAnalysisResult;
+  try {
+    result = JSON.parse(resultText);
+  } catch {
+    result = { summary: "", contacts: [], tasks: [], decisions: [] };
+  }
+
+  if (result.summary) {
+    const newSummary = meeting.summary
+      ? `${meeting.summary}\n\n📎 Análise das imagens:\n${result.summary}`
+      : `📎 Análise das imagens:\n${result.summary}`;
+    await storage.updateMeeting(meetingId, userId, { summary: newSummary });
+  }
+
+  const contactNameToIdMap = new Map<string, string>();
+
+  for (const contactData of result.contacts || []) {
+    if (!contactData.name) continue;
+
+    let companyId: string | undefined;
+    let companyName = contactData.company || null;
+
+    if (companyName) {
+      let company = await storage.getCompanyByName(companyName, userId);
+      if (!company) {
+        company = await storage.createCompany({ name: companyName, userId });
+      }
+      companyId = company.id;
+      companyName = company.name;
+    }
+
+    let contact = await storage.getContactByNameAndCompany(contactData.name, companyName, userId);
+    if (!contact) {
+      contact = await storage.createContact({
+        name: contactData.name,
+        role: contactData.role || null,
+        companyId: companyId || null,
+        companyName: companyName,
+        userId,
+      });
+    }
+
+    contactNameToIdMap.set(contactData.name.toLowerCase(), contact.id);
+    await storage.addMeetingContact(meetingId, contact.id);
+  }
+
+  for (const taskData of result.tasks || []) {
+    if (!taskData.title) continue;
+
+    let taskContactId: string | null = null;
+    if (taskData.contactName) {
+      const normalizedName = taskData.contactName.toLowerCase();
+      taskContactId = contactNameToIdMap.get(normalizedName) || null;
+
+      if (!taskContactId) {
+        const entries = Array.from(contactNameToIdMap.entries());
+        for (const [mapName, mapId] of entries) {
+          if (mapName.includes(normalizedName) || normalizedName.includes(mapName)) {
+            taskContactId = mapId;
+            break;
+          }
+        }
+      }
+    }
+
+    await storage.createTask({
+      title: taskData.title,
+      description: taskData.description || null,
+      priority: taskData.priority || "medium",
+      dueDate: taskData.dueDate ? new Date(taskData.dueDate) : null,
+      meetingId,
+      contactId: taskContactId,
+      status: "pending",
+      userId,
+    });
+  }
+
+  for (const decisionContent of result.decisions || []) {
+    if (!decisionContent) continue;
+    await storage.createDecision({
+      content: decisionContent,
+      meetingId,
+      userId,
+    });
+  }
+
+  return result;
 }

@@ -1,5 +1,5 @@
 import {
-  companies, contacts, meetings, meetingContacts, tasks, decisions, userSettings, meetingFolders,
+  companies, contacts, meetings, meetingContacts, tasks, decisions, userSettings, meetingFolders, meetingAttachments,
   type Company, type InsertCompany,
   type Contact, type InsertContact,
   type Meeting, type InsertMeeting,
@@ -7,6 +7,7 @@ import {
   type Decision, type InsertDecision,
   type UserSettings,
   type MeetingFolder, type InsertMeetingFolder,
+  type MeetingAttachment, type InsertMeetingAttachment,
 } from "@shared/schema";
 import { users, sessions } from "@shared/models/auth";
 import { db } from "./db";
@@ -58,6 +59,10 @@ export interface IStorage {
 
   mergeCompanies(sourceId: string, targetId: string, userId: string): Promise<{ mergedContacts: number; movedContacts: number; movedMeetings: number }>;
   deleteCompany(id: string, userId: string): Promise<void>;
+
+  getAttachments(meetingId: string): Promise<MeetingAttachment[]>;
+  createAttachment(data: InsertMeetingAttachment): Promise<MeetingAttachment>;
+  deleteAttachment(id: string, userId: string): Promise<void>;
 
   getUserSettings(userId: string): Promise<UserSettings | undefined>;
   upsertUserSettings(userId: string, data: Partial<UserSettings>): Promise<UserSettings>;
@@ -248,6 +253,7 @@ export class DatabaseStorage implements IStorage {
     await db.delete(meetingContacts).where(eq(meetingContacts.meetingId, id));
     await db.delete(tasks).where(eq(tasks.meetingId, id));
     await db.delete(decisions).where(eq(decisions.meetingId, id));
+    await db.delete(meetingAttachments).where(eq(meetingAttachments.meetingId, id));
     await db.delete(meetings).where(eq(meetings.id, id));
   }
 
@@ -470,6 +476,22 @@ export class DatabaseStorage implements IStorage {
     return undefined;
   }
 
+  async getAttachments(meetingId: string): Promise<MeetingAttachment[]> {
+    return db.select().from(meetingAttachments)
+      .where(eq(meetingAttachments.meetingId, meetingId))
+      .orderBy(desc(meetingAttachments.createdAt));
+  }
+
+  async createAttachment(data: InsertMeetingAttachment): Promise<MeetingAttachment> {
+    const [attachment] = await db.insert(meetingAttachments).values(data).returning();
+    return attachment;
+  }
+
+  async deleteAttachment(id: string, userId: string): Promise<void> {
+    await db.delete(meetingAttachments)
+      .where(and(eq(meetingAttachments.id, id), eq(meetingAttachments.userId, userId)));
+  }
+
   async getUserSettings(userId: string): Promise<UserSettings | undefined> {
     const [settings] = await db.select().from(userSettings).where(eq(userSettings.userId, userId));
     return settings;
@@ -492,6 +514,7 @@ export class DatabaseStorage implements IStorage {
       await db.delete(meetingContacts).where(eq(meetingContacts.meetingId, meeting.id));
       await db.delete(tasks).where(eq(tasks.meetingId, meeting.id));
       await db.delete(decisions).where(eq(decisions.meetingId, meeting.id));
+      await db.delete(meetingAttachments).where(eq(meetingAttachments.meetingId, meeting.id));
     }
     await db.delete(meetings).where(eq(meetings.userId, userId));
     await db.delete(meetingFolders).where(eq(meetingFolders.userId, userId));

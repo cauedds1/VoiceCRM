@@ -268,7 +268,20 @@
     "deleteDescription": "Are you sure you want to delete this meeting? All associated tasks, decisions, and data will be permanently removed.",
     "deleteConfirm": "Yes, delete",
     "deleteCancel": "Cancel",
-    "deleted": "Meeting deleted successfully"
+    "deleted": "Meeting deleted successfully",
+    "attachments": "Images",
+    "noAttachments": "No images attached",
+    "uploadImages": "Attach images",
+    "uploading": "Uploading...",
+    "analyzeWithAI": "Analyze with AI",
+    "analyzing": "Analyzing...",
+    "analysisComplete": "Analysis complete! New information has been added.",
+    "analysisError": "Error analyzing images",
+    "uploadSuccess": "Images uploaded successfully",
+    "uploadError": "Error uploading images",
+    "deleteImage": "Delete image",
+    "imageDeleted": "Image deleted",
+    "attachImagesHint": "Attach WhatsApp screenshots, document photos, or notes"
   },
   "contactsList": {
     "title": "Contacts",
@@ -524,7 +537,8 @@
     "call": "Call",
     "visit": "Visit",
     "event": "Event",
-    "casual": "Casual"
+    "casual": "Casual",
+    "whatsapp": "WhatsApp"
   },
   "categoryLabel": "Category",
   "categoryFilter": "Filter by category",

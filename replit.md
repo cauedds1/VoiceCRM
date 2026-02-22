@@ -29,7 +29,8 @@ Voice-powered CRM system for professionals. Record audio after meetings, AI tran
 - Companies with city/state location fields
 - Company merge/unification: when renaming a company to match an existing one, system auto-merges contacts (deduplicates by name), reassigns all meetings, and deletes the duplicate
 - Company logo file upload (max 2MB, stored as base64)
-- Meeting categories: AI auto-detects interaction type (meeting, lunch, coffee, call, visit, event, casual) from transcription context
+- Image attachments: upload photos/screenshots to meetings, view in gallery with fullscreen preview, AI analyzes images (GPT-4o vision) to extract contacts/tasks/decisions
+- Meeting categories: AI auto-detects interaction type (meeting, lunch, coffee, call, visit, event, casual, whatsapp) from transcription context
 - Category filter on meetings page, category badge on meeting cards, manual category editing on meeting detail
 - Intelligent meeting folders: AI auto-detects topic and groups meetings with same subject into folders
 - Topic/subject filter on meetings page

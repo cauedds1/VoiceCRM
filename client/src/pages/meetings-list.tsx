@@ -1,6 +1,7 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { Mic, Clock, Search, Plus, PenLine, FolderOpen, FolderClosed, ChevronDown, ChevronRight, MoreHorizontal, Pencil, Trash2, FolderMinus, FolderPlus, List, LayoutGrid, Briefcase, UtensilsCrossed, Coffee, PhoneCall, MapPin, CalendarDays, MessageCircle } from "lucide-react";
+import { Mic, Clock, Search, Plus, PenLine, FolderOpen, FolderClosed, ChevronDown, ChevronRight, MoreHorizontal, Pencil, Trash2, FolderMinus, FolderPlus, List, LayoutGrid, Briefcase, UtensilsCrossed, Coffee, PhoneCall, MapPin, CalendarDays, MessageCircle, MessageSquare } from "lucide-react";
+import { SiWhatsapp } from "react-icons/si";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,9 +45,10 @@ export default function MeetingsList() {
     visit: MapPin,
     event: CalendarDays,
     casual: MessageCircle,
+    whatsapp: SiWhatsapp,
   };
 
-  const categoryKeys = ["meeting", "lunch", "coffee", "call", "visit", "event", "casual"];
+  const categoryKeys = ["meeting", "lunch", "coffee", "call", "visit", "event", "casual", "whatsapp"];
 
   const uniqueTopics = Array.from(new Set(
     meetings.map(m => m.topic).filter(Boolean) as string[]

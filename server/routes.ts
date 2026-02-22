@@ -7,7 +7,7 @@ import { insertContactSchema, insertCompanySchema, insertMeetingSchema, meetingC
 import { z } from "zod";
 import multer from "multer";
 import bcrypt from "bcryptjs";
-import { processAudioMeeting } from "./ai";
+import { processAudioMeeting, analyzeImages } from "./ai";
 import { db } from "./db";
 import { eq, and, sql } from "drizzle-orm";
 
@@ -159,6 +159,75 @@ export async function registerRoutes(
       res.json(meeting);
     } catch (error: any) {
       console.error("Error processing audio:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // === MEETING ATTACHMENTS ===
+  app.get("/api/meetings/:id/attachments", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const meeting = await storage.getMeeting(paramId(req), userId);
+      if (!meeting) return res.status(404).json({ message: "Meeting not found" });
+      const attachments = await storage.getAttachments(paramId(req));
+      res.json(attachments);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/meetings/:id/attachments", isAuthenticated, upload.array("images", 10), async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const meeting = await storage.getMeeting(paramId(req), userId);
+      if (!meeting) return res.status(404).json({ message: "Meeting not found" });
+      const files = req.files as Express.Multer.File[];
+      if (!files || files.length === 0) return res.status(400).json({ message: "No images provided" });
+
+      const attachments = [];
+      for (const file of files) {
+        if (file.size > 5 * 1024 * 1024) continue;
+        const base64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+        const attachment = await storage.createAttachment({
+          meetingId: paramId(req),
+          imageData: base64,
+          filename: file.originalname || "image.png",
+          userId,
+        });
+        attachments.push(attachment);
+      }
+      res.json(attachments);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/meetings/:id/analyze-images", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const meeting = await storage.getMeeting(paramId(req), userId);
+      if (!meeting) return res.status(404).json({ message: "Meeting not found" });
+
+      const attachments = await storage.getAttachments(paramId(req));
+      if (attachments.length === 0) return res.status(400).json({ message: "No images to analyze" });
+
+      const imageUrls = attachments.map(a => a.imageData);
+      const result = await analyzeImages(imageUrls, paramId(req), userId);
+
+      const updatedMeeting = await storage.getMeeting(paramId(req), userId);
+      res.json({ analysis: result, meeting: updatedMeeting });
+    } catch (error: any) {
+      console.error("Error analyzing images:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/attachments/:id", isAuthenticated, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      await storage.deleteAttachment(paramId(req), userId);
+      res.json({ success: true });
+    } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
   });

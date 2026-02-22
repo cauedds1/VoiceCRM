@@ -3,8 +3,10 @@ import { useParams, Link } from "wouter";
 import {
   ArrowLeft, Clock, Users, Building2, CheckSquare, FileText,
   Lightbulb, Edit2, Save, X, Trash2, Briefcase, UtensilsCrossed,
-  Coffee, PhoneCall, MapPin, CalendarDays, MessageCircle
+  Coffee, PhoneCall, MapPin, CalendarDays, MessageCircle,
+  ImagePlus, Sparkles, Loader2, XCircle
 } from "lucide-react";
+import { SiWhatsapp } from "react-icons/si";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,11 +27,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import i18n from "@/i18n";
-import type { Meeting, Task, Decision, Contact } from "@shared/schema";
+import type { Meeting, Task, Decision, Contact, MeetingAttachment } from "@shared/schema";
 
 export default function MeetingDetail() {
   const params = useParams<{ id: string }>();
@@ -39,6 +41,8 @@ export default function MeetingDetail() {
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editSummary, setEditSummary] = useState("");
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const priorityLabel = (p: string) => {
     switch (p) { case "high": return t("priority.high"); case "medium": return t("priority.medium"); case "low": return t("priority.low"); default: return p; }
@@ -60,8 +64,9 @@ export default function MeetingDetail() {
     visit: MapPin,
     event: CalendarDays,
     casual: MessageCircle,
+    whatsapp: SiWhatsapp,
   };
-  const categoryKeys = ["meeting", "lunch", "coffee", "call", "visit", "event", "casual"];
+  const categoryKeys = ["meeting", "lunch", "coffee", "call", "visit", "event", "casual", "whatsapp"];
 
   const { data: meeting, isLoading } = useQuery<Meeting>({
     queryKey: ["/api/meetings", params.id],
@@ -75,6 +80,63 @@ export default function MeetingDetail() {
   const { data: meetingContacts = [] } = useQuery<Contact[]>({
     queryKey: ["/api/meetings", params.id, "contacts"],
   });
+  const { data: attachments = [] } = useQuery<MeetingAttachment[]>({
+    queryKey: ["/api/meetings", params.id, "attachments"],
+  });
+
+  const uploadImages = useMutation({
+    mutationFn: async (files: File[]) => {
+      const formData = new FormData();
+      files.forEach(f => formData.append("images", f));
+      const res = await fetch(`/api/meetings/${params.id}/attachments`, {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Upload failed");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/meetings", params.id, "attachments"] });
+      toast({ title: t("meetingDetail.uploadSuccess") });
+    },
+    onError: () => {
+      toast({ title: t("meetingDetail.uploadError"), variant: "destructive" });
+    },
+  });
+
+  const analyzeImagesMut = useMutation({
+    mutationFn: async () =>
+      apiRequest("POST", `/api/meetings/${params.id}/analyze-images`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/meetings", params.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/meetings", params.id, "tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/meetings", params.id, "decisions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/meetings", params.id, "contacts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/meetings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      toast({ title: t("meetingDetail.analysisComplete") });
+    },
+    onError: () => {
+      toast({ title: t("meetingDetail.analysisError"), variant: "destructive" });
+    },
+  });
+
+  const deleteAttachment = useMutation({
+    mutationFn: async (id: string) =>
+      apiRequest("DELETE", `/api/attachments/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/meetings", params.id, "attachments"] });
+      toast({ title: t("meetingDetail.imageDeleted") });
+    },
+  });
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) uploadImages.mutate(files);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const updateMeeting = useMutation({
     mutationFn: async (data: { title: string; summary: string }) =>
@@ -388,6 +450,88 @@ export default function MeetingDetail() {
               </CardContent>
             </Card>
           )}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-md bg-gradient-to-br from-pink-500 to-rose-500">
+                    <ImagePlus className="h-3.5 w-3.5 text-white" />
+                  </div>
+                  <h2 className="text-base font-semibold">{t("meetingDetail.attachments")} {attachments.length > 0 && `(${attachments.length})`}</h2>
+                </div>
+                <div className="flex items-center gap-2">
+                  {attachments.length > 0 && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => analyzeImagesMut.mutate()}
+                      disabled={analyzeImagesMut.isPending}
+                      className="gap-1.5 text-xs"
+                      data-testid="button-analyze-images"
+                    >
+                      {analyzeImagesMut.isPending ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Sparkles className="h-3.5 w-3.5" />
+                      )}
+                      {analyzeImagesMut.isPending ? t("meetingDetail.analyzing") : t("meetingDetail.analyzeWithAI")}
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadImages.isPending}
+                    className="gap-1.5 text-xs"
+                    data-testid="button-upload-images"
+                  >
+                    {uploadImages.isPending ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <ImagePlus className="h-3.5 w-3.5" />
+                    )}
+                    {uploadImages.isPending ? t("meetingDetail.uploading") : t("meetingDetail.uploadImages")}
+                  </Button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {attachments.length === 0 ? (
+                <div className="text-center py-6">
+                  <p className="text-sm text-muted-foreground">{t("meetingDetail.noAttachments")}</p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">{t("meetingDetail.attachImagesHint")}</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {attachments.map((att) => (
+                    <div key={att.id} className="relative group rounded-lg overflow-hidden border border-border/50" data-testid={`attachment-${att.id}`}>
+                      <img
+                        src={att.imageData}
+                        alt={att.filename}
+                        className="w-full h-32 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => setPreviewImage(att.imageData)}
+                      />
+                      <button
+                        onClick={() => deleteAttachment.mutate(att.id)}
+                        className="absolute top-1 right-1 p-1 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                        data-testid={`button-delete-attachment-${att.id}`}
+                      >
+                        <XCircle className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         <div className="space-y-6">
@@ -422,6 +566,26 @@ export default function MeetingDetail() {
           </Card>
         </div>
       </div>
+
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setPreviewImage(null)}
+        >
+          <button
+            className="absolute top-4 right-4 text-white/80 hover:text-white"
+            onClick={() => setPreviewImage(null)}
+          >
+            <X className="h-8 w-8" />
+          </button>
+          <img
+            src={previewImage}
+            alt="Preview"
+            className="max-w-full max-h-[90vh] object-contain rounded-lg"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 }

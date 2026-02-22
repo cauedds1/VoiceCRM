@@ -268,7 +268,20 @@
     "deleteDescription": "Tem certeza que deseja excluir esta reunião? Todas as tarefas, decisões e dados associados serão removidos permanentemente.",
     "deleteConfirm": "Sim, excluir",
     "deleteCancel": "Cancelar",
-    "deleted": "Reunião excluída com sucesso"
+    "deleted": "Reunião excluída com sucesso",
+    "attachments": "Imagens",
+    "noAttachments": "Nenhuma imagem anexada",
+    "uploadImages": "Anexar imagens",
+    "uploading": "Enviando...",
+    "analyzeWithAI": "Analisar com IA",
+    "analyzing": "Analisando...",
+    "analysisComplete": "Análise concluída! Novas informações foram adicionadas.",
+    "analysisError": "Erro ao analisar imagens",
+    "uploadSuccess": "Imagens enviadas com sucesso",
+    "uploadError": "Erro ao enviar imagens",
+    "deleteImage": "Excluir imagem",
+    "imageDeleted": "Imagem excluída",
+    "attachImagesHint": "Anexe prints de WhatsApp, fotos de documentos ou anotações"
   },
   "contactsList": {
     "title": "Contatos",
@@ -524,7 +537,8 @@
     "call": "Ligação",
     "visit": "Visita",
     "event": "Evento",
-    "casual": "Encontro casual"
+    "casual": "Encontro casual",
+    "whatsapp": "WhatsApp"
   },
   "categoryLabel": "Categoria",
   "categoryFilter": "Filtrar por categoria",

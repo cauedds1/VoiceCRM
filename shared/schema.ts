@@ -88,6 +88,15 @@ export const decisions = pgTable("decisions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const meetingAttachments = pgTable("meeting_attachments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  meetingId: varchar("meeting_id").notNull(),
+  imageData: text("image_data").notNull(),
+  filename: text("filename").notNull(),
+  userId: varchar("user_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const userSettings = pgTable("user_settings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().unique(),
@@ -118,6 +127,11 @@ export const meetingsRelations = relations(meetings, ({ one, many }) => ({
   meetingContacts: many(meetingContacts),
   tasks: many(tasks),
   decisions: many(decisions),
+  attachments: many(meetingAttachments),
+}));
+
+export const meetingAttachmentsRelations = relations(meetingAttachments, ({ one }) => ({
+  meeting: one(meetings, { fields: [meetingAttachments.meetingId], references: [meetings.id] }),
 }));
 
 export const meetingContactsRelations = relations(meetingContacts, ({ one }) => ({
@@ -144,6 +158,7 @@ export const insertMeetingSchema = createInsertSchema(meetings).omit({ id: true,
 export const insertTaskSchema = createInsertSchema(tasks).omit({ id: true, createdAt: true });
 export const insertDecisionSchema = createInsertSchema(decisions).omit({ id: true, createdAt: true });
 export const insertMeetingContactSchema = createInsertSchema(meetingContacts).omit({ id: true });
+export const insertMeetingAttachmentSchema = createInsertSchema(meetingAttachments).omit({ id: true, createdAt: true });
 
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
 export type Company = typeof companies.$inferSelect;
@@ -156,3 +171,5 @@ export type Task = typeof tasks.$inferSelect;
 export type InsertDecision = z.infer<typeof insertDecisionSchema>;
 export type Decision = typeof decisions.$inferSelect;
 export type MeetingContact = typeof meetingContacts.$inferSelect;
+export type MeetingAttachment = typeof meetingAttachments.$inferSelect;
+export type InsertMeetingAttachment = z.infer<typeof insertMeetingAttachmentSchema>;
