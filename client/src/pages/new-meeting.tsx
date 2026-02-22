@@ -2,15 +2,16 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
-import { Mic, Square, Loader2, CheckCircle, AlertCircle, Pause, Play, Trash2, Shield } from "lucide-react";
+import { Mic, Square, Loader2, CheckCircle, AlertCircle, Pause, Play, Trash2, Shield, WifiOff, CloudUpload } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/auth-utils";
+import { saveAudioOffline, uploadPendingAudio, removeAudio, getPendingAudios, updateAudioStatus, isOnline, type PendingAudio } from "@/lib/offline-audio";
 
-type RecordingState = "idle" | "recording" | "paused" | "processing" | "done" | "error";
+type RecordingState = "idle" | "recording" | "paused" | "processing" | "saving" | "saved_offline" | "done" | "error";
 
 export default function NewMeeting() {
   const [, setLocation] = useLocation();
@@ -36,22 +37,38 @@ export default function NewMeeting() {
     stateRef.current = state;
   }, [state]);
 
-  const processMeeting = useMutation({
-    mutationFn: async (audio: Blob) => {
-      const formData = new FormData();
-      formData.append("audio", audio, "recording.webm");
-      const res = await fetch("/api/meetings/process-audio", {
-        method: "POST",
-        body: formData,
-        credentials: "include",
-      });
-      if (!res.ok) {
-        const err = await res.text();
-        throw new Error(err || res.statusText);
-      }
-      return res.json();
-    },
-    onSuccess: (data) => {
+  const savedAudioIdRef = useRef<string | null>(null);
+
+  const processAndUpload = useCallback(async (audio: Blob) => {
+    setState("saving");
+    let audioId: string;
+    try {
+      audioId = await saveAudioOffline(audio);
+      savedAudioIdRef.current = audioId;
+    } catch {
+      audioId = "";
+    }
+    toast({ title: t("newMeeting.audioSaved") });
+
+    if (!isOnline()) {
+      setState("saved_offline");
+      toast({ title: t("newMeeting.offlineSaved"), description: t("newMeeting.offlineSavedDesc") });
+      return;
+    }
+
+    setState("processing");
+    try {
+      if (audioId) await updateAudioStatus(audioId, "uploading");
+      const record: PendingAudio = {
+        id: audioId,
+        audioData: await audio.arrayBuffer(),
+        filename: "recording.webm",
+        timestamp: Date.now(),
+        status: "uploading",
+        retryCount: 0,
+      };
+      const data = await uploadPendingAudio(record);
+      if (audioId) await removeAudio(audioId);
       queryClient.invalidateQueries({ queryKey: ["/api/meetings"] });
       queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
       queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
@@ -59,17 +76,17 @@ export default function NewMeeting() {
       setState("done");
       toast({ title: t("newMeeting.success") });
       setTimeout(() => setLocation(`/meetings/${data.id}`), 1500);
-    },
-    onError: (error: Error) => {
+    } catch (error: any) {
       if (isUnauthorizedError(error)) {
         toast({ title: t("newMeeting.sessionExpired"), description: t("newMeeting.sessionExpiredDesc"), variant: "destructive" });
         setTimeout(() => { window.location.href = "/auth"; }, 500);
         return;
       }
-      setState("error");
-      toast({ title: t("newMeeting.errorProcessing"), description: error.message, variant: "destructive" });
-    },
-  });
+      if (audioId) await updateAudioStatus(audioId, "failed");
+      setState("saved_offline");
+      toast({ title: t("newMeeting.uploadFailed"), description: t("newMeeting.uploadFailedDesc") });
+    }
+  }, [toast, t, setLocation]);
 
   const startTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -242,7 +259,7 @@ export default function NewMeeting() {
 
   useEffect(() => {
     if (audioBlob && state === "processing") {
-      processMeeting.mutate(audioBlob);
+      processAndUpload(audioBlob);
     }
   }, [audioBlob, state]);
 
@@ -334,6 +351,18 @@ export default function NewMeeting() {
                 </div>
               )}
 
+              {state === "saving" && (
+                <div className="flex flex-col items-center gap-4">
+                  <CloudUpload className="h-12 w-12 text-emerald-500 animate-pulse" />
+                  <div className="text-center">
+                    <p className="text-sm font-medium">{t("newMeeting.savingLocally")}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t("newMeeting.savingLocallyDesc")}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {state === "processing" && (
                 <div className="flex flex-col items-center gap-4">
                   <Loader2 className="h-12 w-12 text-emerald-500 animate-spin" />
@@ -342,6 +371,52 @@ export default function NewMeeting() {
                     <p className="text-xs text-muted-foreground mt-1">
                       {t("newMeeting.processingDescription")}
                     </p>
+                  </div>
+                </div>
+              )}
+
+              {state === "saved_offline" && (
+                <div className="flex flex-col items-center gap-4">
+                  <div className="relative">
+                    <CheckCircle className="h-12 w-12 text-amber-500" />
+                    <WifiOff className="h-5 w-5 text-amber-500 absolute -bottom-1 -right-1 bg-background rounded-full p-0.5" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-medium">{t("newMeeting.savedOffline")}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t("newMeeting.savedOfflineDesc")}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      onClick={async () => {
+                        if (!isOnline()) {
+                          toast({ title: t("newMeeting.stillOffline"), variant: "destructive" });
+                          return;
+                        }
+                        if (audioBlob) {
+                          processAndUpload(audioBlob);
+                        }
+                      }}
+                      data-testid="button-retry-upload"
+                    >
+                      <CloudUpload className="h-4 w-4" />
+                      {t("newMeeting.retryUpload")}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setState("idle");
+                        setAudioBlob(null);
+                      }}
+                      data-testid="button-new-recording"
+                    >
+                      {t("newMeeting.newRecording")}
+                    </Button>
                   </div>
                 </div>
               )}
