@@ -4,6 +4,7 @@ import {
   uploadPendingAudio,
   removeAudio,
   updateAudioStatus,
+  clearAllPendingAudios,
   isOnline,
   onOnline,
   type PendingAudio,
@@ -89,5 +90,10 @@ export function usePendingUploads() {
     await refresh();
   }, [refresh]);
 
-  return { pending, uploading, online, retryAll, discardAudio, refresh };
+  const clearAll = useCallback(async () => {
+    await clearAllPendingAudios();
+    setPending([]);
+  }, []);
+
+  return { pending, uploading, online, retryAll, discardAudio, clearAll, refresh };
 }

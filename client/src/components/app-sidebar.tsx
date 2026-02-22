@@ -1,5 +1,5 @@
 import { useLocation, Link } from "wouter";
-import { LayoutDashboard, Mic, Users, Building2, CheckSquare, BarChart3, LogOut, ListTodo, Settings, CalendarDays, CloudUpload, WifiOff, Loader2 } from "lucide-react";
+import { LayoutDashboard, Mic, Users, Building2, CheckSquare, BarChart3, LogOut, ListTodo, Settings, CalendarDays, CloudUpload, WifiOff, Loader2, Trash2 } from "lucide-react";
 import logoImg from "@/assets/images/logo.png";
 import logoFullImg from "@/assets/images/logo-full.png";
 import {
@@ -24,7 +24,7 @@ export function AppSidebar() {
   const { t } = useTranslation();
   const [location] = useLocation();
   const { user, logout } = useAuth();
-  const { pending, uploading, online, retryAll } = usePendingUploads();
+  const { pending, uploading, online, retryAll, clearAll } = usePendingUploads();
 
   const navItems = [
     { title: t("nav.recordMeeting"), url: "/meetings/new", icon: Mic },
@@ -119,18 +119,30 @@ export function AppSidebar() {
                       ? t("pendingUploads.waitingConnection")
                       : t("pendingUploads.readyToUpload")}
                 </p>
-                {online && !uploading && (
+                <div className="flex gap-2">
+                  {online && !uploading && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 h-7 text-xs gap-1 border-amber-500/30 text-amber-500 hover:bg-amber-500/10"
+                      onClick={retryAll}
+                      data-testid="button-retry-pending"
+                    >
+                      <CloudUpload className="h-3 w-3" />
+                      {t("pendingUploads.retryAll")}
+                    </Button>
+                  )}
                   <Button
                     size="sm"
-                    variant="outline"
-                    className="w-full h-7 text-xs gap-1 border-amber-500/30 text-amber-500 hover:bg-amber-500/10"
-                    onClick={retryAll}
-                    data-testid="button-retry-pending"
+                    variant="ghost"
+                    className="h-7 text-xs gap-1 text-muted-foreground hover:text-destructive"
+                    onClick={clearAll}
+                    data-testid="button-clear-pending"
                   >
-                    <CloudUpload className="h-3 w-3" />
-                    {t("pendingUploads.retryAll")}
+                    <Trash2 className="h-3 w-3" />
+                    {t("pendingUploads.clearAll")}
                   </Button>
-                )}
+                </div>
               </div>
             </SidebarGroupContent>
           </SidebarGroup>

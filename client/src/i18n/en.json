@@ -632,6 +632,7 @@
     "waitingConnection": "Waiting for internet connection",
     "readyToUpload": "Ready to upload",
     "retryAll": "Upload now",
+    "clearAll": "Clear",
     "uploadSuccess": "Audio uploaded successfully!"
   }
 }
