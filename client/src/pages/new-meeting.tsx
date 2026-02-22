@@ -11,7 +11,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/auth-utils";
 import { saveAudioOffline, uploadPendingAudio, removeAudio, getPendingAudios, updateAudioStatus, isOnline, type PendingAudio } from "@/lib/offline-audio";
 
-type RecordingState = "idle" | "recording" | "paused" | "processing" | "saving" | "saved_offline" | "done" | "error";
+type RecordingState = "idle" | "recording" | "paused" | "processing" | "saving" | "uploading" | "saved_offline" | "done" | "error";
 
 export default function NewMeeting() {
   const [, setLocation] = useLocation();
@@ -38,8 +38,12 @@ export default function NewMeeting() {
   }, [state]);
 
   const savedAudioIdRef = useRef<string | null>(null);
+  const uploadInProgressRef = useRef(false);
 
   const processAndUpload = useCallback(async (audio: Blob) => {
+    if (uploadInProgressRef.current) return;
+    uploadInProgressRef.current = true;
+
     setState("saving");
     let audioId: string;
     try {
@@ -48,15 +52,15 @@ export default function NewMeeting() {
     } catch {
       audioId = "";
     }
-    toast({ title: t("newMeeting.audioSaved") });
 
     if (!isOnline()) {
       setState("saved_offline");
       toast({ title: t("newMeeting.offlineSaved"), description: t("newMeeting.offlineSavedDesc") });
+      uploadInProgressRef.current = false;
       return;
     }
 
-    setState("processing");
+    setState("uploading");
     try {
       if (audioId) await updateAudioStatus(audioId, "uploading");
       const record: PendingAudio = {
@@ -75,8 +79,10 @@ export default function NewMeeting() {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       setState("done");
       toast({ title: t("newMeeting.success") });
+      uploadInProgressRef.current = false;
       setTimeout(() => setLocation(`/meetings/${data.id}`), 1500);
     } catch (error: any) {
+      uploadInProgressRef.current = false;
       if (isUnauthorizedError(error)) {
         toast({ title: t("newMeeting.sessionExpired"), description: t("newMeeting.sessionExpiredDesc"), variant: "destructive" });
         setTimeout(() => { window.location.href = "/auth"; }, 500);
@@ -363,7 +369,7 @@ export default function NewMeeting() {
                 </div>
               )}
 
-              {state === "processing" && (
+              {(state === "processing" || state === "uploading") && (
                 <div className="flex flex-col items-center gap-4">
                   <Loader2 className="h-12 w-12 text-emerald-500 animate-spin" />
                   <div className="text-center">
@@ -398,6 +404,7 @@ export default function NewMeeting() {
                           return;
                         }
                         if (audioBlob) {
+                          uploadInProgressRef.current = false;
                           processAndUpload(audioBlob);
                         }
                       }}
