@@ -631,8 +631,7 @@
     "uploading": "Uploading to server...",
     "waitingConnection": "Waiting for internet connection",
     "readyToUpload": "Ready to upload",
-    "retryAll": "Upload now",
-    "clearAll": "Clear",
-    "uploadSuccess": "Audio uploaded successfully!"
+    "clearAll": "Clear pending",
+    "duplicateWarning": "Duplicate audios from previous bug. Click to clear."
   }
 }

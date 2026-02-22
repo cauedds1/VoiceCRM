@@ -9,7 +9,7 @@ import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/auth-utils";
-import { saveAudioOffline, uploadPendingAudio, removeAudio, getPendingAudios, updateAudioStatus, isOnline, type PendingAudio } from "@/lib/offline-audio";
+import { saveAudioOffline, isOnline } from "@/lib/offline-audio";
 
 type RecordingState = "idle" | "recording" | "paused" | "processing" | "saving" | "uploading" | "saved_offline" | "done" | "error";
 
@@ -44,16 +44,11 @@ export default function NewMeeting() {
     if (uploadInProgressRef.current) return;
     uploadInProgressRef.current = true;
 
-    setState("saving");
-    let audioId: string;
-    try {
-      audioId = await saveAudioOffline(audio);
-      savedAudioIdRef.current = audioId;
-    } catch {
-      audioId = "";
-    }
-
     if (!isOnline()) {
+      setState("saving");
+      try {
+        await saveAudioOffline(audio);
+      } catch {}
       setState("saved_offline");
       toast({ title: t("newMeeting.offlineSaved"), description: t("newMeeting.offlineSavedDesc") });
       uploadInProgressRef.current = false;
@@ -62,17 +57,18 @@ export default function NewMeeting() {
 
     setState("uploading");
     try {
-      if (audioId) await updateAudioStatus(audioId, "uploading");
-      const record: PendingAudio = {
-        id: audioId,
-        audioData: await audio.arrayBuffer(),
-        filename: "recording.webm",
-        timestamp: Date.now(),
-        status: "uploading",
-        retryCount: 0,
-      };
-      const data = await uploadPendingAudio(record);
-      if (audioId) await removeAudio(audioId);
+      const formData = new FormData();
+      formData.append("audio", audio, "recording.webm");
+      const res = await fetch("/api/meetings/process-audio", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err || res.statusText);
+      }
+      const data = await res.json();
       queryClient.invalidateQueries({ queryKey: ["/api/meetings"] });
       queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
       queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
@@ -88,7 +84,9 @@ export default function NewMeeting() {
         setTimeout(() => { window.location.href = "/auth"; }, 500);
         return;
       }
-      if (audioId) await updateAudioStatus(audioId, "failed");
+      try {
+        await saveAudioOffline(audio);
+      } catch {}
       setState("saved_offline");
       toast({ title: t("newMeeting.uploadFailed"), description: t("newMeeting.uploadFailedDesc") });
     }

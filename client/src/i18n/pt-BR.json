@@ -631,8 +631,7 @@
     "uploading": "Enviando para o servidor...",
     "waitingConnection": "Aguardando conexão com a internet",
     "readyToUpload": "Pronto para enviar",
-    "retryAll": "Enviar agora",
-    "clearAll": "Limpar",
-    "uploadSuccess": "Áudio enviado com sucesso!"
+    "clearAll": "Limpar pendentes",
+    "duplicateWarning": "Áudios duplicados do bug anterior. Clique para limpar."
   }
 }
