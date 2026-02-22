@@ -1,5 +1,5 @@
 import { useLocation, Link } from "wouter";
-import { LayoutDashboard, Mic, Users, Building2, CheckSquare, BarChart3, LogOut, ListTodo, Settings, CalendarDays } from "lucide-react";
+import { LayoutDashboard, Mic, Users, Building2, CheckSquare, BarChart3, LogOut, ListTodo, Settings, CalendarDays, CloudUpload, WifiOff, Loader2 } from "lucide-react";
 import logoImg from "@/assets/images/logo.png";
 import logoFullImg from "@/assets/images/logo-full.png";
 import {
@@ -18,11 +18,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { useTranslation } from "react-i18next";
+import { usePendingUploads } from "@/hooks/use-pending-uploads";
 
 export function AppSidebar() {
   const { t } = useTranslation();
   const [location] = useLocation();
   const { user, logout } = useAuth();
+  const { pending, uploading, online, retryAll } = usePendingUploads();
 
   const navItems = [
     { title: t("nav.recordMeeting"), url: "/meetings/new", icon: Mic },
@@ -93,6 +95,46 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {pending.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <div className="mx-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                <div className="flex items-center gap-2 mb-1">
+                  {uploading ? (
+                    <Loader2 className="h-4 w-4 text-amber-500 animate-spin" />
+                  ) : !online ? (
+                    <WifiOff className="h-4 w-4 text-amber-500" />
+                  ) : (
+                    <CloudUpload className="h-4 w-4 text-amber-500" />
+                  )}
+                  <span className="text-xs font-medium text-amber-500" data-testid="text-pending-count">
+                    {pending.length} {t("pendingUploads.pending", { count: pending.length })}
+                  </span>
+                </div>
+                <p className="text-[10px] text-muted-foreground mb-2">
+                  {uploading
+                    ? t("pendingUploads.uploading")
+                    : !online
+                      ? t("pendingUploads.waitingConnection")
+                      : t("pendingUploads.readyToUpload")}
+                </p>
+                {online && !uploading && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full h-7 text-xs gap-1 border-amber-500/30 text-amber-500 hover:bg-amber-500/10"
+                    onClick={retryAll}
+                    data-testid="button-retry-pending"
+                  >
+                    <CloudUpload className="h-3 w-3" />
+                    {t("pendingUploads.retryAll")}
+                  </Button>
+                )}
+              </div>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="p-4">

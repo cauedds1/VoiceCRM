@@ -234,7 +234,19 @@
     "startRecording": "Start recording",
     "discardRecording": "Discard recording",
     "consentNotice": "By recording, your audio will be processed by artificial intelligence for transcription and information extraction. Your data is protected according to our",
-    "consentPrivacyLink": "Privacy Policy"
+    "consentPrivacyLink": "Privacy Policy",
+    "audioSaved": "Audio saved locally",
+    "savingLocally": "Saving audio...",
+    "savingLocallyDesc": "Protecting your audio before uploading",
+    "offlineSaved": "Saved offline",
+    "offlineSavedDesc": "Your audio will be sent automatically when connection returns",
+    "savedOffline": "Audio saved securely",
+    "savedOfflineDesc": "Will be sent automatically when internet connection is available",
+    "uploadFailed": "Upload failed",
+    "uploadFailedDesc": "Your audio is saved locally and will be retried automatically",
+    "retryUpload": "Retry upload",
+    "newRecording": "New recording",
+    "stillOffline": "Still offline"
   },
   "newMeetingManual": {
     "title": "New Manual Meeting",
@@ -611,5 +623,15 @@
     "recorded": "Recorded",
     "scheduled": "Scheduled",
     "scheduledBadge": "Scheduled"
+  },
+  "pendingUploads": {
+    "pending_one": "pending audio",
+    "pending_other": "pending audios",
+    "pending": "pending audio(s)",
+    "uploading": "Uploading to server...",
+    "waitingConnection": "Waiting for internet connection",
+    "readyToUpload": "Ready to upload",
+    "retryAll": "Upload now",
+    "uploadSuccess": "Audio uploaded successfully!"
   }
 }

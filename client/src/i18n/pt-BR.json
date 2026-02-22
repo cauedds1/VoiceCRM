@@ -234,7 +234,19 @@
     "startRecording": "Iniciar gravação",
     "discardRecording": "Descartar gravação",
     "consentNotice": "Ao gravar, seu audio sera processado por inteligencia artificial para transcricao e extracao de informacoes. Seus dados sao protegidos conforme nossa",
-    "consentPrivacyLink": "Politica de Privacidade"
+    "consentPrivacyLink": "Politica de Privacidade",
+    "audioSaved": "Áudio salvo localmente",
+    "savingLocally": "Salvando áudio...",
+    "savingLocallyDesc": "Protegendo seu áudio antes do envio",
+    "offlineSaved": "Salvo offline",
+    "offlineSavedDesc": "Seu áudio será enviado automaticamente quando a conexão voltar",
+    "savedOffline": "Áudio salvo com segurança",
+    "savedOfflineDesc": "Será enviado automaticamente quando houver conexão com a internet",
+    "uploadFailed": "Falha no envio",
+    "uploadFailedDesc": "Seu áudio está salvo localmente e será reenviado automaticamente",
+    "retryUpload": "Tentar enviar",
+    "newRecording": "Nova gravação",
+    "stillOffline": "Ainda sem conexão"
   },
   "newMeetingManual": {
     "title": "Nova Reunião Manual",
@@ -611,5 +623,15 @@
     "recorded": "Registrada",
     "scheduled": "Agendada",
     "scheduledBadge": "Agendada"
+  },
+  "pendingUploads": {
+    "pending_one": "áudio pendente",
+    "pending_other": "áudios pendentes",
+    "pending": "áudio(s) pendente(s)",
+    "uploading": "Enviando para o servidor...",
+    "waitingConnection": "Aguardando conexão com a internet",
+    "readyToUpload": "Pronto para enviar",
+    "retryAll": "Enviar agora",
+    "uploadSuccess": "Áudio enviado com sucesso!"
   }
 }
