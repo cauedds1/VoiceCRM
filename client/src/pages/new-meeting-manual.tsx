@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
-import { CalendarDays, Users, Loader2, FileText } from "lucide-react";
+import { CalendarDays, Users, Loader2, FileText, ImagePlus, XCircle, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,8 @@ export default function NewMeetingManual() {
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
   const [contactSearch, setContactSearch] = useState("");
+  const [images, setImages] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: contacts = [] } = useQuery<Contact[]>({ queryKey: ["/api/contacts"] });
 
@@ -35,6 +37,15 @@ export default function NewMeetingManual() {
     );
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setImages((prev) => [...prev, ...files]);
+  };
+
+  const removeImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const createMeeting = useMutation({
     mutationFn: async () => {
       const res = await apiRequest("POST", "/api/meetings", {
@@ -43,7 +54,18 @@ export default function NewMeetingManual() {
         contactIds: selectedContacts.length > 0 ? selectedContacts : undefined,
         date,
       });
-      return res.json();
+      const meeting = await res.json();
+
+      if (images.length > 0) {
+        const formData = new FormData();
+        images.forEach((f) => formData.append("images", f));
+        await fetch(`/api/meetings/${meeting.id}/attachments`, {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+        });
+      }
+      return meeting;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/meetings"] });
@@ -111,6 +133,63 @@ export default function NewMeetingManual() {
                 data-testid="input-meeting-summary"
               />
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-medium flex items-center gap-2">
+                <ImagePlus className="h-4 w-4 text-muted-foreground" />
+                {t("meetingDetail.attachments")}
+              </h2>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                className="h-8 gap-1.5 text-xs"
+                data-testid="button-add-manual-images"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                {t("meetingDetail.uploadImages")}
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+            </div>
+          </CardHeader>
+          <CardContent>
+            {images.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-2 text-center">
+                {t("meetingDetail.noAttachments")}
+              </p>
+            ) : (
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                {images.map((file, index) => (
+                  <div key={index} className="relative group rounded-md overflow-hidden border border-border/50 aspect-square">
+                    <img
+                      src={URL.createObjectURL(file)}
+                      alt={file.name}
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-1 right-1 p-0.5 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
+                      data-testid={`button-remove-manual-image-${index}`}
+                    >
+                      <XCircle className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
