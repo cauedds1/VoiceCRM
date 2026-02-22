@@ -225,12 +225,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getMeetingsByDateRange(userId: string, start: Date, end: Date): Promise<Meeting[]> {
+    // Standardize to start and end of day in UTC to ensure no meetings are missed due to time components
+    const startDate = new Date(start);
+    startDate.setUTCHours(0, 0, 0, 0);
+    const endDate = new Date(end);
+    endDate.setUTCHours(23, 59, 59, 999);
+
     return db.select().from(meetings)
       .where(and(
         eq(meetings.userId, userId),
         or(
-          and(gte(meetings.date, start), lte(meetings.date, end)),
-          and(gte(meetings.scheduledDate, start), lte(meetings.scheduledDate, end))
+          and(gte(meetings.date, startDate), lte(meetings.date, endDate)),
+          and(gte(meetings.scheduledDate, startDate), lte(meetings.scheduledDate, endDate))
         )
       ))
       .orderBy(meetings.date);

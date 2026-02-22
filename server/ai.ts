@@ -404,7 +404,14 @@ REGRAS FINAIS:
   }
 
   const isSchedule = extracted.meetingType === "schedule";
-  const scheduledDate = extracted.scheduledDate ? new Date(extracted.scheduledDate) : null;
+  // Fix: Ensure scheduledDate is correctly parsed and fallback to null if invalid
+  let scheduledDate: Date | null = null;
+  if (isSchedule && extracted.scheduledDate) {
+    const parsedDate = new Date(extracted.scheduledDate);
+    if (!isNaN(parsedDate.getTime())) {
+      scheduledDate = parsedDate;
+    }
+  }
 
   const meeting = await storage.createMeeting({
     title: extracted.title || "Reunião sem título",
