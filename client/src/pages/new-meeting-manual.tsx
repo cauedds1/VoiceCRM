@@ -64,11 +64,15 @@ export default function NewMeetingManual() {
           body: formData,
           credentials: "include",
         });
+        await apiRequest("POST", `/api/meetings/${meeting.id}/analyze-images`);
       }
       return meeting;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/meetings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       toast({ title: t("newMeetingManual.meetingCreated") });
       navigate(`/meetings/${data.id}`);
     },
@@ -249,7 +253,9 @@ export default function NewMeetingManual() {
             ) : (
               <CalendarDays className="h-4 w-4" />
             )}
-            {t("newMeetingManual.createMeeting")}
+            {createMeeting.isPending && images.length > 0
+              ? t("newMeetingManual.creatingWithImages")
+              : t("newMeetingManual.createMeeting")}
           </Button>
           <Button type="button" variant="ghost" onClick={() => navigate("/meetings")} data-testid="button-cancel">
             {t("common.cancel")}

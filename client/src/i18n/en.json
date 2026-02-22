@@ -251,7 +251,8 @@
     "createMeeting": "Create Meeting",
     "meetingCreated": "Meeting created successfully!",
     "errorCreating": "Error creating meeting",
-    "titleRequired": "Please provide a meeting title"
+    "titleRequired": "Please provide a meeting title",
+    "creatingWithImages": "Creating and analyzing images..."
   },
   "meetingDetail": {
     "notFound": "Meeting not found",

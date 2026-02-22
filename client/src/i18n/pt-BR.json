@@ -251,7 +251,8 @@
     "createMeeting": "Criar Reunião",
     "meetingCreated": "Reunião criada com sucesso!",
     "errorCreating": "Erro ao criar reunião",
-    "titleRequired": "Informe o título da reunião"
+    "titleRequired": "Informe o título da reunião",
+    "creatingWithImages": "Criando e analisando imagens..."
   },
   "meetingDetail": {
     "notFound": "Reunião não encontrada",
