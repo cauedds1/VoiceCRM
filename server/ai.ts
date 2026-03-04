@@ -191,6 +191,19 @@ Identifique TODAS as empresas/organizações mencionadas:
 ═══════════════════════════════════════
 ${getTaskExtractionInstruction(extractionLevel)}
 
+⚠️ REGRA ESPECIAL — AGENDAMENTOS (meetingType: "schedule"):
+Quando o áudio é um AGENDAMENTO de reunião futura, NÃO crie tarefas que sejam sobre o próprio ato de agendar/marcar a reunião. Exemplos de tarefas PROIBIDAS nesse contexto:
+- "Agendar reunião com João"
+- "Marcar reunião com TechCorp"
+- "Ligar para João para agendar"
+- "Confirmar reunião com X"
+- "Colocar reunião na agenda"
+A razão: a reunião JÁ está sendo criada no sistema — criar uma tarefa para "agendar" ela seria duplicar o próprio registro.
+Tarefas de PREPARAÇÃO para a reunião são PERMITIDAS e bem-vindas, como:
+- "Preparar pauta para reunião com João"
+- "Enviar apresentação antes da reunião"
+- "Levantar dados de vendas para reunião"
+
 PADRÕES DE FALA QUE INDICAM TAREFA:
 
 Verbos de obrigação/necessidade:
